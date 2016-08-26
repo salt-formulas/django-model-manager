@@ -43,33 +43,33 @@
     <div class="col-xs-2 col">
       <h2 class="text-center">DevOps Portal</h2>
       <div class="list-group">
-        <a href="{% url 'devops:overview' %}" class="list-group-item {% if 'overview' in request.path %}active{% endif %}">
+        <a href="{% url 'overview' %}" class="list-group-item {% if request.path == '/' %}active{% endif %}">
           Overview
         </a>
-        <a href="{% url 'devops:jenkins' %}" class="list-group-item {% if 'jenkins' in request.path %}active{% endif %}">
+        <a href="{% url 'jenkins' %}" class="list-group-item {% if 'jenkins' in request.path %}active{% endif %}">
           Jenkins
         </a>
-        <a href="{% url 'devops:gerrit' %}" class="list-group-item {% if 'gerrit' in request.path %}active{% endif %}">
+        <a href="{% url 'gerrit' %}" class="list-group-item {% if 'gerrit' in request.path %}active{% endif %}">
           Gerrit
         </a>
-        <a href="{% url 'devops:maas' %}" class="list-group-item {% if 'maas' in request.path %}active{% endif %}">
+        <a href="{% url 'maas' %}" class="list-group-item {% if 'maas' in request.path %}active{% endif %}">
           MAAS
         </a>
-        <a href="{% url 'devops:artifactory' %}" class="list-group-item {% if 'artifactory' in request.path %}active{% endif %}">
+        <a href="{% url 'artifactory' %}" class="list-group-item {% if 'artifactory' in request.path %}active{% endif %}">
           Artifactory
         </a>
-        <a href="{% url 'devops:salt' %}" class="list-group-item {% if 'salt' in request.path %}active{% endif %}">
+        <a href="{% url 'salt' %}" class="list-group-item {% if 'salt' in request.path %}active{% endif %}">
           SaltStack
         </a>
       </div>
       <ul>
       <li>
-        <a href="{% url 'devops:doc' %}" class=" {% if 'doc' in request.path %}active{% endif %}">
+        <a href="{% url 'doc' %}" class=" {% if 'doc' in request.path %}active{% endif %}">
           Documentation
         </a>
       </li>
       <li>
-        <a href="{% url 'devops:doc' %}" class=" {% if 'doc' in request.path %}active{% endif %}">
+        <a href="{% url 'doc' %}" class=" {% if 'doc' in request.path %}active{% endif %}">
           User Guides
         </a>
       </li>

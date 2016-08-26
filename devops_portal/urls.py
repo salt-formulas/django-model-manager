@@ -4,7 +4,7 @@ from . import views
 
 
 urlpatterns = patterns('',
-    url(r'^overview$', views.overview, name='overview'),
+    url(r'^$', views.overview, name='overview'),
     url(r'^jenkins/$', views.jenkins, name='jenkins'),
     url(r'^gerrit/$', views.gerrit, name='gerrit'),
     url(r'^maas/$', views.maas, name='maas'),
