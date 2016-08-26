@@ -44,3 +44,9 @@ def doc(request):
     args = {}
 
     return render(request, 'devops_portal/doc.html', args)
+
+
+def userguides(request):
+    args = {}
+
+    return render(request, 'devops_portal/userguides.html', args)

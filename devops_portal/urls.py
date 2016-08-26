@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     url(r'^artifactory/$', views.artifactory, name='artifactory'),
     url(r'^salt/$', views.salt, name='salt'),
     url(r'^doc/$', views.doc, name='doc'),
+    url(r'^user-guides/$', views.userguides, name='userguides'),
 )
