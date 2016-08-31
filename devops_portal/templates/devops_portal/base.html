@@ -58,9 +58,11 @@
         <a href="{% url 'artifactory' %}" class="list-group-item {% if 'artifactory' in request.path %}active{% endif %}">
           Artifactory
         </a>
+        {% comment %}
         <a href="{% url 'salt' %}" class="list-group-item {% if 'salt' in request.path %}active{% endif %}">
           SaltStack
         </a>
+        {% endcomment %}
       </div>
       <ul>
       <li>

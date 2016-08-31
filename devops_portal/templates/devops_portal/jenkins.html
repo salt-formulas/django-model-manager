@@ -2,6 +2,6 @@
 {% block title %}Jenkins{% endblock %}
 {% block page_title %}Jenkins{% endblock %}
 {% block content %}
-<iframe width="100%" src="http://185.22.98.100/">
+<iframe width="100%" src="http://{{ JENKINS_HOST }}:{{ JENKINS_PORT }}/">
 </iframe>
 {% endblock %}
