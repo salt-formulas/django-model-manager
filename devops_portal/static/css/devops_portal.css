@@ -1,26 +1,20 @@
 body {
-    color: #fff;
-    background-color: #171717;
 }
 
-a {
-    color: #fff;
-}
-
-a:hover {
-    color: #900101;
-    text-decoration: none;
-}
 
 .table-hover>tbody>tr:hover {
     background-color: #1f1f1f;
 }
 
-.list-group-item {
+.menu li {
+  padding-bottom: 5px;   
+}
+
+.menu li a {
     background-color: #252525;
     border: 1px solid #2f2f2f;
 }
-.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+.menu li.active a, .menu li.active a:focus, .menu li.active a:hover {
     background-color: #770606;
     border-color: #900101;
 }
@@ -43,6 +37,41 @@ iframe {
     padding-right:0!important;
 }
 
+
+.menu {
+    background-image: url(../img/universe-inverse.jpg);
+    background-repeat: repeat-x;
+    background-position: top right;
+    position: relative;
+    background-size: 1600px 65px;
+}
+
+.content {
+    background-image: url(../img/universe.jpg);
+    background-repeat: repeat-x;
+    background-position: top left;
+    position: relative;
+    background-size: 100% 65px;
+}
+
+.content h3 {
+    font-size: 24px;
+    padding-left: 20px;
+}
+.content h4 {
+    font-size: 20px;
+    padding-left: 10px;
+}
+.content .tbl {
+    margin: 60px 30px;
+}
+.menu h2 {
+  font-size: 32px;
+}
+.nav {
+    padding: 15px;
+}
+
 html, body, .col, .container-fluid {
     height: 100%;
     margin: 0;         /* Reset default margin on the body element */
@@ -53,4 +82,12 @@ iframe {
     border: none;         /* Reset default border */
     width: 100%;
     height: 100%;
+}
+
+.footnote {
+    position: fixed;
+    bottom:0;
+    left:0;
+    padding:15px;
+    margin:0;
 }

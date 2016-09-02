@@ -12,7 +12,7 @@
     <meta name="author" content="">
 
   <!-- CSS -->
-  <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/cyborg.css' %}" rel="stylesheet">
   <link href="{% static 'css/devops_portal.css' %}" rel="stylesheet">
 
     <!-- javascript basic -->
@@ -40,30 +40,31 @@
 </head> 
 <body>
   <div class="container-fluid" style="padding:0;">
-    <div class="col-xs-2 col">
+    <div class="col-xs-2 col menu">
       <h2 class="text-center">DevOps Portal</h2>
-      <div class="list-group">
-        <a href="{% url 'overview' %}" class="list-group-item {% if request.path == '/' %}active{% endif %}">
+      <ul class="nav nav-stacked nav-pills">
+        <li class="{% if request.path == '/' %}active{% endif %}"><a href="{% url 'overview' %}" >
           Overview
-        </a>
-        <a href="{% url 'jenkins' %}" class="list-group-item {% if 'jenkins' in request.path %}active{% endif %}">
+        </a></li>
+        <li {% if 'jenkins' in request.path %}class="active"{% endif %}><a href="{% url 'jenkins' %}">
           Jenkins
-        </a>
-        <a href="{% url 'gerrit' %}" class="list-group-item {% if 'gerrit' in request.path %}active{% endif %}">
+        </a></li>
+        <li {% if 'gerrit' in request.path %}class="active"{% endif %}><a href="{% url 'gerrit' %}">
           Gerrit
-        </a>
-        <a href="{% url 'maas' %}" class="list-group-item {% if 'maas' in request.path %}active{% endif %}">
+        </a></li>
+        <li {% if 'maas' in request.path %}class="active"{% endif %}><a href="{% url 'maas' %}">
           MAAS
-        </a>
-        <a href="{% url 'artifactory' %}" class="list-group-item {% if 'artifactory' in request.path %}active{% endif %}">
-          Artifactory
-        </a>
+        </a></li>
+        <li {% if 'artifactory' in request.path %}class="active"{% endif %}><a href="{% url 'artifactory' %}">
+          Artifactory</a>
+        </li>
         {% comment %}
         <a href="{% url 'salt' %}" class="list-group-item {% if 'salt' in request.path %}active{% endif %}">
           SaltStack
         </a>
         {% endcomment %}
-      </div>
+      </ul>
+      {% comment %}
       <ul>
       <li>
         <a href="{% url 'doc' %}" class=" {% if 'doc' in request.path %}active{% endif %}">
@@ -76,8 +77,10 @@
         </a>
       </li>
       </ul>
+      {% endcomment %}
+      <p class="footnote">© 2016 Mirantis, Inc.</p>
     </div>
-    <div class="col-xs-10 col">
+    <div class="col-xs-10 col content">
       {% block content %}
       {% endblock %}
     </div>
