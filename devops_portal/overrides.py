@@ -5,7 +5,7 @@ from django.views.decorators.debug import sensitive_variables  # noqa
 from devops_portal.api import devops_portal
 from horizon import exceptions
 from horizon.utils import functions as utils
-from openstack_dashboard.dashboards.settings.password import forms
+#from openstack_dashboard.dashboards.settings.password import forms
 
 
 @sensitive_variables('data')
