@@ -136,8 +136,8 @@ def get_staticfiles_dirs(webroot='/'):
 
 
 def find_static_files(HORIZON_CONFIG):
-    import horizon
     import devops_portal
+    import horizon
     devops_portal_home_dir = devops_portal.__path__[0]
     horizon_home_dir = horizon.__path__[0]
 
