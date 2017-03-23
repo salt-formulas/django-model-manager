@@ -1,12 +1,11 @@
-{% load branding i18n %}
-{% load context_selection %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
   <head>
     <meta content='IE=edge' http-equiv='X-UA-Compatible' />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type' />
     {% include "horizon/_custom_meta.html" %}
-    <title>{% block title %}{% endblock %} - {% site_branding %}</title>
+    <title>{% block title %}{% endblock %}</title>
     {% comment %} Load CSS sheets before Javascript  {% endcomment %}
     {% block css %}
       {% include "_stylesheets.html" %}
