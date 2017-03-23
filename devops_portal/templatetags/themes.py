@@ -38,8 +38,6 @@ def get_theme(request):
     except KeyError:
         pass
 
-    print this_theme
-
     return this_theme
 
 
@@ -80,8 +78,6 @@ def theme_cookie():
 
 @register.assignment_tag()
 def theme_dir():
-    print hz_themes.get_theme_dir()
-
     return hz_themes.get_theme_dir()
 
 
