@@ -2,7 +2,7 @@ from django import http
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_variables  # noqa
-from devops_portal.api import devops_portal
+#from devops_portal.api import devops_portal
 from horizon import exceptions
 from horizon.utils import functions as utils
 #from openstack_dashboard.dashboards.settings.password import forms
