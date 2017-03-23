@@ -1,5 +1,5 @@
 // My Themes
-@import "/{{ THEME_DIR }}/{{ THEME }}/variables";
+//@import "/{{ THEME_DIR }}/{{ THEME }}/variables";
 
 // Horizon
 @import "/dashboard/scss/horizon.scss";
@@ -8,8 +8,8 @@
 @import "/app/app";
 
 {% for file in HORIZON_CONFIG.scss_files %}
-@import '/{{ file }}';
+//@import '/{{ file }}';
 {% endfor %}
 
 // Custom Styles
-@import "/{{ THEME_DIR }}/{{ THEME }}/styles";
+//@import "/{{ THEME_DIR }}/{{ THEME }}/styles";
