@@ -17,11 +17,6 @@
   themes/themes.scss template file.
 
 {% with THEME=current_theme THEME_DIR=theme_dir %}
-{% compress css %}
-  <style type="text/scss">
-    {% include 'themes/themes.scss' %}
-  </style>
-{% endcompress %}
 {% endwith %}
 {% endcomment %}
 
