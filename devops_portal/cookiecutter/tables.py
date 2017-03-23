@@ -32,4 +32,4 @@ class CookiecutterTable(tables.DataTable):
     class Meta:
         name = _("Cookiecutter")
         verbose_name = _("Cookiecutters")
-        table_actions = (CreateCookiecutter)
+        table_actions = (CreateCookiecutter,)
