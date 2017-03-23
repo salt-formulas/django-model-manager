@@ -15,7 +15,6 @@
 
   If you wish to add new scss files, it is recommended that you add them from within the
   themes/themes.scss template file.
-{% endcomment %}
 
 {% with THEME=current_theme THEME_DIR=theme_dir %}
 {% compress css %}
@@ -24,5 +23,6 @@
   </style>
 {% endcompress %}
 {% endwith %}
+{% endcomment %}
 
 <link rel="shortcut icon" href="{% themable_asset 'img/favicon.ico' %}"/>
