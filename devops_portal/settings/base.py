@@ -45,7 +45,7 @@ if ROOT_PATH not in sys.path:
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
-SITE_BRANDING = 'OpenStack Dashboard'
+SITE_BRANDING = 'DevOps Portal'
 
 WEBROOT = '/'
 LOGIN_URL = None
