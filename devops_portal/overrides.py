@@ -32,4 +32,4 @@ def handle(self, request, data):
                           _('Unable to change password.'))
         return False
 
-forms.PasswordForm.handle = handle
+#forms.PasswordForm.handle = handle
