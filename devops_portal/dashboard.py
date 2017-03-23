@@ -15,7 +15,7 @@ class DevopsPortal(horizon.Dashboard):
 
     name = _(getattr(settings, 'DEVOPS_PORTAL_DASHBOARD_NAME', _("DevOps Portal")))
     slug = "devops_portal"
-    panels = (Tickets, Identity,)
+    panels = (Model,)
     default_panel = "cookiecutter"
 
 
