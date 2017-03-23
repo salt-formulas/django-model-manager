@@ -137,8 +137,8 @@ def get_staticfiles_dirs(webroot='/'):
 
 def find_static_files(HORIZON_CONFIG):
     import horizon
-    import openstack_dashboard
-    os_dashboard_home_dir = openstack_dashboard.__path__[0]
+    import devops_portal
+    devops_portal_home_dir = devops_portal.__path__[0]
     horizon_home_dir = horizon.__path__[0]
 
     # note the path must end in a '/' or the resultant file paths will have a
@@ -156,6 +156,6 @@ def find_static_files(HORIZON_CONFIG):
     # leading "/"
     file_discovery.populate_horizon_config(
         HORIZON_CONFIG,
-        os.path.join(os_dashboard_home_dir, 'static/'),
+        os.path.join(devops_portal_home_dir, 'static/'),
         sub_path='app/'
     )
