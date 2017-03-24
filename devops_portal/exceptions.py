@@ -19,16 +19,55 @@
 from requests import exceptions as requests
 
 
+class ClientException(Exception):
+    """
+    The base exception class for all exceptions.
+    """
+    def __init__(self, code, message=None, details=None,
+                 request_id=None, response=None):
+        self.code = code
+        self.message = message or getattr(self.__class__, 'message', None)
+        self.details = details
+        self.request_id = request_id
+
+    def __str__(self):
+        formatted_string = "%s" % self.message
+        if self.code >= 100:
+            # HTTP codes start at 100.
+            formatted_string += " (HTTP %s)" % self.code
+        if self.request_id:
+            formatted_string += " (Request-ID: %s)" % self.request_id
+
+        return formatted_string
+
+
+class Unauthorized(ClientException):
+    """
+    HTTP 401 - Unauthorized: bad credentials.
+    """
+    http_status = 401
+    message = "Unauthorized"
+
+
+class NotFound(ClientException):
+    """
+    HTTP 404 - Not found
+    """
+    http_status = 404
+    message = "Not found"
+
+
 UNAUTHORIZED = (
-    requests.RequestException,
+    Unauthorized,
 )
 
 
 NOT_FOUND = (
-    requests.RequestException,
+    NotFound,
 )
 
 
 RECOVERABLE = (
     requests.RequestException,
 )
+
