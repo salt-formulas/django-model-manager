@@ -1,4 +1,10 @@
+# virtualenv
 venv/
+# static dir
 static/
+# local_settings
+devops_portal/settings/local/local_settings.py
+# misc
 *.egg-info/
 *.pyc
+
