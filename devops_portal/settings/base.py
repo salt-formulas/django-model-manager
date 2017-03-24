@@ -24,19 +24,14 @@ import warnings
 from django.utils.translation import pgettext_lazy
 from django.utils.translation import ugettext_lazy as _
 
-from openstack_dashboard import exceptions
-from openstack_dashboard.static_settings import find_static_files  # noqa
-from openstack_dashboard.static_settings import get_staticfiles_dirs  # noqa
-from openstack_dashboard import theme_settings
-
-from horizon.utils.escape import monkeypatch_escape
-
-monkeypatch_escape()
+from devops_portal import exceptions
+from .static import find_static_files, get_staticfiles_dirs
+from .theme import get_available_themes, get_theme_static_dirs 
 
 warnings.formatwarning = lambda message, category, *args, **kwargs: \
     '%s: %s' % (category.__name__, message)
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BIN_DIR = os.path.abspath(os.path.join(ROOT_PATH, '..', 'bin'))
 
 if ROOT_PATH not in sys.path:
@@ -54,10 +49,10 @@ LOGIN_REDIRECT_URL = None
 STATIC_ROOT = None
 STATIC_URL = None
 
-ROOT_URLCONF = 'openstack_dashboard.urls'
+ROOT_URLCONF = 'devops_portal.urls'
 
 HORIZON_CONFIG = {
-    'user_home': 'openstack_dashboard.views.get_user_home',
+    'user_home': 'devops_portal.views.get_user_home',
     'ajax_queue_limit': 10,
     'auto_fade_alerts': {
         'delay': 3000,
@@ -123,7 +118,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
     'horizon.context_processors.horizon',
-    'openstack_dashboard.context_processors.openstack',
+    'devops_portal.context_processors.openstack',
 )
 
 TEMPLATE_LOADERS = (
@@ -159,7 +154,7 @@ COMPRESS_CSS_HASHING_METHOD = 'hash'
 COMPRESS_PARSER = 'compressor.parser.HtmlParser'
 
 INSTALLED_APPS = [
-    'openstack_dashboard',
+    'devops_portal',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
@@ -167,16 +162,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'django_pyscss',
-    'openstack_dashboard.django_pyscss_fix',
+    'devops_portal.django_pyscss_fix',
     'compressor',
     'horizon',
-    'openstack_auth',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)
-AUTHENTICATION_URLS = ['openstack_auth.urls']
-AUTH_USER_MODEL = 'openstack_auth.User'
+AUTHENTICATION_BACKENDS = ('devops_portal_auth.backend.DevopsPortalBackend',)
+AUTHENTICATION_URLS = ['devops_portal_auth.urls']
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
@@ -296,7 +289,7 @@ except ImportError:
     logging.warning("No local_settings file found.")
 
 # allow to drop settings snippets into a local_settings_dir
-LOCAL_SETTINGS_DIR_PATH = os.path.join(ROOT_PATH, "local", "local_settings.d")
+LOCAL_SETTINGS_DIR_PATH = os.path.join(ROOT_PATH, "settings", "local", "local_settings.d")
 if os.path.exists(LOCAL_SETTINGS_DIR_PATH):
     for (dirpath, dirnames, filenames) in os.walk(LOCAL_SETTINGS_DIR_PATH):
         for filename in sorted(filenames):
@@ -326,7 +319,7 @@ if STATIC_ROOT is None:
 if STATIC_URL is None:
     STATIC_URL = WEBROOT + 'static/'
 
-AVAILABLE_THEMES, DEFAULT_THEME = theme_settings.get_available_themes(
+AVAILABLE_THEMES, DEFAULT_THEME = get_available_themes(
     AVAILABLE_THEMES,
     CUSTOM_THEME_PATH,
     DEFAULT_THEME_PATH,
@@ -334,7 +327,7 @@ AVAILABLE_THEMES, DEFAULT_THEME = theme_settings.get_available_themes(
 )
 
 STATICFILES_DIRS = get_staticfiles_dirs(STATIC_URL) + \
-    theme_settings.get_theme_static_dirs(
+    get_theme_static_dirs(
         AVAILABLE_THEMES,
         THEME_COLLECTION_DIR,
         ROOT_PATH)
@@ -364,22 +357,22 @@ if not SECRET_KEY:
                                                        '.secret_key_store'))
 
 # Load the pluggable dashboard settings
-import openstack_dashboard.enabled
-import openstack_dashboard.local.enabled
-from openstack_dashboard.utils import settings
+import devops_portal.settings.enabled
+import devops_portal.settings.local.enabled
+from devops_portal.utils import settings
 
 INSTALLED_APPS = list(INSTALLED_APPS)  # Make sure it's mutable
 settings.update_dashboards(
     [
-        openstack_dashboard.enabled,
-        openstack_dashboard.local.enabled,
+        devops_portal.settings.enabled,
+        devops_portal.settings.local.enabled,
     ],
     HORIZON_CONFIG,
     INSTALLED_APPS,
 )
 INSTALLED_APPS[0:0] = ADD_INSTALLED_APPS
 
-from openstack_auth import policy
+from devops_portal import policy
 POLICY_CHECK_FUNCTION = policy.check
 
 # This base context objects gets added to the offline context generator
@@ -394,12 +387,5 @@ COMPRESS_OFFLINE_CONTEXT = 'horizon.themes.offline_context'
 
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
-
-# during django reloads and an active user is logged in, the monkey
-# patch below will not otherwise be applied in time - resulting in developers
-# appearing to be logged out.  In typical production deployments this section
-# below may be omitted, though it should not be harmful
-from openstack_auth import utils as auth_utils
-auth_utils.patch_middleware_get_user()
 
 CSRF_COOKIE_AGE = None
