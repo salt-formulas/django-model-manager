@@ -1,1 +1,9 @@
-#from devops_portal.api.devops_portal import devops_portal  # noqa
+from .base import BaseClient
+from .users import User, Operator
+
+class Api(BaseClient):
+
+    users = User()
+    pass
+
+devops_portal = Api()
