@@ -9,4 +9,5 @@ devops_portal/settings/local/local_settings.py
 # misc
 *.egg-info/
 *.pyc
-
+# development backend db
+backend_db.sqlite3
