@@ -170,6 +170,11 @@ INSTALLED_APPS = [
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('devops_portal_auth.backend.DevopsPortalBackend',)
 AUTHENTICATION_URLS = ['devops_portal_auth.urls']
+AUTH_BACKEND_PROTOCOL = "http"
+AUTH_BACKEND_HOST = "127.0.0.1"
+AUTH_BACKEND_PORT = 8001
+AUTH_BACKEND_URL = "%s://%s:%s" % (AUTH_BACKEND_PROTOCOL, AUTH_BACKEND_HOST, AUTH_BACKEND_PORT)
+AUTH_BACKEND_API_PREFIX = "/api"
 MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
