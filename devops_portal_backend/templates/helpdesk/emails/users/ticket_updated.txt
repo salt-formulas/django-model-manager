@@ -1,0 +1,10 @@
+
+{% load i18n %}
+
+{{ ticket.description|safe }}
+
+{% for change in changes %}
+{{ change.0|safe }}: {{ change.1|safe }} -> {{ change.2|safe }}
+{% endfor %}
+
+{% trans "See" %} {{ helpdesk_url }}/helpdesk/ticket/{{ ticket.id }}/detail">

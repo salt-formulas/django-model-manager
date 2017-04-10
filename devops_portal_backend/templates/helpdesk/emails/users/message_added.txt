@@ -1,0 +1,14 @@
+{% extends "helpdesk/emails/base.html" %}
+{% load i18n %}
+
+{% block header %}
+<h1>{{ message.author }} {% trans "has updated a task" %} {{ message.ticket }}</h1>
+{% endblock %}
+
+{% block main %}
+
+<h2>{% trans "new comment" %}</h2>
+
+<p>{{ message.text|safe }}</p>
+
+{% endblock %}

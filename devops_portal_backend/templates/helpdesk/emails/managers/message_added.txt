@@ -1,0 +1,7 @@
+
+{{ message.author }} has updated a work order {{ message.ticket }}
+{{ message.text|safe }}
+
+{% if message.spent_time %}Operator spent {{ message.spent_time }} hours.{% endif %}
+
+See {{ helpdesk_url }}/helpdesk/work_orders/{{ ticket.id }}/detail

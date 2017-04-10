@@ -1,0 +1,12 @@
+{% load i18n %}
+{% if ticket.type == 'problem' %}{% trans "Ticket" %}{% else %}{% trans "Work Order" %}{% endif %} {{ ticket.title }} {% trans "was created by" %} {{ ticket.author }}
+
+{{ ticket.description|safe }}
+
+{% if ticket.bussiness_crit %}
+{% trans "It's bussiness critical !!" %}
+{% endif %}
+
+{% if ticket.severity %} {% trans "Organisation has" %} {{ ticket.severity }} {% trans "business severity" %}.{% endif %}
+
+See {{ helpdesk_url }}/helpdesk/ticket/{{ ticket.id }}/detail

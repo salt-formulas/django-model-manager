@@ -1,0 +1,19 @@
+{% extends "helpdesk/emails/base.html" %}
+
+{% load i18n %}
+
+{% block header %}
+<h1>{% if ticket.type == 'problem' %}{% trans "Ticket" %}{% else %}{% trans "Work Order" %}{% endif %} {{ ticket.title }} {% trans "was created by" %} {{ ticket.author }}</h1>
+{% endblock %}
+{% block main %}
+
+<p>{{ ticket.description|safe }}</p>
+
+{% if ticket.bussiness_crit %}
+<b>{% trans "It's bussiness critical !!" %}</b>
+{% endif %}
+
+<br>
+{% if ticket.severity %} {% trans "Organisation has" %} {{ ticket.severity }} {% trans "business severity" %}.{% endif %}
+
+{% endblock %}

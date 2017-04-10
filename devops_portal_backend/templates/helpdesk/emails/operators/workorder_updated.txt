@@ -1,0 +1,8 @@
+
+{{ ticket.description|safe }}
+
+{% for change in changes %}
+{{ change.0|safe }}: {{ change.1|safe }} -> {{ change.2|safe }}
+{% endfor %}
+
+See {{ helpdesk_url }}/helpdesk/ticket/{{ ticket.id }}/detail">
