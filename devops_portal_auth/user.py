@@ -56,7 +56,6 @@ def create_user_from_token(request=None, auth_ref=None):
         operator=user["operator"],
         manager=user["manager"],
         organisation=user["organisation"],
-        support_level=user["support_level"],
         key_account=user["key_account"],
         phone=user["phone"],
         token=token,
@@ -82,7 +81,7 @@ class User(models.AnonymousUser):
     def __init__(self, id=None, token=None, user=None, roles=None,
                  authorized_tenants=None, endpoint=None, is_active=True, manager=None,
                  is_admin=False, username=None, first_name=None, last_name=None, email=None,
-                 organisation=None, operator=None, support_level=None, phone=None, key_account=None):
+                 organisation=None, operator=None, phone=None, key_account=None):
 
         self.id = id
         self.pk = id
@@ -97,7 +96,6 @@ class User(models.AnonymousUser):
         self.email = email
         self.organisation = organisation
         self.operator = operator
-        self.support_level = support_level
         self.roles = roles or []
         self.key_account = key_account
 
@@ -204,20 +202,8 @@ class User(models.AnonymousUser):
         return self.operator
 
     @property
-    def level(self):
-        """returns support level as integer type
-        """
-        if self.is_operator:
-            return int(self.support_level.replace('l', ''))
-        return None
-
-    @property
     def is_manager(self):
         return self.manager
-
-    @property
-    def is_l3(self):
-        return True if self.level >= 3 else False
 
     @property
     def available_services_regions(self):
