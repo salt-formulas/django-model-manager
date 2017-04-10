@@ -55,15 +55,6 @@ class Login(django_auth_forms.AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super(Login, self).__init__(*args, **kwargs)
         self.fields.keyOrder = ['username', 'password', 'region']
-        if getattr(settings,
-                   'OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT',
-                   False):
-            self.fields['domain'] = forms.CharField(
-                label=_("Domain"),
-                required=True,
-                widget=forms.TextInput(attrs={"autofocus": "autofocus"}))
-            self.fields['username'].widget = forms.widgets.TextInput()
-            self.fields.keyOrder = ['domain', 'username', 'password', 'region']
         self.fields['region'].choices = self.get_region_choices()
         if len(self.fields['region'].choices) == 1:
             self.fields['region'].initial = self.fields['region'].choices[0][0]
@@ -74,7 +65,7 @@ class Login(django_auth_forms.AuthenticationForm):
 
     @staticmethod
     def get_region_choices():
-        default_region = (settings.OPENSTACK_KEYSTONE_URL, "Default Region")
+        default_region = (getattr(settings, 'AUTH_BACKEND_URL', 'http://localhost:8001'), "Default Region")
         regions = getattr(settings, 'AVAILABLE_REGIONS', [])
         if not regions:
             regions = [default_region]
@@ -82,9 +73,7 @@ class Login(django_auth_forms.AuthenticationForm):
 
     @sensitive_variables()
     def clean(self):
-        default_domain = getattr(settings,
-                                 'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN',
-                                 'Default')
+        default_domain = 'Default'
         username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
         region = self.cleaned_data.get('region')

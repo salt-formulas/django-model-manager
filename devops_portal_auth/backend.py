@@ -61,7 +61,7 @@ class DevopsPortalBackend(object):
         except Exception as exc:
             msg = _("Invalid credentials.")
             LOG.debug(str(exc))
-            raise exceptions.HelpdeskAuthException(msg)
+            raise exceptions.DevopsPortalAuthException(msg)
 
         try:
             # If we made it here we succeeded. Create our User!
@@ -69,7 +69,7 @@ class DevopsPortalBackend(object):
             auth_user.set_session_from_user(request, user)
         except:
             msg = _("Invalid credentials.")
-            raise exceptions.HelpdeskAuthException(msg)
+            raise exceptions.DevopsPortalAuthException(msg)
 
         if request is not None:
             request.user = user
