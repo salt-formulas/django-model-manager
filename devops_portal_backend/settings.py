@@ -8,7 +8,7 @@ STATIC_ROOT = None
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.abspath(os.path.join(ROOT_PATH, '..', 'backend_db.sqlite3')),
+        'NAME': os.path.abspath(os.path.join(ROOT_PATH, 'backend_db.sqlite3')),
     }
 }
 
@@ -37,11 +37,11 @@ LANGUAGES = (
 )
 
 if not MEDIA_ROOT:
-    MEDIA_ROOT = os.path.abspath(os.path.join(ROOT_PATH, '..', 'media'))
+    MEDIA_ROOT = os.path.abspath(os.path.join(ROOT_PATH, 'media'))
 MEDIA_URL = '/media/'
 
 if not STATIC_ROOT:
-    STATIC_ROOT = os.path.abspath(os.path.join(ROOT_PATH, '..', 'static'))
+    STATIC_ROOT = os.path.abspath(os.path.join(ROOT_PATH, 'static'))
 STATIC_URL = '/static/'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -56,7 +56,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': TEMPLATE_CONTEXT_PROCESSORS,
             'loaders': [
@@ -129,6 +128,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'devops_portal_backend.pagination.PageNumberPagination',
     'PAGE_SIZE': 25
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 try:
     from local_settings import *
