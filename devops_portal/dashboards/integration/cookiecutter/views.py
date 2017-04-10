@@ -16,6 +16,7 @@ LOG = logging.getLogger(__name__)
 
 class IndexView(tables.DataTableView):
     table_class = CookiecutterTable
+    template_name = "integration/cookiecutter/index.html"
     page_title = _("Cookiecutters")
 
     def get_data(self):

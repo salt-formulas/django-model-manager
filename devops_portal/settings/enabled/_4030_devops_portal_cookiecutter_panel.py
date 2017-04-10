@@ -1,5 +1,5 @@
 PANEL = 'cookiecutter'
-PANEL_GROUP = 'project'
-PANEL_DASHBOARD = 'project'
+PANEL_GROUP = 'models'
+PANEL_DASHBOARD = 'integration'
 
-ADD_PANEL = 'devops_portal.dashboard.cookiecutter.panel.Cookiecutter'
+ADD_PANEL = 'devops_portal.dashboards.integration.cookiecutter.panel.Cookiecutter'

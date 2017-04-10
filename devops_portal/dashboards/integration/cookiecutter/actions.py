@@ -4,11 +4,9 @@ from horizon import workflows
 
 
 class ClusterBasicAction(workflows.Action):
-    # The name field will be automatically available in all action's
-    # methods.
-    # If we want this field to be used in the another Step or Workflow,
-    # it has to be contributed by this step, then depend on in another
-    # step.
+    """
+    TODO: document this action
+    """
     cluster_name = forms.CharField(max_length=255,
                                    label=_("Cluster Name"),
                                    help_text="",
@@ -19,5 +17,30 @@ class ClusterBasicAction(workflows.Action):
                                      help_text="",
                                      required=True)
 
-    def handle(self, request, data):
-        pass
+    class Meta(object):
+        name = _("Cluster Basic Action")
+
+
+class ClusterServiceAction(workflows.Action):
+    """
+    TODO: document this action
+    """
+    install_cicd = forms.BooleanField(label=_("Install CI/CD"),
+                                      help_text="",
+                                      required=False)
+
+    install_openstack = forms.BooleanField(label=_("Install OpenStack"),
+                                           help_text="",
+                                           required=False)
+
+    install_opencontrail = forms.BooleanField(label=_("Install OpenContrail"),
+                                              help_text="",
+                                              required=False)
+
+    install_kubernetes = forms.BooleanField(label=_("Install Kubernetes"),
+                                            help_text="",
+                                            required=False)
+
+    class Meta(object):
+        name = _("Cluster Service Action")
+
