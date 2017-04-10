@@ -288,6 +288,13 @@ try:
 except ImportError:
     logging.warning("No local_settings file found.")
 
+try:
+    with open("/etc/devops_portal/settings.py") as f:
+        code = compile(f.read(), "/etc/devops_portal/settings.py", 'exec')
+        exec(code)
+except IOError:
+    pass
+
 # allow to drop settings snippets into a local_settings_dir
 LOCAL_SETTINGS_DIR_PATH = os.path.join(ROOT_PATH, "settings", "local", "local_settings.d")
 if os.path.exists(LOCAL_SETTINGS_DIR_PATH):
