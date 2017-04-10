@@ -8,7 +8,7 @@ LOG = logging.getLogger(__name__)
 
 
 class IndexView(views.HorizonTemplateView):
-    template_name = "integration/overview/_index.html"
+    template_name = "integration/overview/index.html"
 
 
 class StatusView(TemplateView):
