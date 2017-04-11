@@ -1,0 +1,20 @@
+{% include 'horizon/common/_form_errors.html' with form=form %}
+
+{% for fieldset in form.visible_fields %}
+  {% if fieldset.field.is_fieldset %}
+  <fieldset>
+    <legend>{{ fieldset.field.label }}</legend>
+    {% for field in form.visible_fields %}
+    {% if not field.field.is_fieldset and field.field.fieldset == fieldset.field.name %}
+      {% include 'horizon/common/_form_field.html' with field=field %}
+    {% endif %}
+    {% endfor %}
+  </fieldset>
+  {% endif %}
+{% endfor %}
+{% for field in form.visible_fields %}
+  {% if not field.field.is_fieldset and not field.field.fieldset %}
+    {% include 'horizon/common/_form_field.html' with field=field %}
+  {% endif %}
+{% endfor %}
+

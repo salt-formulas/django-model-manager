@@ -16,8 +16,8 @@ LOG = logging.getLogger(__name__)
 
 class IndexView(tables.DataTableView):
     table_class = CookiecutterTable
-    template_name = "integration/cookiecutter/index.html"
-    page_title = _("Cookiecutters")
+    template_name = 'integration/cookiecutter/index.html'
+    page_title = _('Cookiecutters')
 
     def get_data(self):
         try:
@@ -30,3 +30,5 @@ class IndexView(tables.DataTableView):
 
 class CreateView(workflows.WorkflowView):
     workflow_class = CreateCookiecutterContext
+    template_name = 'integration/cookiecutter/workflow/_workflow_base.html'
+
