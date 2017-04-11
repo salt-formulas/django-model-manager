@@ -1,5 +1,7 @@
 # virtualenv
 venv/
+# vim swp files
+.*.swp
 # static dir
 /static/
 # secret key store
