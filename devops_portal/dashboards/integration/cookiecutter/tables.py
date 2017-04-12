@@ -9,6 +9,7 @@ class CreateCookiecutter(tables.LinkAction):
     name = "create_cookiecutter"
     verbose_name = _("Create Cookiecutter")
     url = "horizon:integration:cookiecutter:create"
+    #classes = ["ajax-modal"]
 
     def get_link_url(self, datum=None):
         return reverse(self.url)

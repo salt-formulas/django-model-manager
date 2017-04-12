@@ -97,7 +97,8 @@ class FieldGeneratorMixin(object):
             "kwargs": {
                 "max_length": 255,
                 "label": "",
-                "required": True
+                "required": True,
+                "help_text": ""
             }
         },
         "IP": {
@@ -116,6 +117,15 @@ class FieldGeneratorMixin(object):
                 "label": "",
                 "required": False
             }
+        },
+        "CHOICE": {
+            "class": ChoiceField,
+            "args": tuple(),
+            "kwargs": {
+                "label": "",
+                "choices": [],
+                "required": False
+            }
         }
     }
 
@@ -126,27 +136,29 @@ class FieldGeneratorMixin(object):
     def generate_fields(self, ctx):
         # iterate over fieldsets in context data
         for fieldset in ctx:
-            name = fieldset.get('fieldset_name')
-            label = fieldset.get('fieldset_label')
+            fieldset_name = fieldset.get('name')
+            fieldset_label = fieldset.get('label')
             fields = fieldset.get('fields')
             # create fieldset
-            self.fields["fieldset_" + name] = Fieldset(name=name, label=label)
+            self.fields["fieldset_" + fieldset_name] = Fieldset(
+                name=fieldset_name,
+                label=fieldset_label
+            )
             # iterate over fields dictionary
-            for field, params in fields.items():
+            for field in fields:
                 # get field schema from FIELDS and set params
                 field_templates = copy.deepcopy(self.FIELDS)
-                field_template = field_templates[params['field_template']]
+                field_template = field_templates[field['type']]
                 field_cls = field_template['class']
                 field_args = field_template['args']
                 field_kw = field_template['kwargs']
-                # set default label
-                if 'label' in field_kw:
-                    field_kw['label'] = self.deslugify(field)
-                # update field template from field params
-                if params.get('args'):
-                    field_args = field_args + params['args']
-                if params.get('kwargs'):
-                    field_kw.update(params['kwargs'])
+                # set kwargs
+                field_kw['fieldset'] = fieldset_name
+                field_kw['label'] = field.get('label', None) if 'label' in field else self.deslugify(field['name'])
+                field_kw['help_text'] = field.get('help_text', None)
+                field_kw['initial'] = field.get('initial', None)
+                if 'CHOICE' in field['type']:
+                    field_kw['choices'] = field['choices']
                 # declare field on self
-                self.fields[field] = field_cls(*field_args, **field_kw)
-
+                self.fields[field['name']] = field_cls(*field_args, **field_kw)
+                                

@@ -1,33 +1,55 @@
+import yaml
+
 from django.utils.encoding import iri_to_uri
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
 
 from .actions import ClusterBasicAction, ClusterServiceAction, ClusterParamsAction
+from .const import STEP1_CTX, STEP2_CTX, STEP3_CTX
 
 
 class ClusterBasicStep(workflows.Step):
     action_class = ClusterBasicAction
     template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
     depends_on = tuple()
-    contributes = ("cluster_name", "cluster_domain", "public_host", "public_port",
-                   "salt_master_source", "reclass_repository", "reclass_branch")
+    contributes = tuple()
+
+    def __init__(self, *args, **kwargs):
+        super(ClusterBasicStep, self).__init__(*args, **kwargs)
+        ctx = yaml.load(STEP1_CTX)
+        # get lists of fields
+        field_lists = [x['fields'] for x in ctx]
+        # flatten the lists
+        field_list = [item for sublist in field_lists for item in sublist]
+        contributes = list(self.contributes)
+        for field in field_list:
+            contributes.append(field['name'])
+        self.contributes = tuple(contributes)
 
 
 class ClusterServiceStep(workflows.Step):
     action_class = ClusterServiceAction
     template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
-    depends_on = ("cluster_name", "cluster_domain", "public_host", "public_port",
-                   "salt_master_source", "reclass_repository", "reclass_branch")
-    contributes = ("install_cicd", "install_openstack", "install_opencontrail",
-                   "install_kubernetes", "install_stacklight")
+    depends_on = tuple()
+    contributes = tuple()
 
+    def __init__(self, *args, **kwargs):
+        super(ClusterServiceStep, self).__init__(*args, **kwargs)
+        ctx = yaml.load(STEP2_CTX)
+        # get lists of fields
+        field_lists = [x['fields'] for x in ctx]
+        # flatten the lists
+        field_list = [item for sublist in field_lists for item in sublist]
+        contributes = list(self.contributes)
+        for field in field_list:
+            contributes.append(field['name'])
+        self.contributes = tuple(contributes)
 
 class ClusterParamsStep(workflows.Step):
     action_class = ClusterParamsAction
     template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
-    depends_on = ("install_cicd", "install_openstack", "install_opencontrail",
-                  "install_kubernetes", "install_stacklight")
+    depends_on = tuple()
     contributes = tuple()
 
 
