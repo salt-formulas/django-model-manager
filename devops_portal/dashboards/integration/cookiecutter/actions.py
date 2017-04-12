@@ -1,53 +1,9 @@
 from django.utils.translation import ugettext_lazy as _
 from django import forms
-from horizon import workflows, forms as horizon_forms
+from horizon import workflows
 
-
-class Fieldset(forms.Field):
-    """
-    Fake field to use in _form_fields_with_fieldsets.html template,
-    Fieldset.name connects to Field.fieldset
-    """
-    def __init__(self, *args, **kwargs):
-        self.name = kwargs.pop('name')
-        self.is_fieldset = True
-        kwargs['required'] = False
-        super(Fieldset, self).__init__(*args, **kwargs)
-
-class CharField(forms.CharField):
-    """
-    Custom CharField with fieldset attribute
-    """
-    def __init__(self, *args, **kwargs):
-        self.fieldset = kwargs.pop('fieldset')
-        super(CharField, self).__init__(*args, **kwargs)
-
-
-class BooleanField(forms.BooleanField):
-    """
-    Custom BooleanField with fieldset attribute
-    """
-    def __init__(self, *args, **kwargs):
-        self.fieldset = kwargs.pop('fieldset')
-        super(BooleanField, self).__init__(*args, **kwargs)
-
-
-class IPField(horizon_forms.IPField):
-    """
-    Custom IPField with fieldset attribute
-    """
-    def __init__(self, *args, **kwargs):
-        self.fieldset = kwargs.pop('fieldset')
-        super(IPField, self).__init__(*args, **kwargs)
-
-
-class ChoiceField(forms.ChoiceField):
-    """
-    Custom ThemableChoiceField with fieldset attribute
-    """
-    def __init__(self, *args, **kwargs):
-        self.fieldset = kwargs.pop('fieldset')
-        super(ChoiceField, self).__init__(*args, **kwargs)
+from .const import STEP1_CTX
+from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField
 
 
 class ClusterBasicAction(workflows.Action):
@@ -68,53 +24,18 @@ class ClusterBasicAction(workflows.Action):
                                required=True,
                                fieldset="base")
 
-    public_host = CharField(label=_("Public Host"),
+    public_host = CharField(max_length=255,
+                            label=_("Public Host"),
                             required=True,
                             initial="${_param:openstack_proxy_address}",
                             fieldset="base")
 
-    public_port = CharField(max_length=255,
-                            label=_("Public Port"),
-                            initial="https",
-                            required=True,
-                            fieldset="base")
-
-    fieldset_salt = Fieldset(name="salt", label=_("Salt Master"))
-
-    salt_master_source_choices = [('pkg', _('Package')),
-                                  ('git', _('Git'))]
-
-    salt_master_source = ChoiceField(choices = salt_master_source_choices,
-                                             label = "Salt Master Source",
-                                             required=True,
-                                             fieldset="salt")
-
     reclass_repository = CharField(max_length=255,
                                    label = "Reclass Repository",
-                                   initial="git@github.com:Mirantis/reclass-system-salt-model.git",
+                                   initial="https://github.com/Mirantis/mk-lab-salt-model.git",
                                    required=True,
-                                   fieldset="salt")
+                                   fieldset="base")
 
-    reclass_branch = CharField(max_length=255,
-                               label = "Reclass Branch",
-                               initial="master",
-                               required=True,
-                               fieldset="salt")
-
-    def __init__(self, request, context, *args, **kwargs):
-        super(ClusterBasicAction, self).__init__(
-            request, context, *args, **kwargs)
-
-        self.help_text = str(context)
-
-    class Meta(object):
-        name = _("Basic Cluster Setup")
-
-
-class ClusterServiceAction(workflows.Action):
-    """
-    TODO: document this action
-    """
     fieldset_services = Fieldset(name="services", label=_("Services"))
 
     install_cicd = BooleanField(label=_("Install CI/CD"),
@@ -137,6 +58,18 @@ class ClusterServiceAction(workflows.Action):
                                       fieldset="services",
                                       required=False)
 
+    def __init__(self, request, context, *args, **kwargs):
+        super(ClusterBasicAction, self).__init__(
+            request, context, *args, **kwargs)
+
+    class Meta(object):
+        name = _("Basic Cluster Setup")
+
+
+class ClusterServiceAction(workflows.Action):
+    """
+    TODO: document this action
+    """
     fieldset_networking = Fieldset(name="networking", label=_("Networking"))
 
     pxe_subnet = IPField(label = "PXE Subnet",
@@ -155,25 +88,23 @@ class ClusterServiceAction(workflows.Action):
         super(ClusterServiceAction, self).__init__(
             request, context, *args, **kwargs)
 
-        self.help_text = str(context)
-
     class Meta(object):
         name = _("Required Cluster Services")
 
 
-class ClusterParamsAction(workflows.Action):
+from .forms import FieldGeneratorMixin
+from .utils import generate_context, INFRA_JSON_URL
+
+class ClusterParamsAction(workflows.Action, FieldGeneratorMixin):
     """
     TODO: document this action
     """
-    dummy = forms.BooleanField(label=_("Dummy"),
-                               help_text="",
-                               required=False)
-
     def __init__(self, request, context, *args, **kwargs):
         super(ClusterParamsAction, self).__init__(
             request, context, *args, **kwargs)
 
-        self.help_text = str(context)
+        ctx_infra = generate_context('github', 'infra', 'Infra', **{'url': INFRA_JSON_URL})
+        self.generate_fields(ctx_infra)
 
     class Meta(object):
         name = _("Cluster Parameters")
