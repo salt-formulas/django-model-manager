@@ -12,12 +12,7 @@ class ClusterBasicAction(GeneratedAction):
     """
     TODO: document this action
     """
-    def __init__(self, request, context, *args, **kwargs):
-        super(ClusterBasicAction, self).__init__(
-            request, context, *args, **kwargs)
-
-        ctx = yaml.load(STEP1_CTX)
-        self.generate_fields(ctx)
+    source_context = yaml.load(STEP1_CTX)
 
     class Meta(object):
         name = _("Basic Cluster Setup")
@@ -27,12 +22,7 @@ class ClusterServiceAction(GeneratedAction):
     """
     TODO: document this action
     """
-    def __init__(self, request, context, *args, **kwargs):
-        super(ClusterServiceAction, self).__init__(
-            request, context, *args, **kwargs)
-
-        ctx = yaml.load(STEP2_CTX)
-        self.generate_fields(ctx)
+    source_context = yaml.load(STEP2_CTX)
 
     class Meta(object):
         name = _("Required Cluster Services")
@@ -42,12 +32,7 @@ class ClusterParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    def __init__(self, request, context, *args, **kwargs):
-        super(ClusterParamsAction, self).__init__(
-            request, context, *args, **kwargs)
-
-        ctx = yaml.load(STEP3_CTX)
-        self.generate_fields(ctx)
+    source_context = yaml.load(STEP3_CTX)
 
     class Meta(object):
         name = _("Cluster Parameters")

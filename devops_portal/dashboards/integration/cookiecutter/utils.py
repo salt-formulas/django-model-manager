@@ -99,8 +99,8 @@ def generate_context(source, name, label, **kwargs):
 
 
 class GeneratedAction(workflows.Action):
-
-    FIELDS = {
+    source_context = {}
+    field_templates = {
         "TEXT": {
             "class": CharField,
             "args": tuple(),
@@ -139,13 +139,11 @@ class GeneratedAction(workflows.Action):
         }
     }
 
-    @staticmethod
-    def deslugify(string):
-        return str(string).replace('_', ' ').capitalize()
+    def __init__(self, request, context, *args, **kwargs):
+        super(GeneratedAction, self).__init__(
+            request, context, *args, **kwargs)
 
-    def generate_fields(self, ctx):
-        # iterate over fieldsets in context data
-        for fieldset in ctx:
+        for fieldset in self.source_context:
             fieldset_name = fieldset.get('name')
             fieldset_label = fieldset.get('label')
             fields = fieldset.get('fields')
@@ -157,7 +155,7 @@ class GeneratedAction(workflows.Action):
             # iterate over fields dictionary
             for field in fields:
                 # get field schema from FIELDS and set params
-                field_templates = copy.deepcopy(self.FIELDS)
+                field_templates = copy.deepcopy(self.field_templates)
                 field_template = field_templates[field['type']]
                 field_cls = field_template['class']
                 field_args = field_template['args']
@@ -171,6 +169,11 @@ class GeneratedAction(workflows.Action):
                     field_kw['choices'] = field['choices']
                 # declare field on self
                 self.fields[field['name']] = field_cls(*field_args, **field_kw)
+
+
+    @staticmethod
+    def deslugify(string):
+        return str(string).replace('_', ' ').capitalize()
 
 
 class GeneratedStep(workflows.Step):
