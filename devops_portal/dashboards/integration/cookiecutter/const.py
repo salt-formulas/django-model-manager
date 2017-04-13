@@ -101,15 +101,13 @@ STEP2_CTX = '''
           - "OpenContrail"
         - - "ovs"
           - "Neutron OVS"
-
 '''
 
 STEP3_CTX = '''
+{% set control_subnet = control_network_subnet|default('10.0.1.0') %}
 - name: "ovs"
   label: "Neutron OVS"
   step: 1
-  requires:
-    - openstack_network_engine: ovs
   fields:
     - name: "openstack_ovs_dvr_enabled"
       type: "BOOL"
@@ -122,6 +120,6 @@ STEP3_CTX = '''
       initial: "2416:2420"
     - name: "test"
       type: "TEXT"
-      initial: {{ ".".join(testovaci_subnet.split('.')[:-1]) }}.1
+      initial: {{ '.'.join(control_subnet.split('.')[:-1]) }}.1
 '''
 

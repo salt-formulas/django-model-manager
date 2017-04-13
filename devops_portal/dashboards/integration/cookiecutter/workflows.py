@@ -1,5 +1,3 @@
-import yaml
-
 from django.utils.encoding import iri_to_uri
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _
@@ -15,7 +13,7 @@ class ClusterBasicStep(GeneratedStep):
     template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
     depends_on = tuple()
     contributes = tuple()
-    source_context = yaml.load(STEP1_CTX)
+    source_context = STEP1_CTX
 
 
 class ClusterServiceStep(GeneratedStep):
@@ -23,7 +21,7 @@ class ClusterServiceStep(GeneratedStep):
     template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
     depends_on = tuple()
     contributes = tuple()
-    source_context = yaml.load(STEP2_CTX)
+    source_context = STEP2_CTX
 
 
 class ClusterParamsStep(GeneratedStep):

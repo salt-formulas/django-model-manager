@@ -1,12 +1,10 @@
-import copy
-import json
-import requests
-import socket
+import copy, json, requests, socket, yaml
 
 from django import http
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
+from jinja2 import Template, exceptions
 
 from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField 
 
@@ -100,7 +98,7 @@ def generate_context(source, name, label, **kwargs):
 
 
 class GeneratedAction(workflows.Action):
-    source_context = {}
+    source_context = ""
     field_templates = {
         "TEXT": {
             "class": CharField,
@@ -144,7 +142,8 @@ class GeneratedAction(workflows.Action):
         super(GeneratedAction, self).__init__(
             request, context, *args, **kwargs)
 
-        for fieldset in self.source_context:
+        rendered_context = self.render_context(context)
+        for fieldset in rendered_context:
             skip = False
             if context and 'requires' in fieldset:
                 for req in fieldset['requires']:
@@ -185,13 +184,25 @@ class GeneratedAction(workflows.Action):
     def deslugify(string):
         return str(string).replace('_', ' ').capitalize()
 
+    def render_context(self, context):
+        tmpl = Template(self.source_context)
+        try:
+            ctx = yaml.load(tmpl.render(context))
+        except exceptions.UndefinedError:
+            ctx = yaml.load(tmpl.render())
+        except:
+            ctx = yaml.load(self.source_context)
+        if not isinstance(ctx, list):
+            return []
+        return ctx
+
 
 class GeneratedStep(workflows.Step):
-    source_context = {}
+    source_context = ""
 
     def __init__(self, *args, **kwargs):
         super(GeneratedStep, self).__init__(*args, **kwargs)
-        ctx = self.source_context
+        ctx = self.render_context()
         # get lists of fields
         field_lists = [x['fields'] for x in ctx]
         # flatten the lists
@@ -200,6 +211,16 @@ class GeneratedStep(workflows.Step):
         for field in field_list:
             contributes.append(field['name'])
         self.contributes = tuple(contributes)
+
+    def render_context(self):
+        tmpl = Template(self.source_context)
+        try:
+            ctx = yaml.load(tmpl.render())
+        except:
+            ctx = yaml.load(self.source_context)
+        if not isinstance(ctx, list):
+            return []
+        return ctx
 
     def contribute(self, data, context):
         # TODO: Don't call super, override default functionality to

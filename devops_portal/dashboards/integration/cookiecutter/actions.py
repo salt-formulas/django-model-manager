@@ -1,5 +1,3 @@
-import yaml
-
 from django.utils.translation import ugettext_lazy as _
 from django import forms
 from horizon import workflows
@@ -12,7 +10,7 @@ class ClusterBasicAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = yaml.load(STEP1_CTX)
+    source_context = STEP1_CTX
 
     class Meta(object):
         name = _("Basic Cluster Setup")
@@ -22,7 +20,7 @@ class ClusterServiceAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = yaml.load(STEP2_CTX)
+    source_context = STEP2_CTX
 
     class Meta(object):
         name = _("Required Cluster Services")
@@ -32,7 +30,7 @@ class ClusterParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = yaml.load(STEP3_CTX)
+    source_context = STEP3_CTX
 
     class Meta(object):
         name = _("Cluster Parameters")
