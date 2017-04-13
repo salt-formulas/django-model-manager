@@ -120,5 +120,8 @@ STEP3_CTX = '''
     - name: "openstack_ovs_encapsulation_vlan_range"
       type: "TEXT"
       initial: "2416:2420"
+    - name: "test"
+      type: "TEXT"
+      initial: {{ ".".join(testovaci_subnet.split('.')[:-1]) }}.1
 '''
 
