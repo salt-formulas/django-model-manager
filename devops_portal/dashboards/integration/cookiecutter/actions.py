@@ -5,10 +5,10 @@ from django import forms
 from horizon import workflows
 
 from .const import STEP1_CTX, STEP2_CTX, STEP3_CTX
-from .forms import FieldGeneratorMixin, Fieldset, CharField, BooleanField, IPField, ChoiceField
+from .utils import GeneratedAction
 
 
-class ClusterBasicAction(workflows.Action, FieldGeneratorMixin):
+class ClusterBasicAction(GeneratedAction):
     """
     TODO: document this action
     """
@@ -23,16 +23,10 @@ class ClusterBasicAction(workflows.Action, FieldGeneratorMixin):
         name = _("Basic Cluster Setup")
 
 
-class ClusterServiceAction(workflows.Action, FieldGeneratorMixin):
+class ClusterServiceAction(GeneratedAction):
     """
     TODO: document this action
     """
-
-    openstack_enabled = forms.BooleanField(widget=forms.HiddenInput(),
-                                           initial=False)
-    kubernetes_enabled = forms.BooleanField(widget=forms.HiddenInput(),
-                                            initial=False)
-
     def __init__(self, request, context, *args, **kwargs):
         super(ClusterServiceAction, self).__init__(
             request, context, *args, **kwargs)
@@ -40,24 +34,11 @@ class ClusterServiceAction(workflows.Action, FieldGeneratorMixin):
         ctx = yaml.load(STEP2_CTX)
         self.generate_fields(ctx)
 
-        # add missing parameters openstack_enabled, kubernetes_enabled to context
-        # depends on platform select from previous step
-        if 'platform' in context:
-            platform = context.get('platform')
-            if 'openstack_enabled' in platform:
-                self.fields['openstack_enabled'].initial = True
-            elif 'kubernetes_enabled' in platform:
-                self.fields['kubernetes_enabled'].initial = True
-                del self.fields['fieldset_openstack_networking']
-                del self.fields['openstack_network_engine']
-
-        return
-
     class Meta(object):
         name = _("Required Cluster Services")
 
 
-class ClusterParamsAction(workflows.Action, FieldGeneratorMixin):
+class ClusterParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
