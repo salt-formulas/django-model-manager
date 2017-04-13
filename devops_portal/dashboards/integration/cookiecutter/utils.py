@@ -3,6 +3,7 @@ import json
 import requests
 import socket
 
+from django import http
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
@@ -144,6 +145,16 @@ class GeneratedAction(workflows.Action):
             request, context, *args, **kwargs)
 
         for fieldset in self.source_context:
+            skip = False
+            if context and 'requires' in fieldset:
+                for req in fieldset['requires']:
+                    key = req.keys()[0]
+                    value = req.values()[0]
+                    if (not key in context) or (key in context and not value == context[key]):
+                        skip = True
+            if skip:
+                continue
+
             fieldset_name = fieldset.get('name')
             fieldset_label = fieldset.get('label')
             fields = fieldset.get('fields')
@@ -170,7 +181,6 @@ class GeneratedAction(workflows.Action):
                 # declare field on self
                 self.fields[field['name']] = field_cls(*field_args, **field_kw)
 
-
     @staticmethod
     def deslugify(string):
         return str(string).replace('_', ' ').capitalize()
@@ -192,6 +202,8 @@ class GeneratedStep(workflows.Step):
         self.contributes = tuple(contributes)
 
     def contribute(self, data, context):
+        # TODO: Don't call super, override default functionality to
+        # contribute all keys in data and remove __init__ override
         super(GeneratedStep, self).contribute(data, context)
         # update shared context with option Bool values according to choices made in ChoiceList fields
         choice_fields = [obj for obj in self.action.fields.values() if hasattr(obj, 'choices')]
@@ -199,4 +211,91 @@ class GeneratedStep(workflows.Step):
         for choice in choices:
             context[choice] = True if choice in context.values() else False
         return context
+
+
+class AsyncWorkflowView(workflows.WorkflowView):
+    """
+    Overrides default WF functionality
+    """
+    def render_next_steps(self, request, workflow, start, end):
+        """render next steps
+
+        this allows change form content on the fly
+
+        """
+        rendered = {}
+
+        request = copy.copy(self.request)
+        # patch request method, because we want render new form without
+        # validation
+        request.method = "GET"
+
+        new_workflow = self.get_workflow_class()(
+            request,
+            context_seed=workflow.context,
+            entry_point=workflow.entry_point)
+
+        for step in new_workflow.steps[end:]:
+            rendered[step.get_id()] = step.render()
+
+        return rendered
+
+    def post(self, request, *args, **kwargs):
+        """Handler for HTTP POST requests."""
+        context = self.get_context_data(**kwargs)
+        workflow = context[self.context_object_name]
+        try:
+            # Check for the VALIDATE_STEP* headers, if they are present
+            # and valid integers, return validation results as JSON,
+            # otherwise proceed normally.
+            validate_step_start = int(self.request.META.get(
+                'HTTP_X_HORIZON_VALIDATE_STEP_START', ''))
+            validate_step_end = int(self.request.META.get(
+                'HTTP_X_HORIZON_VALIDATE_STEP_END', ''))
+        except ValueError:
+            # No VALIDATE_STEP* headers, or invalid values. Just proceed
+            # with normal workflow handling for POSTs.
+            pass
+        else:
+            # There are valid VALIDATE_STEP* headers, so only do validation
+            # for the specified steps and return results.
+            data = self.validate_steps(request, workflow,
+                                       validate_step_start,
+                                       validate_step_end)
+
+            next_steps = self.render_next_steps(request, workflow,
+                                                validate_step_start,
+                                                validate_step_end)
+            # append rendered next steps
+            data["rendered"] = next_steps
+
+            return http.HttpResponse(json.dumps(data),
+                                     content_type="application/json")
+
+        if not workflow.is_valid():
+            return self.render_to_response(context)
+        try:
+            success = workflow.finalize()
+        except forms.ValidationError:
+            return self.render_to_response(context)
+        except Exception:
+            success = False
+            exceptions.handle(request)
+        if success:
+            msg = workflow.format_status_message(workflow.success_message)
+            messages.success(request, msg)
+        else:
+            msg = workflow.format_status_message(workflow.failure_message)
+            messages.error(request, msg)
+        if "HTTP_X_HORIZON_ADD_TO_FIELD" in self.request.META:
+            field_id = self.request.META["HTTP_X_HORIZON_ADD_TO_FIELD"]
+            response = http.HttpResponse()
+            if workflow.object:
+                data = [self.get_object_id(workflow.object),
+                        self.get_object_display(workflow.object)]
+                response.content = json.dumps(data)
+                response["X-Horizon-Add-To-Field"] = field_id
+            return response
+        next_url = self.request.POST.get(workflow.redirect_param_name)
+        return shortcuts.redirect(next_url or workflow.get_success_url())
 

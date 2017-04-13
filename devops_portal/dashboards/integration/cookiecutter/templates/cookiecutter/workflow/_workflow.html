@@ -100,14 +100,14 @@
 
 {% with workflow.get_entry_point as entry_point %}
 
-<div class="workflow {{ layout|join:' ' }}" id="wf_cookiecutter" data-backdrop="{{ modal_backdrop }}">
+<div class="workflow {{ layout|join:' ' }}{% if workflow.async_wizard %} async-wizard{% endif %}" id="wf_cookiecutter" data-backdrop="{{ modal_backdrop }}">
   <form {{ workflow.attr_string|safe }} action="{{ workflow.get_absolute_url }}" {% if add_to_field %}data-add-to-field="{{ add_to_field }}"{% endif %} method="POST"{% if workflow.multipart %} enctype="multipart/form-data"{% endif %}>{% csrf_token %}
     {% if REDIRECT_URL %}<input type="hidden" name="{{ workflow.redirect_param_name }}" value="{{ REDIRECT_URL }}"/>{% endif %}
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
         {% block modal-body %}
-        <ul class="nav nav-pills selenium-nav-region{% if workflow.wizard %} wizard-tabs{% endif %}" role="tablist">
+        <ul class="nav nav-pills selenium-nav-region{% if workflow.async_wizard %} wizard-tabs{% endif %}" role="tablist">
             {% for step in workflow.steps %}
             <li class="{% if entry_point == step.slug %}active{% endif %}{% if step.has_errors %} error{% endif %}{% if step.has_required_fields %} required{% endif %}">
               <a href="#{{ step.get_id }}" data-toggle="tab" data-target="#{{ step.get_id }}">
@@ -131,7 +131,7 @@
         </div>
         <div class="modal-footer">
         {% block modal-footer %}
-          {% if workflow.wizard %}
+          {% if workflow.async_wizard %}
           <div class="row">
             <div class="col-sm-6 back">
               <button type="button" class="btn btn-default button-previous">&laquo; {% trans "Back" %}</button>
@@ -155,11 +155,8 @@
 {% endwith %}
 
 {% block modal-js %}
-  {% if workflow.wizard %}
-  <script type="text/javascript">
-    (window.$ || window.addHorizonLoadEvent)(function () {
-      horizon.modals.init_wizard();
-    });
-  </script>
+  {% if workflow.async_wizard %}
+    {% include "integration/cookiecutter/workflow/_init_wizard.html" %}
   {% endif %}
 {% endblock %}
+

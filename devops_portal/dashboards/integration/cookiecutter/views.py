@@ -28,7 +28,8 @@ class IndexView(tables.DataTableView):
         return cookiecutters
 
 
-class CreateView(workflows.WorkflowView):
+from .utils import AsyncWorkflowView
+class CreateView(AsyncWorkflowView):
     workflow_class = CreateCookiecutterContext
     template_name = 'integration/cookiecutter/workflow/_workflow_base.html'
 

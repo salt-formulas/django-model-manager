@@ -36,7 +36,7 @@ class ClusterParamsStep(GeneratedStep):
 class CreateCookiecutterContext(workflows.Workflow):
     name = _("Create Cookiecutter Context")
     slug = "create_cookiecutter_context"
-    wizard = True
+    async_wizard = True
     default_steps = (ClusterBasicStep, ClusterServiceStep, ClusterParamsStep)
     finalize_button_name = _("Confirm")
     success_message = _('Your request was successfully submitted.')

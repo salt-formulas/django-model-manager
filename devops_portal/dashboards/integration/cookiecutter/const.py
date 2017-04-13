@@ -78,8 +78,6 @@ STEP2_CTX = '''
 - name: "salt"
   label: "Salt Master"
   step: 1
-  requires:
-    - openstack_enabled: True
   fields:
     - name: "salt_master_address"
       type: "IP"
@@ -93,6 +91,8 @@ STEP2_CTX = '''
 - name: "openstack_networking"
   label: "OpenStack Networking"
   step: 1
+  requires:
+    - openstack_enabled: True
   fields:
     - name: "openstack_network_engine"
       type: "CHOICE"
