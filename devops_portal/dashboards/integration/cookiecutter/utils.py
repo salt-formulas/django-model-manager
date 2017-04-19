@@ -165,6 +165,7 @@ class GeneratedAction(workflows.Action):
             "kwargs": {
                 "max_length": 255,
                 "label": "",
+                "initial": "",
                 "required": True,
                 "help_text": ""
             }
@@ -174,6 +175,7 @@ class GeneratedAction(workflows.Action):
             "args": tuple(),
             "kwargs": {
                 "label": "",
+                "initial": "",
                 "required": True,
                 "mask": True
             }
@@ -183,6 +185,7 @@ class GeneratedAction(workflows.Action):
             "args": tuple(),
             "kwargs": {
                 "label": "",
+                "initial": False,
                 "required": False
             }
         },
@@ -223,6 +226,17 @@ class GeneratedAction(workflows.Action):
             )
             # iterate over fields dictionary
             for field in fields:
+                skip = False
+                if context and 'requires' in field:
+                    for req in field['requires']:
+                        key = req.keys()[0]
+                        value = req.values()[0]
+                        if (not key in context) or (key in context and not value == context[key]):
+                            skip = True
+
+                if skip:
+                    continue
+
                 # get field schema from FIELDS and set params
                 field_templates = copy.deepcopy(self.field_templates)
                 field_template = field_templates[field['type']]
@@ -264,6 +278,9 @@ class GeneratedAction(workflows.Action):
 class GeneratedStep(workflows.Step):
     """ TODO: Document this class
     """
+    template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
+    depends_on = tuple()
+    contributes = tuple()
     source_context = ""
 
     def __init__(self, *args, **kwargs):

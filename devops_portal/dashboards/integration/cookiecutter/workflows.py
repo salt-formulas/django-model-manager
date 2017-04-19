@@ -10,25 +10,16 @@ from .utils import GeneratedStep
 
 class ClusterBasicStep(GeneratedStep):
     action_class = ClusterBasicAction
-    template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
-    depends_on = tuple()
-    contributes = tuple()
     source_context = STEP1_CTX
 
 
 class ClusterServiceStep(GeneratedStep):
     action_class = ClusterServiceAction
-    template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
-    depends_on = tuple()
-    contributes = tuple()
     source_context = STEP2_CTX
 
 
 class ClusterParamsStep(GeneratedStep):
     action_class = ClusterParamsAction
-    template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
-    depends_on = tuple()
-    contributes = tuple()
 
 
 class CreateCookiecutterContext(workflows.Workflow):
