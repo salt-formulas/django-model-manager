@@ -44,27 +44,30 @@ STEP1_CTX = '''
     - name: "dns_server02"
       type: "IP"
       initial: "8.8.4.4"
+    - name: "deploy_network_subnet"
+      type: IP
+      initial: "10.0.0.0/24"
     - name: "deploy_network_netmask"
       type: IP
       initial: "255.255.255.0"
-    - name: "deploy_network_subnet"
-      type: IP
-      initial: "10.0.0.0"
     - name: "deploy_network_gateway"
       type: IP
       initial: "10.0.0.1"
     - name: "control_network_subnet"
       type: IP
-      initial: "10.0.1.0"
+      initial: "10.0.1.0/24"
     - name: "control_network_netmask"
       type: IP
       initial: "255.255.255.0"
     - name: "tenant_network_subnet"
       type: IP
-      initial: "10.0.2.0"
+      initial: "10.0.2.0/24"
     - name: "tenant_network_netmask"
       type: IP
       initial: "255.255.255.0"
+    - name: "tenant_network_gateway"
+      type: IP
+      initial: "10.0.2.1"
     - name: "control_vlan"
       type: IP
       initial: "10"
@@ -92,7 +95,7 @@ STEP2_CTX = '''
   label: "OpenStack Networking"
   step: 1
   requires:
-    - openstack_enabled: True
+    - platform: "openstack_enabled"
   fields:
     - name: "openstack_network_engine"
       type: "CHOICE"
@@ -104,22 +107,527 @@ STEP2_CTX = '''
 '''
 
 STEP3_CTX = '''
-{% set control_subnet = control_network_subnet|default('10.0.1.0') %}
-- name: "ovs"
-  label: "Neutron OVS"
-  step: 1
-  fields:
-    - name: "openstack_ovs_dvr_enabled"
-      type: "BOOL"
-      initial: False
-    - name: "openstack_ovs_encapsulation_type"
-      type: "TEXT"
-      initial: "vxlan"
-    - name: "openstack_ovs_encapsulation_vlan_range"
-      type: "TEXT"
-      initial: "2416:2420"
-    - name: "test"
-      type: "TEXT"
-      initial: {{ '.'.join(control_subnet.split('.')[:-1]) }}.1
+- fields:
+  - initial: eth2
+    name: infra_primary_second_nic
+    type: TEXT
+  - initial: kvm02
+    name: infra_kvm02_hostname
+    type: TEXT
+  - initial: kvm03
+    name: infra_kvm03_hostname
+    type: TEXT
+  - initial: eth0
+    name: infra_deploy_nic
+    type: TEXT
+  - initial: 10.167.4.241
+    name: infra_kvm01_control_address
+    type: IP
+  - initial: eth1
+    name: infra_primary_first_nic
+    type: TEXT
+  - initial: '100'
+    name: openstack_compute_count
+    type: IP
+  - initial: kvm01
+    name: infra_kvm01_hostname
+    type: TEXT
+  - initial: 10.167.4.240
+    name: infra_kvm_vip_address
+    type: IP
+  - initial: 10.167.4.243
+    name: infra_kvm03_control_address
+    type: IP
+  - initial: 'False'
+    name: openstack_nfv_sriov_enabled
+    type: BOOL
+  - initial: 10.167.4.242
+    name: infra_kvm02_control_address
+    type: IP
+  - initial: 10.167.5.242
+    name: infra_kvm02_deploy_address
+    type: IP
+  - initial: $6$Qr0XdRvdciun2ucl$osj7gvaoxoOsV9BSiZLD0cqYysOCxA/i8CYTgSpCTnqGF25n8.m/QgP5xrOxE46RtJkY4Ta1AaGODHuiA/iwt1
+    name: salt_api_password_hash
+    type: TEXT
+  - initial: 10.167.5.243
+    name: infra_kvm03_deploy_address
+    type: IP
+  - initial: 'False'
+    name: openstack_nfv_dpdk_enabled
+    type: BOOL
+  - initial: 10.167.5.241
+    name: infra_kvm01_deploy_address
+    type: IP
+  label: Infra
+  name: infra
+- fields:
+  - initial: <<WILL_BE_GENERATED>>
+    name: cicd_private_key
+    type: TEXT
+  - initial: cid02
+    name: cicd_control_node02_hostname
+    type: TEXT
+  - initial: <<WILL_BE_GENERATED>>
+    name: cicd_public_key
+    type: TEXT
+  - initial: 10.167.4.90
+    name: cicd_control_vip_address
+    type: IP
+  - initial: cid03
+    name: cicd_control_node03_hostname
+    type: TEXT
+  - initial: cid01
+    name: cicd_control_node01_hostname
+    type: TEXT
+  - initial: 10.167.4.92
+    name: cicd_control_node02_address
+    type: IP
+  - initial: 10.167.4.91
+    name: cicd_control_node01_address
+    type: IP
+  - initial: 10.167.4.93
+    name: cicd_control_node03_address
+    type: IP
+  - initial: cid
+    name: cicd_control_vip_hostname
+    type: TEXT
+  - initial: 'False'
+    name: openldap_enabled
+    type: BOOL
+  label: CI/CD
+  name: cicd
+- fields:
+  - initial: cmp01
+    name: kubernetes_compute_node01_hostname
+    type: TEXT
+  - initial: 192.168.0.0
+    name: calico_network
+    type: IP
+  - initial: docker-prod-virtual.docker.mirantis.net/mirantis/kubernetes/hyperkube-amd64:v1.4.6-6
+    name: hyperkube_image
+    type: TEXT
+  - initial: 10.167.5.102
+    name: kubernetes_compute_node02_deploy_address
+    type: IP
+  - initial: 'true'
+    name: calico_enable_nat
+    type: BOOL
+  - initial: 172.16.10.107
+    name: kubernetes_control_node01_address
+    type: IP
+  - initial: docker-prod-virtual.docker.mirantis.net/mirantis/projectcalico/calico/ctl:latest
+    name: calicoctl_image
+    type: TEXT
+  - initial: docker-prod-virtual.docker.mirantis.net/mirantis/projectcalico/calico/node:latest
+    name: calico_image
+    type: TEXT
+  - initial: 10.167.2.101
+    name: kubernetes_compute_node01_single_address
+    type: IP
+  - initial: 10.167.4.10
+    name: kubernetes_control_address
+    type: IP
+  - initial: 10.167.5.13
+    name: kubernetes_control_node03_deploy_address
+    type: IP
+  - initial: 'true'
+    name: etcd_ssl
+    type: BOOL
+  - initial: 10.167.5.11
+    name: kubernetes_control_node01_deploy_address
+    type: IP
+  - initial: ens4
+    name: kubernetes_keepalived_vip_interface
+    type: TEXT
+  - initial: 172.17.10.106
+    name: kubernetes_compute_node02_address
+    type: IP
+  - initial: ctl02
+    name: kubernetes_control_node02_hostname
+    type: TEXT
+  - initial: 172.17.10.105
+    name: kubernetes_compute_node01_address
+    type: IP
+  - initial: 172.16.10.109
+    name: kubernetes_control_node03_address
+    type: IP
+  - initial: ctl01
+    name: kubernetes_control_node01_hostname
+    type: TEXT
+  - initial: 172.16.10.108
+    name: kubernetes_control_node02_address
+    type: IP
+  - initial: ctl03
+    name: kubernetes_control_node03_hostname
+    type: TEXT
+  - initial: 10.167.2.102
+    name: kubernetes_compute_node02_single_address
+    type: IP
+  - initial: 10.167.5.12
+    name: kubernetes_control_node02_deploy_address
+    type: IP
+  - initial: cmp02
+    name: kubernetes_compute_node02_hostname
+    type: TEXT
+  - initial: docker-prod-virtual.docker.mirantis.net/mirantis/projectcalico/calico/cni:latest
+    name: calico_cni_image
+    type: TEXT
+  - initial: 10.167.5.101
+    name: kubernetes_compute_node01_deploy_address
+    type: IP
+  - initial: '16'
+    name: calico_netmask
+    type: IP
+  label: Kubernetes
+  name: kubernetes
+- fields:
+  - initial: ntw02
+    name: opencontrail_control_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.101
+    name: opencontrail_router02_address
+    type: IP
+  - initial: 10.167.4.100
+    name: opencontrail_router01_address
+    type: IP
+  - initial: '24'
+    name: opencontrail_compute_iface_mask
+    type: IP
+  - initial: nal01
+    name: opencontrail_analytics_node01_hostname
+    type: TEXT
+  - initial: 10.167.4.32
+    name: opencontrail_analytics_node02_address
+    type: IP
+  - initial: ntw01
+    name: opencontrail_control_node01_hostname
+    type: TEXT
+  - initial: nal03
+    name: opencontrail_analytics_node03_hostname
+    type: TEXT
+  - initial: 10.167.4.30
+    name: opencontrail_analytics_address
+    type: IP
+  - initial: nal02
+    name: opencontrail_analytics_node02_hostname
+    type: TEXT
+  - initial: nal
+    name: opencontrail_analytics_hostname
+    type: TEXT
+  - initial: 10.167.4.23
+    name: opencontrail_control_node03_address
+    type: IP
+  - initial: ntw03
+    name: opencontrail_control_node03_hostname
+    type: TEXT
+  - initial: 10.167.4.33
+    name: opencontrail_analytics_node03_address
+    type: IP
+  - initial: rtr01
+    name: opencontrail_router01_hostname
+    type: TEXT
+  - initial: ntw
+    name: opencontrail_control_hostname
+    type: TEXT
+  - initial: 'False'
+    name: openstack_nfv_dpdk_enabled
+    type: BOOL
+  - initial: 10.167.4.31
+    name: opencontrail_analytics_node01_address
+    type: IP
+  - initial: 10.167.4.22
+    name: opencontrail_control_node02_address
+    type: IP
+  - initial: rtr02
+    name: opencontrail_router02_hostname
+    type: TEXT
+  - initial: 10.167.4.21
+    name: opencontrail_control_node01_address
+    type: IP
+  - initial: bond0.${_param:tenant_vlan}
+    name: opencontrail_compute_iface
+    type: TEXT
+  - initial: 10.167.4.20
+    name: opencontrail_control_address
+    type: IP
+  label: OpenContrail
+  name: opencontrail
+- fields:
+  - initial: mdb02
+    name: openstack_telemetry_node02_hostname
+    type: TEXT
+  - initial: 10.167.6.6
+    name: openstack_gateway_node01_tenant_address
+    type: IP
+  - initial: 10.167.6
+    name: openstack_compute_rack01_tenant_subnet
+    type: IP
+  - initial: 10.167.4.80
+    name: openstack_proxy_address
+    type: IP
+  - initial: 10.167.4.226
+    name: openstack_gateway_node03_address
+    type: IP
+  - initial: 10.167.4.42
+    name: openstack_message_queue_node02_address
+    type: IP
+  - initial: prx
+    name: openstack_proxy_hostname
+    type: TEXT
+  - initial: 10.167.4.81
+    name: openstack_proxy_node01_address
+    type: IP
+  - initial: msg03
+    name: openstack_message_queue_node03_hostname
+    type: TEXT
+  - initial: 10.167.4.76
+    name: openstack_telemetry_node01_address
+    type: IP
+  - initial: dbs02
+    name: openstack_database_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.53
+    name: openstack_database_node03_address
+    type: IP
+  - initial: gtw01
+    name: openstack_gateway_node01_hostname
+    type: TEXT
+  - initial: 10.167.4.41
+    name: openstack_message_queue_node01_address
+    type: IP
+  - initial: physnet1
+    name: openstack_nfv_sriov_network
+    type: TEXT
+  - initial: 10.167.6.8
+    name: openstack_gateway_node03_tenant_address
+    type: IP
+  - initial: 10.167.4.43
+    name: openstack_message_queue_node03_address
+    type: IP
+  - initial: 10.167.4.51
+    name: openstack_database_node01_address
+    type: IP
+  - initial: 10.167.4.10
+    name: openstack_control_address
+    type: IP
+  - initial: msg01
+    name: openstack_message_queue_node01_hostname
+    type: TEXT
+  - initial: gtw02
+    name: openstack_gateway_node02_hostname
+    type: TEXT
+  - initial: ctl01
+    name: openstack_control_node01_hostname
+    type: TEXT
+  - initial: 'False'
+    name: openstack_nova_compute_nfv_req_enabled
+    type: BOOL
+  - initial: 10.167.4.77
+    name: openstack_telemetry_node02_address
+    type: IP
+  - initial: cmp
+    name: openstack_compute_rack01_hostname
+    type: TEXT
+  - initial: 10.167.4.225
+    name: openstack_gateway_node02_address
+    type: IP
+  - initial: 10.167.4
+    name: openstack_compute_rack01_sigle_subnet
+    type: IP
+  - initial: 10.167.4.52
+    name: openstack_database_node02_address
+    type: IP
+  - initial: 10.167.4.40
+    name: openstack_message_queue_address
+    type: IP
+  - initial: prx02
+    name: openstack_proxy_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.78
+    name: openstack_telemetry_node03_address
+    type: IP
+  - initial: msg
+    name: openstack_message_queue_hostname
+    type: TEXT
+  - initial: mdb01
+    name: openstack_telemetry_node01_hostname
+    type: TEXT
+  - initial: dbs03
+    name: openstack_database_node03_hostname
+    type: TEXT
+  - initial: 10.167.4.13
+    name: openstack_control_node03_address
+    type: IP
+  - initial: dbs01
+    name: openstack_database_node01_hostname
+    type: TEXT
+  - initial: eth1
+    name: compute_primary_first_nic
+    type: TEXT
+  - initial: gtw03
+    name: openstack_gateway_node03_hostname
+    type: TEXT
+  - initial: dbs
+    name: openstack_database_hostname
+    type: TEXT
+  - initial: 'False'
+    name: openstack_nfv_sriov_enabled
+    type: BOOL
+  - initial: 10.167.4.11
+    name: openstack_control_node01_address
+    type: IP
+  - initial: mdb03
+    name: openstack_telemetry_node03_hostname
+    type: TEXT
+  - initial: 'False'
+    name: openstack_nfv_dpdk_enabled
+    type: BOOL
+  - initial: 10.167.4.50
+    name: openstack_database_address
+    type: IP
+  - initial: prx01
+    name: openstack_proxy_node01_hostname
+    type: TEXT
+  - initial: mitaka
+    name: openstack_version
+    type: TEXT
+  - initial: ctl02
+    name: openstack_control_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.82
+    name: openstack_proxy_node02_address
+    type: IP
+  - initial: 10.167.4.224
+    name: openstack_gateway_node01_address
+    type: IP
+  - initial: 10.167.4.75
+    name: openstack_telemetry_address
+    type: IP
+  - initial: vxlan
+    name: openstack_ovs_encapsulation_type
+    type: TEXT
+  - initial: ctl03
+    name: openstack_control_node03_hostname
+    type: TEXT
+  - initial: eth1
+    name: gateway_primary_first_nic
+    type: TEXT
+  - initial: 10.167.6.7
+    name: openstack_gateway_node02_tenant_address
+    type: IP
+  - initial: msg02
+    name: openstack_message_queue_node02_hostname
+    type: TEXT
+  - initial: '16'
+    name: openstack_nova_compute_hugepages_count
+    type: IP
+  - initial: ctl
+    name: openstack_control_hostname
+    type: TEXT
+  - initial: 1,2,3,4,5,7,8,9,10,11
+    name: openstack_nova_cpu_pinning
+    type: TEXT
+  - initial: 'False'
+    name: openstack_ovs_dvr_enabled
+    type: BOOL
+  - initial: eth2
+    name: gateway_primary_second_nic
+    type: TEXT
+  - initial: eth7
+    name: openstack_nfv_sriov_pf_nic
+    type: TEXT
+  - initial: mdb
+    name: openstack_telemetry_hostname
+    type: TEXT
+  - initial: 2416:2420
+    name: openstack_ovs_encapsulation_vlan_range
+    type: TEXT
+  - initial: eth2
+    name: compute_primary_second_nic
+    type: TEXT
+  - initial: '7'
+    name: openstack_nfv_sriov_numvfs
+    type: IP
+  - initial: 10.167.4.12
+    name: openstack_control_node02_address
+    type: IP
+  label: OpenStack
+  name: openstack
+- fields:
+  - initial: 10.167.4.73
+    name: stacklight_monitor_node03_address
+    type: IP
+  - initial: 10.167.4.88
+    name: stacklight_telemetry_node03_address
+    type: IP
+  - initial: mtr01
+    name: stacklight_telemetry_node01_hostname
+    type: TEXT
+  - initial: 10.167.4.85
+    name: stacklight_telemetry_address
+    type: IP
+  - initial: mon02
+    name: stacklight_monitor_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.61
+    name: stacklight_log_node01_address
+    type: IP
+  - initial: mon01
+    name: stacklight_monitor_node01_hostname
+    type: TEXT
+  - initial: log02
+    name: stacklight_log_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.86
+    name: stacklight_telemetry_node01_address
+    type: IP
+  - initial: 10.167.4.70
+    name: stacklight_monitor_address
+    type: IP
+  - initial: 10.167.4.60
+    name: stacklight_log_address
+    type: IP
+  - initial: 10.167.4.63
+    name: stacklight_log_node03_address
+    type: IP
+  - initial: mtr02
+    name: stacklight_telemetry_node02_hostname
+    type: TEXT
+  - initial: 10.167.4.72
+    name: stacklight_monitor_node02_address
+    type: IP
+  - initial: log
+    name: stacklight_log_hostname
+    type: TEXT
+  - initial: log01
+    name: stacklight_log_node01_hostname
+    type: TEXT
+  - initial: mon03
+    name: stacklight_monitor_node03_hostname
+    type: TEXT
+  - initial: mtr
+    name: stacklight_telemetry_hostname
+    type: TEXT
+  - initial: 10.167.4.71
+    name: stacklight_monitor_node01_address
+    type: IP
+  - initial: log03
+    name: stacklight_log_node03_hostname
+    type: TEXT
+  - initial: mon
+    name: stacklight_monitor_hostname
+    type: TEXT
+  - initial: 10.167.4.87
+    name: stacklight_telemetry_node02_address
+    type: IP
+  - initial: mtr03
+    name: stacklight_telemetry_node03_hostname
+    type: TEXT
+  - initial: 10.167.4.62
+    name: stacklight_log_node02_address
+    type: IP
+  label: Stacklight
+  name: stacklight
 '''
 
