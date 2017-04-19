@@ -281,6 +281,7 @@ class GeneratedStep(workflows.Step):
     def render_context(self):
         context = {}
         env = Environment()
+        env.filters['subnet'] = subnet
         tmpl = env.from_string(self.source_context)
         parsed_source = env.parse(self.source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
