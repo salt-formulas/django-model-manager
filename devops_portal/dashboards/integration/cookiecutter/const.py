@@ -28,6 +28,9 @@ STEP1_CTX = '''
           - - "kubernetes_enabled"
             - "Kubernetes"
       initial: "openstack_enabled"
+    - name: "opencontrail_enabled"
+      type: "BOOL"
+      initial: True
     - name: "stacklight_enabled"
       type: "BOOL"
       initial: True
@@ -107,7 +110,9 @@ STEP2_CTX = '''
 '''
 
 STEP3_CTX = '''
-- fields:
+- label: "Infrastructure product parameters"
+  name: "infra"
+  fields:
   - initial: eth2
     name: infra_primary_second_nic
     type: TEXT
@@ -162,9 +167,11 @@ STEP3_CTX = '''
   - initial: {{ deploy_network_subnet | subnet(241) }}
     name: infra_kvm01_deploy_address
     type: IP
-  label: Infra
-  name: infra
-- fields:
+- label: "CI/CD product parameters"
+  name: "cicd"
+  requires:
+    - cicd_enabled: True
+  fields:
   - initial: <<WILL_BE_GENERATED>>
     name: cicd_private_key
     type: TEXT
@@ -198,9 +205,11 @@ STEP3_CTX = '''
   - initial: 'False'
     name: openldap_enabled
     type: BOOL
-  label: CI/CD
-  name: cicd
-- fields:
+- label: "Kubernetes product parameters"
+  name: "kubernetes"
+  requires:
+    - platform: "kubernetes_enabled"
+  fields:
   - initial: cmp01
     name: kubernetes_compute_node01_hostname
     type: TEXT
@@ -282,9 +291,11 @@ STEP3_CTX = '''
   - initial: '16'
     name: calico_netmask
     type: IP
-  label: Kubernetes
-  name: kubernetes
-- fields:
+- label: "OpenContrail service parameters"
+  name: "opencontrail"
+  requires:
+    - opencontrail_enabled: True
+  fields:
   - initial: ntw02
     name: opencontrail_control_node02_hostname
     type: TEXT
@@ -354,9 +365,11 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(20) }}
     name: opencontrail_control_address
     type: IP
-  label: OpenContrail
-  name: opencontrail
-- fields:
+- label: "OpenStack product parameters"
+  name: "openstack"
+  requires:
+    - platform: "openstack_enabled"
+  fields:
   - initial: mdb02
     name: openstack_telemetry_node02_hostname
     type: TEXT
@@ -555,9 +568,11 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(12) }}
     name: openstack_control_node02_address
     type: IP
-  label: OpenStack
-  name: openstack
-- fields:
+- label: "StackLight product parameters"
+  name: "stacklight"
+  requires:
+    - stacklight_enabled: True
+  fields:
   - initial: {{ control_network_subnet | subnet(73) }}
     name: stacklight_monitor_node03_address
     type: IP
@@ -630,7 +645,5 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(62) }}
     name: stacklight_log_node02_address
     type: IP
-  label: Stacklight
-  name: stacklight
 '''
 
