@@ -84,7 +84,7 @@ STEP2_CTX = '''
   fields:
     - name: "salt_master_address"
       type: "IP"
-      initial: "10.167.4.90"
+      initial: {{ control_network_subnet | subnet(90) }}
     - name: "salt_master_management_address"
       type: "IP"
       initial: "10.167.5.90"
@@ -120,9 +120,10 @@ STEP3_CTX = '''
   - initial: eth0
     name: infra_deploy_nic
     type: TEXT
-  - initial: 10.167.4.241
-    name: infra_kvm01_control_address
-    type: IP
+  - name: "infra_kvm01_control_address"
+    label: "kvm01 Control Address"
+    initial: {{ control_network_subnet | subnet(241) }}
+    type: "IP"
   - initial: eth1
     name: infra_primary_first_nic
     type: TEXT
@@ -132,16 +133,18 @@ STEP3_CTX = '''
   - initial: kvm01
     name: infra_kvm01_hostname
     type: TEXT
-  - initial: 10.167.4.240
-    name: infra_kvm_vip_address
-    type: IP
-  - initial: 10.167.4.243
-    name: infra_kvm03_control_address
-    type: IP
+  - name: "infra_kvm_vip_address"
+    label: "kvm VIP Address"
+    initial: {{ control_network_subnet | subnet(240) }}
+    type: "IP"
+  - initial: {{ control_network_subnet | subnet(243) }}
+    name: "infra_kvm03_control_address"
+    label: "kvm03 Control Address"
+    type: "IP"
   - initial: 'False'
     name: openstack_nfv_sriov_enabled
     type: BOOL
-  - initial: 10.167.4.242
+  - initial: {{ control_network_subnet | subnet(242) }}
     name: infra_kvm02_control_address
     type: IP
   - initial: 10.167.5.242
@@ -171,7 +174,7 @@ STEP3_CTX = '''
   - initial: <<WILL_BE_GENERATED>>
     name: cicd_public_key
     type: TEXT
-  - initial: 10.167.4.90
+  - initial: {{ control_network_subnet | subnet(90) }}
     name: cicd_control_vip_address
     type: IP
   - initial: cid03
@@ -180,13 +183,13 @@ STEP3_CTX = '''
   - initial: cid01
     name: cicd_control_node01_hostname
     type: TEXT
-  - initial: 10.167.4.92
+  - initial: {{ control_network_subnet | subnet(92) }}
     name: cicd_control_node02_address
     type: IP
-  - initial: 10.167.4.91
+  - initial: {{ control_network_subnet | subnet(91) }}
     name: cicd_control_node01_address
     type: IP
-  - initial: 10.167.4.93
+  - initial: {{ control_network_subnet | subnet(93) }}
     name: cicd_control_node03_address
     type: IP
   - initial: cid
@@ -225,7 +228,7 @@ STEP3_CTX = '''
   - initial: 10.167.2.101
     name: kubernetes_compute_node01_single_address
     type: IP
-  - initial: 10.167.4.10
+  - initial: {{ control_network_subnet | subnet(10) }}
     name: kubernetes_control_address
     type: IP
   - initial: 10.167.5.13
@@ -285,10 +288,10 @@ STEP3_CTX = '''
   - initial: ntw02
     name: opencontrail_control_node02_hostname
     type: TEXT
-  - initial: 10.167.4.101
+  - initial: {{ control_network_subnet | subnet(101) }}
     name: opencontrail_router02_address
     type: IP
-  - initial: 10.167.4.100
+  - initial: {{ control_network_subnet | subnet(100) }}
     name: opencontrail_router01_address
     type: IP
   - initial: '24'
@@ -297,7 +300,7 @@ STEP3_CTX = '''
   - initial: nal01
     name: opencontrail_analytics_node01_hostname
     type: TEXT
-  - initial: 10.167.4.32
+  - initial: {{ control_network_subnet | subnet(32) }}
     name: opencontrail_analytics_node02_address
     type: IP
   - initial: ntw01
@@ -306,7 +309,7 @@ STEP3_CTX = '''
   - initial: nal03
     name: opencontrail_analytics_node03_hostname
     type: TEXT
-  - initial: 10.167.4.30
+  - initial: {{ control_network_subnet | subnet(30) }}
     name: opencontrail_analytics_address
     type: IP
   - initial: nal02
@@ -315,13 +318,13 @@ STEP3_CTX = '''
   - initial: nal
     name: opencontrail_analytics_hostname
     type: TEXT
-  - initial: 10.167.4.23
+  - initial: {{ control_network_subnet | subnet(23) }}
     name: opencontrail_control_node03_address
     type: IP
   - initial: ntw03
     name: opencontrail_control_node03_hostname
     type: TEXT
-  - initial: 10.167.4.33
+  - initial: {{ control_network_subnet | subnet(33) }}
     name: opencontrail_analytics_node03_address
     type: IP
   - initial: rtr01
@@ -333,22 +336,22 @@ STEP3_CTX = '''
   - initial: 'False'
     name: openstack_nfv_dpdk_enabled
     type: BOOL
-  - initial: 10.167.4.31
+  - initial: {{ control_network_subnet | subnet(31) }}
     name: opencontrail_analytics_node01_address
     type: IP
-  - initial: 10.167.4.22
+  - initial: {{ control_network_subnet | subnet(22) }}
     name: opencontrail_control_node02_address
     type: IP
   - initial: rtr02
     name: opencontrail_router02_hostname
     type: TEXT
-  - initial: 10.167.4.21
+  - initial: {{ control_network_subnet | subnet(21) }}
     name: opencontrail_control_node01_address
     type: IP
   - initial: bond0.${_param:tenant_vlan}
     name: opencontrail_compute_iface
     type: TEXT
-  - initial: 10.167.4.20
+  - initial: {{ control_network_subnet | subnet(20) }}
     name: opencontrail_control_address
     type: IP
   label: OpenContrail
@@ -363,37 +366,37 @@ STEP3_CTX = '''
   - initial: 10.167.6
     name: openstack_compute_rack01_tenant_subnet
     type: IP
-  - initial: 10.167.4.80
+  - initial: {{ control_network_subnet | subnet(80) }}
     name: openstack_proxy_address
     type: IP
-  - initial: 10.167.4.226
+  - initial: {{ control_network_subnet | subnet(226) }}
     name: openstack_gateway_node03_address
     type: IP
-  - initial: 10.167.4.42
+  - initial: {{ control_network_subnet | subnet(42) }}
     name: openstack_message_queue_node02_address
     type: IP
   - initial: prx
     name: openstack_proxy_hostname
     type: TEXT
-  - initial: 10.167.4.81
+  - initial: {{ control_network_subnet | subnet(81) }}
     name: openstack_proxy_node01_address
     type: IP
   - initial: msg03
     name: openstack_message_queue_node03_hostname
     type: TEXT
-  - initial: 10.167.4.76
+  - initial: {{ control_network_subnet | subnet(76) }}
     name: openstack_telemetry_node01_address
     type: IP
   - initial: dbs02
     name: openstack_database_node02_hostname
     type: TEXT
-  - initial: 10.167.4.53
+  - initial: {{ control_network_subnet | subnet(53) }}
     name: openstack_database_node03_address
     type: IP
   - initial: gtw01
     name: openstack_gateway_node01_hostname
     type: TEXT
-  - initial: 10.167.4.41
+  - initial: {{ control_network_subnet | subnet(41) }}
     name: openstack_message_queue_node01_address
     type: IP
   - initial: physnet1
@@ -402,13 +405,13 @@ STEP3_CTX = '''
   - initial: 10.167.6.8
     name: openstack_gateway_node03_tenant_address
     type: IP
-  - initial: 10.167.4.43
+  - initial: {{ control_network_subnet | subnet(43) }}
     name: openstack_message_queue_node03_address
     type: IP
-  - initial: 10.167.4.51
+  - initial: {{ control_network_subnet | subnet(51) }}
     name: openstack_database_node01_address
     type: IP
-  - initial: 10.167.4.10
+  - initial: {{ control_network_subnet | subnet(10) }}
     name: openstack_control_address
     type: IP
   - initial: msg01
@@ -423,28 +426,28 @@ STEP3_CTX = '''
   - initial: 'False'
     name: openstack_nova_compute_nfv_req_enabled
     type: BOOL
-  - initial: 10.167.4.77
+  - initial: {{ control_network_subnet | subnet(77) }}
     name: openstack_telemetry_node02_address
     type: IP
   - initial: cmp
     name: openstack_compute_rack01_hostname
     type: TEXT
-  - initial: 10.167.4.225
+  - initial: {{ control_network_subnet | subnet(225) }}
     name: openstack_gateway_node02_address
     type: IP
   - initial: 10.167.4
     name: openstack_compute_rack01_sigle_subnet
     type: IP
-  - initial: 10.167.4.52
+  - initial: {{ control_network_subnet | subnet(52) }}
     name: openstack_database_node02_address
     type: IP
-  - initial: 10.167.4.40
+  - initial: {{ control_network_subnet | subnet(40) }}
     name: openstack_message_queue_address
     type: IP
   - initial: prx02
     name: openstack_proxy_node02_hostname
     type: TEXT
-  - initial: 10.167.4.78
+  - initial: {{ control_network_subnet | subnet(78) }}
     name: openstack_telemetry_node03_address
     type: IP
   - initial: msg
@@ -456,7 +459,7 @@ STEP3_CTX = '''
   - initial: dbs03
     name: openstack_database_node03_hostname
     type: TEXT
-  - initial: 10.167.4.13
+  - initial: {{ control_network_subnet | subnet(13) }}
     name: openstack_control_node03_address
     type: IP
   - initial: dbs01
@@ -474,7 +477,7 @@ STEP3_CTX = '''
   - initial: 'False'
     name: openstack_nfv_sriov_enabled
     type: BOOL
-  - initial: 10.167.4.11
+  - initial: {{ control_network_subnet | subnet(11) }}
     name: openstack_control_node01_address
     type: IP
   - initial: mdb03
@@ -483,7 +486,7 @@ STEP3_CTX = '''
   - initial: 'False'
     name: openstack_nfv_dpdk_enabled
     type: BOOL
-  - initial: 10.167.4.50
+  - initial: {{ control_network_subnet | subnet(50) }}
     name: openstack_database_address
     type: IP
   - initial: prx01
@@ -495,13 +498,13 @@ STEP3_CTX = '''
   - initial: ctl02
     name: openstack_control_node02_hostname
     type: TEXT
-  - initial: 10.167.4.82
+  - initial: {{ control_network_subnet | subnet(82) }}
     name: openstack_proxy_node02_address
     type: IP
-  - initial: 10.167.4.224
+  - initial: {{ control_network_subnet | subnet(224) }}
     name: openstack_gateway_node01_address
     type: IP
-  - initial: 10.167.4.75
+  - initial: {{ control_network_subnet | subnet(75) }}
     name: openstack_telemetry_address
     type: IP
   - initial: vxlan
@@ -549,28 +552,28 @@ STEP3_CTX = '''
   - initial: '7'
     name: openstack_nfv_sriov_numvfs
     type: IP
-  - initial: 10.167.4.12
+  - initial: {{ control_network_subnet | subnet(12) }}
     name: openstack_control_node02_address
     type: IP
   label: OpenStack
   name: openstack
 - fields:
-  - initial: 10.167.4.73
+  - initial: {{ control_network_subnet | subnet(73) }}
     name: stacklight_monitor_node03_address
     type: IP
-  - initial: 10.167.4.88
+  - initial: {{ control_network_subnet | subnet(88) }}
     name: stacklight_telemetry_node03_address
     type: IP
   - initial: mtr01
     name: stacklight_telemetry_node01_hostname
     type: TEXT
-  - initial: 10.167.4.85
+  - initial: {{ control_network_subnet | subnet(85) }}
     name: stacklight_telemetry_address
     type: IP
   - initial: mon02
     name: stacklight_monitor_node02_hostname
     type: TEXT
-  - initial: 10.167.4.61
+  - initial: {{ control_network_subnet | subnet(61) }}
     name: stacklight_log_node01_address
     type: IP
   - initial: mon01
@@ -579,22 +582,22 @@ STEP3_CTX = '''
   - initial: log02
     name: stacklight_log_node02_hostname
     type: TEXT
-  - initial: 10.167.4.86
+  - initial: {{ control_network_subnet | subnet(86) }}
     name: stacklight_telemetry_node01_address
     type: IP
-  - initial: 10.167.4.70
+  - initial: {{ control_network_subnet | subnet(70) }}
     name: stacklight_monitor_address
     type: IP
-  - initial: 10.167.4.60
+  - initial: {{ control_network_subnet | subnet(60) }}
     name: stacklight_log_address
     type: IP
-  - initial: 10.167.4.63
+  - initial: {{ control_network_subnet | subnet(63) }}
     name: stacklight_log_node03_address
     type: IP
   - initial: mtr02
     name: stacklight_telemetry_node02_hostname
     type: TEXT
-  - initial: 10.167.4.72
+  - initial: {{ control_network_subnet | subnet(72) }}
     name: stacklight_monitor_node02_address
     type: IP
   - initial: log
@@ -609,7 +612,7 @@ STEP3_CTX = '''
   - initial: mtr
     name: stacklight_telemetry_hostname
     type: TEXT
-  - initial: 10.167.4.71
+  - initial: {{ control_network_subnet | subnet(71) }}
     name: stacklight_monitor_node01_address
     type: IP
   - initial: log03
@@ -618,13 +621,13 @@ STEP3_CTX = '''
   - initial: mon
     name: stacklight_monitor_hostname
     type: TEXT
-  - initial: 10.167.4.87
+  - initial: {{ control_network_subnet | subnet(87) }}
     name: stacklight_telemetry_node02_address
     type: IP
   - initial: mtr03
     name: stacklight_telemetry_node03_hostname
     type: TEXT
-  - initial: 10.167.4.62
+  - initial: {{ control_network_subnet | subnet(62) }}
     name: stacklight_log_node02_address
     type: IP
   label: Stacklight
