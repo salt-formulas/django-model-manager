@@ -87,7 +87,7 @@ STEP2_CTX = '''
       initial: {{ control_network_subnet | subnet(90) }}
     - name: "salt_master_management_address"
       type: "IP"
-      initial: "10.167.5.90"
+      initial: {{ deploy_network_subnet | subnet(90) }}
     - name: "salt_master_hostname"
       type: "TEXT"
       initial: "cfg01"
@@ -147,19 +147,19 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(242) }}
     name: infra_kvm02_control_address
     type: IP
-  - initial: 10.167.5.242
+  - initial: {{ deploy_network_subnet | subnet(242) }}
     name: infra_kvm02_deploy_address
     type: IP
   - initial: $6$Qr0XdRvdciun2ucl$osj7gvaoxoOsV9BSiZLD0cqYysOCxA/i8CYTgSpCTnqGF25n8.m/QgP5xrOxE46RtJkY4Ta1AaGODHuiA/iwt1
     name: salt_api_password_hash
     type: TEXT
-  - initial: 10.167.5.243
+  - initial: {{ deploy_network_subnet | subnet(243) }}
     name: infra_kvm03_deploy_address
     type: IP
   - initial: 'False'
     name: openstack_nfv_dpdk_enabled
     type: BOOL
-  - initial: 10.167.5.241
+  - initial: {{ deploy_network_subnet | subnet(241) }}
     name: infra_kvm01_deploy_address
     type: IP
   label: Infra
@@ -210,7 +210,7 @@ STEP3_CTX = '''
   - initial: docker-prod-virtual.docker.mirantis.net/mirantis/kubernetes/hyperkube-amd64:v1.4.6-6
     name: hyperkube_image
     type: TEXT
-  - initial: 10.167.5.102
+  - initial: {{ deploy_network_subnet | subnet(102) }}
     name: kubernetes_compute_node02_deploy_address
     type: IP
   - initial: 'true'
@@ -231,13 +231,13 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(10) }}
     name: kubernetes_control_address
     type: IP
-  - initial: 10.167.5.13
+  - initial: {{ deploy_network_subnet | subnet(13) }}
     name: kubernetes_control_node03_deploy_address
     type: IP
   - initial: 'true'
     name: etcd_ssl
     type: BOOL
-  - initial: 10.167.5.11
+  - initial: {{ deploy_network_subnet | subnet(11) }}
     name: kubernetes_control_node01_deploy_address
     type: IP
   - initial: ens4
@@ -267,7 +267,7 @@ STEP3_CTX = '''
   - initial: 10.167.2.102
     name: kubernetes_compute_node02_single_address
     type: IP
-  - initial: 10.167.5.12
+  - initial: {{ deploy_network_subnet | subnet(12) }}
     name: kubernetes_control_node02_deploy_address
     type: IP
   - initial: cmp02
@@ -276,7 +276,7 @@ STEP3_CTX = '''
   - initial: docker-prod-virtual.docker.mirantis.net/mirantis/projectcalico/calico/cni:latest
     name: calico_cni_image
     type: TEXT
-  - initial: 10.167.5.101
+  - initial: {{ deploy_network_subnet | subnet(101) }}
     name: kubernetes_compute_node01_deploy_address
     type: IP
   - initial: '16'
