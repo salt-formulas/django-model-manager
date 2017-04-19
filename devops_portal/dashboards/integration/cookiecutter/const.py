@@ -360,7 +360,7 @@ STEP3_CTX = '''
   - initial: mdb02
     name: openstack_telemetry_node02_hostname
     type: TEXT
-  - initial: 10.167.6.6
+  - initial: {{ tenant_network_subnet | subnet(6) }}
     name: openstack_gateway_node01_tenant_address
     type: IP
   - initial: 10.167.6
@@ -402,7 +402,7 @@ STEP3_CTX = '''
   - initial: physnet1
     name: openstack_nfv_sriov_network
     type: TEXT
-  - initial: 10.167.6.8
+  - initial: {{ tenant_network_subnet | subnet(8) }}
     name: openstack_gateway_node03_tenant_address
     type: IP
   - initial: {{ control_network_subnet | subnet(43) }}
@@ -516,7 +516,7 @@ STEP3_CTX = '''
   - initial: eth1
     name: gateway_primary_first_nic
     type: TEXT
-  - initial: 10.167.6.7
+  - initial: {{ tenant_network_subnet | subnet(7) }}
     name: openstack_gateway_node02_tenant_address
     type: IP
   - initial: msg02
