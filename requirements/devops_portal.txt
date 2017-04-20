@@ -4,6 +4,7 @@ horizon-contrib>=2016.9.5
 django-openstack-auth>=3.1.1
 python-keystoneclient!=1.8.0,!=2.1.0,<3.0.0,>=1.6.0
 Jinja2==2.9.6
+ipaddress==1.0.18
 
 # XStatic fix
 XStatic-Magic-Search==0.2.5.1
