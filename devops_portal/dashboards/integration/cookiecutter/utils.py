@@ -254,6 +254,11 @@ class GeneratedAction(workflows.Action):
                     field_kw['mask'] = field['mask']
                 # declare field on self
                 self.fields[field['name']] = field_cls(*field_args, **field_kw)
+                if field.get('readonly', False):
+                    try:
+                        self.fields[field['name']].widget.attrs['readonly'] = True
+                    except:
+                        pass
                 # workaround for empty strings in inital data after ``contribute`` is defined
                 # TODO: find out why this is happening
                 if field['name'] in self.initial and (self.initial[field['name']] == '' or self.initial[field['name']] == None):

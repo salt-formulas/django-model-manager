@@ -107,11 +107,13 @@ STEP2_CTX = '''
     - name: "openstack_network_engine"
       type: "TEXT"
       initial: "opencontrail"
+      readonly: True
       requires:
         - opencontrail_enabled: True
     - name: "openstack_network_engine"
       type: "TEXT"
       initial: "ovs"
+      readonly: True
       requires:
         - opencontrail_enabled: False
 '''
