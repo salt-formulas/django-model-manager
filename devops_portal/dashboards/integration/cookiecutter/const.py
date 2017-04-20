@@ -55,6 +55,7 @@ STEP1_CTX = '''
     - name: "deploy_network_subnet"
       type: IP
       initial: "10.0.0.0/24"
+      mask: True
     - name: "deploy_network_netmask"
       type: IP
       initial: "255.255.255.0"
@@ -64,12 +65,14 @@ STEP1_CTX = '''
     - name: "control_network_subnet"
       type: IP
       initial: "10.0.1.0/24"
+      mask: True
     - name: "control_network_netmask"
       type: IP
       initial: "255.255.255.0"
     - name: "tenant_network_subnet"
       type: IP
       initial: "10.0.2.0/24"
+      mask: True
     - name: "tenant_network_netmask"
       type: IP
       initial: "255.255.255.0"
@@ -140,7 +143,7 @@ STEP3_CTX = '''
     type: TEXT
   - initial: '100'
     name: openstack_compute_count
-    type: IP
+    type: TEXT
   - initial: kvm01
     name: infra_kvm01_hostname
     type: TEXT

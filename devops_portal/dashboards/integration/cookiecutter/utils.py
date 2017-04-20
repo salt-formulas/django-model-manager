@@ -177,7 +177,7 @@ class GeneratedAction(workflows.Action):
                 "label": "",
                 "initial": "",
                 "required": True,
-                "mask": True
+                "mask": False
             }
         },
         "BOOL": {
@@ -248,10 +248,17 @@ class GeneratedAction(workflows.Action):
                 field_kw['label'] = field.get('label', None) if 'label' in field else self.deslugify(field['name'])
                 field_kw['help_text'] = field.get('help_text', None)
                 field_kw['initial'] = field.get('initial', None)
+                # template specific params
                 if 'CHOICE' in field['type']:
                     field_kw['choices'] = field['choices']
+                if 'IP' in field['type'] and 'mask' in field:
+                    field_kw['mask'] = field['mask']
                 # declare field on self
                 self.fields[field['name']] = field_cls(*field_args, **field_kw)
+                # workaround for empty strings in inital data after ``contribute`` is defined
+                # TODO: find out why this is happening
+                if field['name'] in self.initial and not self.initial[field['name']]:
+                    self.initial[field['name']] = field_kw['initial'] = field.get('initial', None)
 
     @staticmethod
     def deslugify(string):
@@ -264,7 +271,7 @@ class GeneratedAction(workflows.Action):
         parsed_source = env.parse(self.source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
-            if not key in context:
+            if (not key in context) or (key in context and context[key] == None):
                 context[key] = ""
         try:
             ctx = yaml.load(tmpl.render(context))
@@ -292,8 +299,12 @@ class GeneratedStep(workflows.Step):
         field_list = [item for sublist in field_lists for item in sublist]
         contributes = list(self.contributes)
         for field in field_list:
-            contributes.append(field['name'])
+            if field['name'] not in contributes:
+                contributes.append(field['name'])
         self.contributes = tuple(contributes)
+
+    #def _verify_contributions(self, context):
+    #    return True
 
     def render_context(self):
         context = {}
@@ -311,17 +322,6 @@ class GeneratedStep(workflows.Step):
         if not isinstance(ctx, list):
             return []
         return ctx
-
-    def contribute(self, data, context):
-        # TODO: Don't call super, override default functionality to
-        # contribute all keys in data and remove __init__ override
-        super(GeneratedStep, self).contribute(data, context)
-        # update shared context with option Bool values according to choices made in ChoiceList fields
-        choice_fields = [obj for obj in self.action.fields.values() if hasattr(obj, 'choices')]
-        choices = [chc[0] for fld in choice_fields for chc in fld.choices]
-        for choice in choices:
-            context[choice] = True if choice in context.values() else False
-        return context
 
 
 class AsyncWorkflowView(workflows.WorkflowView):

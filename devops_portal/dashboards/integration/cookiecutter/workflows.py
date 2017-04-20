@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
 
 from .actions import ClusterBasicAction, ClusterServiceAction, ClusterParamsAction
-from .const import STEP1_CTX, STEP2_CTX
+from .const import STEP1_CTX, STEP2_CTX, STEP3_CTX
 from .utils import GeneratedStep
 
 
@@ -20,6 +20,7 @@ class ClusterServiceStep(GeneratedStep):
 
 class ClusterParamsStep(GeneratedStep):
     action_class = ClusterParamsAction
+    source_context = STEP3_CTX
 
 
 class CreateCookiecutterContext(workflows.Workflow):
@@ -44,7 +45,4 @@ class CreateCookiecutterContext(workflows.Workflow):
             success_url = iri_to_uri(request.get_full_path())
 
         return success_url
-
-    def handle(self, request, data):
-        pass
 
