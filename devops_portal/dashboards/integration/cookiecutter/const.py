@@ -31,12 +31,15 @@ STEP1_CTX = '''
     - name: "opencontrail_enabled"
       type: "BOOL"
       initial: True
+      label: "OpenContrail enabled"
     - name: "stacklight_enabled"
       type: "BOOL"
       initial: True
+      label: "StackLight enabled"
     - name: "cicd_enabled"
       type: "BOOL"
       initial: True
+      label: "CI/CD enabled"
 - name: "networking"
   label: "Networking"
   step: 1
@@ -44,9 +47,11 @@ STEP1_CTX = '''
     - name: "dns_server01"
       type: "IP"
       initial: "8.8.8.8"
+      label: "DNS Server 01"
     - name: "dns_server02"
       type: "IP"
       initial: "8.8.4.4"
+      label: "DNS Server 02"
     - name: "deploy_network_subnet"
       type: IP
       initial: "10.0.0.0/24"
@@ -78,6 +83,7 @@ STEP1_CTX = '''
     - name: "tenant_vlan"
       type: IP
       initial: "20"
+      label: "Tenant VLAN"
 '''
 
 STEP2_CTX = '''
