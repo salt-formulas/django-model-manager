@@ -1,7 +1,6 @@
 STEP1_CTX = '''
 - name: "base"
   label: "Base"
-  step: 1
   fields:
     - name: "cluster_name"
       type: "TEXT"
@@ -18,7 +17,6 @@ STEP1_CTX = '''
       initial: "https://github.com/Mirantis/mk-lab-salt-model.git"
 - name: "services"
   label: "Services"
-  step: 1
   fields:
     - name: "platform"
       type: "CHOICE"
@@ -42,7 +40,6 @@ STEP1_CTX = '''
       label: "CI/CD enabled"
 - name: "networking"
   label: "Networking"
-  step: 1
   fields:
     - name: "dns_server01"
       type: "IP"
@@ -80,11 +77,11 @@ STEP1_CTX = '''
       type: IP
       initial: "10.0.2.1"
     - name: "control_vlan"
-      type: IP
+      type: TEXT
       initial: "10"
       label: "Control VLAN"
     - name: "tenant_vlan"
-      type: IP
+      type: TEXT
       initial: "20"
       label: "Tenant VLAN"
 '''
@@ -92,7 +89,6 @@ STEP1_CTX = '''
 STEP2_CTX = '''
 - name: "salt"
   label: "Salt Master"
-  step: 1
   fields:
     - name: "salt_master_address"
       type: "IP"
@@ -105,17 +101,19 @@ STEP2_CTX = '''
       initial: "cfg01"
 - name: "openstack_networking"
   label: "OpenStack Networking"
-  step: 1
   requires:
     - platform: "openstack_enabled"
   fields:
     - name: "openstack_network_engine"
-      type: "CHOICE"
-      choices:
-        - - "opencontrail"
-          - "OpenContrail"
-        - - "ovs"
-          - "Neutron OVS"
+      type: "TEXT"
+      initial: "opencontrail"
+      requires:
+        - opencontrail_enabled: True
+    - name: "openstack_network_engine"
+      type: "TEXT"
+      initial: "ovs"
+      requires:
+        - opencontrail_enabled: False
 '''
 
 STEP3_CTX = '''
