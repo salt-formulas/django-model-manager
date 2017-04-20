@@ -133,7 +133,6 @@ def subnet(subnet, host_ip):
         Output
         ------
         192.168.1.1
-
     """
     if not subnet:
         return ""
@@ -257,8 +256,8 @@ class GeneratedAction(workflows.Action):
                 self.fields[field['name']] = field_cls(*field_args, **field_kw)
                 # workaround for empty strings in inital data after ``contribute`` is defined
                 # TODO: find out why this is happening
-                if field['name'] in self.initial and not self.initial[field['name']]:
-                    self.initial[field['name']] = field_kw['initial'] = field.get('initial', None)
+                if field['name'] in self.initial and (self.initial[field['name']] == '' or self.initial[field['name']] == None):
+                    self.initial[field['name']] = field.get('initial', None)
 
     @staticmethod
     def deslugify(string):
