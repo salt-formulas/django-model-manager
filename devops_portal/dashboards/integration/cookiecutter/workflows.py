@@ -3,31 +3,36 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
 
-from .actions import ClusterBasicAction, ClusterServiceAction, ClusterParamsAction
+from .actions import (GeneralParamsAction, InfraParamsAction, ProductParamsAction,
+    CookiecutterContextAction)
 from .const import STEP1_CTX, STEP2_CTX, STEP3_CTX
 from .utils import GeneratedStep
 
 
-class ClusterBasicStep(GeneratedStep):
-    action_class = ClusterBasicAction
+class GeneralParamsStep(GeneratedStep):
+    action_class = GeneralParamsAction
     source_context = STEP1_CTX
 
 
-class ClusterServiceStep(GeneratedStep):
-    action_class = ClusterServiceAction
+class InfraParamsStep(GeneratedStep):
+    action_class = InfraParamsAction
     source_context = STEP2_CTX
 
 
-class ClusterParamsStep(GeneratedStep):
-    action_class = ClusterParamsAction
+class ProductParamsStep(GeneratedStep):
+    action_class = ProductParamsAction
     source_context = STEP3_CTX
+
+
+class CookiecutterContextStep(workflows.Step):
+    action_class = CookiecutterContextAction
 
 
 class CreateCookiecutterContext(workflows.Workflow):
     name = _("Create Cookiecutter Context")
     slug = "create_cookiecutter_context"
     async_wizard = True
-    default_steps = (ClusterBasicStep, ClusterServiceStep, ClusterParamsStep)
+    default_steps = (GeneralParamsStep, InfraParamsStep, ProductParamsStep, CookiecutterContextStep)
     finalize_button_name = _("Confirm")
     success_message = _('Your request was successfully submitted.')
     failure_message = _('Your request could not be submitted, please try again later.')
@@ -45,4 +50,10 @@ class CreateCookiecutterContext(workflows.Workflow):
             success_url = iri_to_uri(request.get_full_path())
 
         return success_url
+
+    def handle(self, request, context):
+        """Handles any final processing for this workflow. Should return a
+        boolean value indicating success.
+        """
+        return True
 
