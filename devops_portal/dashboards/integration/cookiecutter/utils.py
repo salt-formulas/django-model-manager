@@ -306,6 +306,15 @@ class GeneratedStep(workflows.Step):
     #def _verify_contributions(self, context):
     #    return True
 
+    def contribute(self, data, context):
+        super(GeneratedStep, self).contribute(data, context)
+        # update shared context with option Bool values according to choices made in ChoiceList fields
+        choice_fields = [obj for obj in self.action.fields.values() if hasattr(obj, 'choices')]
+        choices = [chc[0] for fld in choice_fields for chc in fld.choices]
+        for choice in choices:
+            context[choice] = True if choice in context.values() else False
+        return context
+
     def render_context(self):
         context = {}
         env = Environment()
