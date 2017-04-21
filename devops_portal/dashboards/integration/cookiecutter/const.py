@@ -15,6 +15,15 @@ STEP1_CTX = '''
     - name: "reclass_repository"
       type: "TEXT"
       initial: "https://github.com/Mirantis/mk-lab-salt-model.git"
+    - name: "deployment_type"
+      label: "Deployment type"
+      type: "CHOICE"
+      initial: "physical"
+      choices:
+          - - "heat"
+            - "Heat"
+          - - "physical"
+            - "Physical"
 - name: "services"
   label: "Services"
   fields:
@@ -53,9 +62,6 @@ STEP1_CTX = '''
       type: IP
       initial: "10.0.0.0/24"
       mask: True
-    - name: "deploy_network_netmask"
-      type: IP
-      initial: "255.255.255.0"
     - name: "deploy_network_gateway"
       type: IP
       initial: "10.0.0.1"
@@ -63,16 +69,10 @@ STEP1_CTX = '''
       type: IP
       initial: "10.0.1.0/24"
       mask: True
-    - name: "control_network_netmask"
-      type: IP
-      initial: "255.255.255.0"
     - name: "tenant_network_subnet"
       type: IP
       initial: "10.0.2.0/24"
       mask: True
-    - name: "tenant_network_netmask"
-      type: IP
-      initial: "255.255.255.0"
     - name: "tenant_network_gateway"
       type: IP
       initial: "10.0.2.1"
@@ -99,6 +99,10 @@ STEP2_CTX = '''
     - name: "salt_master_hostname"
       type: "TEXT"
       initial: "cfg01"
+    - initial: {{ 32|generate_password }}
+      name: salt_api_password
+      type: TEXT
+      hidden: True
 - name: "openstack_networking"
   label: "OpenStack Networking"
   requires:
@@ -116,80 +120,125 @@ STEP2_CTX = '''
       readonly: True
       requires:
         - opencontrail_enabled: False
+    - initial: 'False'
+      name: openstack_nfv_sriov_enabled
+      label: 'OpenStack NFV SRIOV enabled'
+      type: BOOL
+    - initial: 'False'
+      name: openstack_nfv_dpdk_enabled
+      type: BOOL
+    - initial: 'False'
+      name: openstack_nova_compute_nfv_req_enabled
+      type: BOOL
 '''
 
 STEP3_CTX = '''
+{% set private_key, public_key = generate_ssh_keypair() %}
 - label: "Infrastructure product parameters"
   name: "infra"
   fields:
+  - name: "deploy_network_netmask"
+    type: IP
+    initial: {{ deploy_network_subnet | netmask }}
+    hidden: True
+  - name: "control_network_netmask"
+    type: IP
+    initial: {{ control_network_subnet | netmask }}
+    hidden: True
+  - name: "tenant_network_netmask"
+    type: IP
+    initial: {{ tenant_network_subnet | netmask }}
+    hidden: True
   - initial: eth2
     name: infra_primary_second_nic
     type: TEXT
+    requires:
+      - deployment_type: "physical"
   - initial: kvm02
     name: infra_kvm02_hostname
     type: TEXT
+    requires:
+      - deployment_type: "physical"
   - initial: kvm03
     name: infra_kvm03_hostname
     type: TEXT
+    requires:
+      - deployment_type: "physical"
   - initial: eth0
     name: infra_deploy_nic
     type: TEXT
+    requires:
+      - deployment_type: "physical"
   - name: "infra_kvm01_control_address"
-    label: "kvm01 Control Address"
     initial: {{ control_network_subnet | subnet(241) }}
     type: "IP"
+    requires:
+      - deployment_type: "physical"
   - initial: eth1
     name: infra_primary_first_nic
     type: TEXT
+    requires:
+      - deployment_type: "physical"
   - initial: '100'
     name: openstack_compute_count
     type: TEXT
+    requires:
+      - platform: "openstack_enabled"
   - initial: kvm01
     name: infra_kvm01_hostname
     type: TEXT
+    requires:
+      - deployment_type: "physical"
   - name: "infra_kvm_vip_address"
-    label: "kvm VIP Address"
     initial: {{ control_network_subnet | subnet(240) }}
     type: "IP"
+    requires:
+      - deployment_type: "physical"
   - initial: {{ control_network_subnet | subnet(243) }}
     name: "infra_kvm03_control_address"
-    label: "kvm03 Control Address"
     type: "IP"
-  - initial: 'False'
-    name: openstack_nfv_sriov_enabled
-    type: BOOL
+    requires:
+      - deployment_type: "physical"
   - initial: {{ control_network_subnet | subnet(242) }}
     name: infra_kvm02_control_address
     type: IP
+    requires:
+      - deployment_type: "physical"
   - initial: {{ deploy_network_subnet | subnet(242) }}
     name: infra_kvm02_deploy_address
     type: IP
-  - initial: $6$Qr0XdRvdciun2ucl$osj7gvaoxoOsV9BSiZLD0cqYysOCxA/i8CYTgSpCTnqGF25n8.m/QgP5xrOxE46RtJkY4Ta1AaGODHuiA/iwt1
+    requires:
+      - deployment_type: "physical"
+  - initial: {{ salt_api_password|hash_password }}
     name: salt_api_password_hash
     type: TEXT
+    hidden: True
   - initial: {{ deploy_network_subnet | subnet(243) }}
     name: infra_kvm03_deploy_address
     type: IP
-  - initial: 'False'
-    name: openstack_nfv_dpdk_enabled
-    type: BOOL
+    requires:
+      - deployment_type: "physical"
   - initial: {{ deploy_network_subnet | subnet(241) }}
     name: infra_kvm01_deploy_address
     type: IP
+    requires:
+      - deployment_type: "physical"
 - label: "CI/CD product parameters"
   name: "cicd"
   requires:
     - cicd_enabled: True
   fields:
-  - initial: <<WILL_BE_GENERATED>>
+  - initial: "{{ private_key }}"
     name: cicd_private_key
-    type: TEXT
+    type: LONG_TEXT
+    hidden: True
   - initial: cid02
     name: cicd_control_node02_hostname
     type: TEXT
-  - initial: <<WILL_BE_GENERATED>>
+    hidden: True
+  - initial: {{ public_key }}
     name: cicd_public_key
-    type: TEXT
+    type: LONG_TEXT
   - initial: {{ control_network_subnet | subnet(90) }}
     name: cicd_control_vip_address
     type: IP
@@ -299,7 +348,7 @@ STEP3_CTX = '''
     type: IP
   - initial: '16'
     name: calico_netmask
-    type: IP
+    type: TEXT
 - label: "OpenContrail service parameters"
   name: "opencontrail"
   requires:
@@ -314,9 +363,9 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(100) }}
     name: opencontrail_router01_address
     type: IP
-  - initial: '24'
+  - initial: {{ tenant_network_subnet[-2:] }}
     name: opencontrail_compute_iface_mask
-    type: IP
+    type: TEXT
   - initial: nal01
     name: opencontrail_analytics_node01_hostname
     type: TEXT
@@ -353,9 +402,6 @@ STEP3_CTX = '''
   - initial: ntw
     name: opencontrail_control_hostname
     type: TEXT
-  - initial: 'False'
-    name: openstack_nfv_dpdk_enabled
-    type: BOOL
   - initial: {{ control_network_subnet | subnet(31) }}
     name: opencontrail_analytics_node01_address
     type: IP
@@ -371,6 +417,7 @@ STEP3_CTX = '''
   - initial: bond0.${_param:tenant_vlan}
     name: opencontrail_compute_iface
     type: TEXT
+    hidden: True
   - initial: {{ control_network_subnet | subnet(20) }}
     name: opencontrail_control_address
     type: IP
@@ -424,6 +471,8 @@ STEP3_CTX = '''
   - initial: physnet1
     name: openstack_nfv_sriov_network
     type: TEXT
+    requires:
+      - openstack_nfv_sriov_enabled: True
   - initial: {{ tenant_network_subnet | subnet(8) }}
     name: openstack_gateway_node03_tenant_address
     type: IP
@@ -445,9 +494,6 @@ STEP3_CTX = '''
   - initial: ctl01
     name: openstack_control_node01_hostname
     type: TEXT
-  - initial: 'False'
-    name: openstack_nova_compute_nfv_req_enabled
-    type: BOOL
   - initial: {{ control_network_subnet | subnet(77) }}
     name: openstack_telemetry_node02_address
     type: IP
@@ -496,18 +542,12 @@ STEP3_CTX = '''
   - initial: dbs
     name: openstack_database_hostname
     type: TEXT
-  - initial: 'False'
-    name: openstack_nfv_sriov_enabled
-    type: BOOL
   - initial: {{ control_network_subnet | subnet(11) }}
     name: openstack_control_node01_address
     type: IP
   - initial: mdb03
     name: openstack_telemetry_node03_hostname
     type: TEXT
-  - initial: 'False'
-    name: openstack_nfv_dpdk_enabled
-    type: BOOL
   - initial: {{ control_network_subnet | subnet(50) }}
     name: openstack_database_address
     type: IP
