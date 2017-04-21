@@ -1,11 +1,16 @@
-import copy, json, requests, socket, yaml
+import copy, bcrypt, json, requests, socket, yaml
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend
+from django import forms
 from django import http
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
 from ipaddress import IPv4Network
 from jinja2 import Environment, meta, exceptions
+from os import urandom
 
 from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField 
 
@@ -151,6 +156,114 @@ def subnet(subnet, host_ip):
 
     return ipaddr
 
+
+def netmask(subnet):
+    """
+    Create network object and get netmask
+
+    Example:
+
+        Context
+        -------
+        {'my_subnet': '192.168.1.0/24'}
+
+        Template
+        --------
+        {{ my_subnet|netmask }}
+
+        Output
+        ------
+        255.255.255.0
+    """
+    if not subnet:
+        return ""
+
+    if '/' not in subnet:
+        subnet = str(subnet) + '/24'
+
+    try:
+        network = IPv4Network(unicode(subnet))
+        netmask = str(network.netmask)
+    except:
+        netmask = "Cannot determine network mask"
+
+    return netmask
+
+
+def generate_password(length):
+    """
+    Generate password of defined length
+
+    Example:
+
+        Template
+        --------
+        {{ 32|generate_password }}
+
+        Output
+        ------
+        Jda0HK9rM4UETFzZllDPbu8i2szzKbMM
+    """
+    chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNpPqQrRsStTuUvVwWxXyYzZ1234567890!@#$"
+
+    return "".join(chars[ord(c) % len(chars)] for c in urandom(length))
+
+
+def hash_password(password):
+    """
+    Hash password
+
+    Example:
+
+        Context
+        -------
+        {'some_password': 'Jda0HK9rM4UETFzZllDPbu8i2szzKbMM'}
+
+        Template
+        --------
+        {{ some_password|hash_password }}
+
+        Output
+        ------
+        $2b$12$HXXew12E9mN3NIXv/egSDurU.dshYQRepBoeY.6bfbOOS5IyFVIBa
+    """
+    salt = bcrypt.gensalt()
+
+    return bcrypt.hashpw(bytes(password), salt)
+
+
+CUSTOM_FILTERS = [
+    ('subnet', subnet),
+    ('generate_password', generate_password),
+    ('hash_password', hash_password),
+    ('netmask', netmask)
+]
+
+
+def generate_ssh_keypair():
+    private_key_obj = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, \
+        key_size=2048)
+    
+    public_key_obj = private_key_obj.public_key()
+    
+    public_key = public_key_obj.public_bytes(
+        serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH)
+    
+    private_key = private_key_obj.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption())
+    
+    private_key_str = private_key.decode('utf-8')
+    public_key_str = public_key.decode('utf-8')
+
+    return (private_key_str, public_key_str)    
+    
+    
+CUSTOM_FUNCTIONS = [
+    ('generate_ssh_keypair', generate_ssh_keypair)
+]
+
 # Extended workflow classes
 
 class GeneratedAction(workflows.Action):
@@ -166,6 +279,17 @@ class GeneratedAction(workflows.Action):
                 "label": "",
                 "initial": "",
                 "required": True,
+                "help_text": ""
+            }
+        },
+        "LONG_TEXT": {
+            "class": CharField,
+            "args": tuple(),
+            "kwargs": {
+                "label": "",
+                "initial": "",
+                "required": True,
+                "widget": forms.Textarea(attrs={'rows': '20'}),
                 "help_text": ""
             }
         },
@@ -259,6 +383,8 @@ class GeneratedAction(workflows.Action):
                         self.fields[field['name']].widget.attrs['readonly'] = True
                     except:
                         pass
+                if field.get('hidden', False):
+                    self.fields[field['name']].widget = forms.HiddenInput()
                 # workaround for empty strings in inital data after ``contribute`` is defined
                 # TODO: find out why this is happening
                 if field['name'] in self.initial and (self.initial[field['name']] == '' or self.initial[field['name']] == None):
@@ -270,13 +396,17 @@ class GeneratedAction(workflows.Action):
 
     def render_context(self, context):
         env = Environment()
-        env.filters['subnet'] = subnet
+        for fltr in CUSTOM_FILTERS:
+            env.filters[fltr[0]] = fltr[1]
+        for fnc in CUSTOM_FUNCTIONS:
+            env.globals[fnc[0]] = fnc[1]
         tmpl = env.from_string(self.source_context)
         parsed_source = env.parse(self.source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
-            if (not key in context) or (key in context and context[key] == None):
-                context[key] = ""
+            if key not in env.globals:
+                if (not key in context) or (key in context and context[key] == None):
+                    context[key] = ""
         try:
             ctx = yaml.load(tmpl.render(context))
         except:
@@ -322,12 +452,16 @@ class GeneratedStep(workflows.Step):
     def render_context(self):
         context = {}
         env = Environment()
-        env.filters['subnet'] = subnet
+        for fltr in CUSTOM_FILTERS:
+            env.filters[fltr[0]] = fltr[1]
+        for fnc in CUSTOM_FUNCTIONS:
+            env.globals[fnc[0]] = fnc[1]
         tmpl = env.from_string(self.source_context)
         parsed_source = env.parse(self.source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
-            context[key] = ""
+            if key not in env.globals:
+                context[key] = ""
         try:
             ctx = yaml.load(tmpl.render(context))
         except:
