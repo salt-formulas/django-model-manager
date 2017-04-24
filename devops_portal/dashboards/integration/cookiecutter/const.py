@@ -250,7 +250,8 @@ STEP3_CTX = '''
   requires:
     - cicd_enabled: True
   fields:
-  - initial: "{{ private_key }}"
+  - initial: |-
+      {{ private_key|indent(6) }}
     name: cicd_private_key
     type: LONG_TEXT
     hidden: True
