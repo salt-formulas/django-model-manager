@@ -120,14 +120,19 @@ STEP2_CTX = '''
       readonly: True
       requires:
         - opencontrail_enabled: False
-    - initial: 'False'
+    - initial: vxlan
+      name: openstack_ovs_encapsulation_type
+      type: TEXT
+      requires:
+        - opencontrail_enabled: False
+    - initial: False
       name: openstack_nfv_sriov_enabled
       label: 'OpenStack NFV SRIOV enabled'
       type: BOOL
-    - initial: 'False'
+    - initial: False
       name: openstack_nfv_dpdk_enabled
       type: BOOL
-    - initial: 'False'
+    - initial: False
       name: openstack_nova_compute_nfv_req_enabled
       type: BOOL
 '''
@@ -239,6 +244,7 @@ STEP3_CTX = '''
   - initial: {{ public_key }}
     name: cicd_public_key
     type: LONG_TEXT
+    hidden: True
   - initial: {{ control_network_subnet | subnet(90) }}
     name: cicd_control_vip_address
     type: IP
@@ -366,6 +372,7 @@ STEP3_CTX = '''
   - initial: {{ tenant_network_subnet[-2:] }}
     name: opencontrail_compute_iface_mask
     type: TEXT
+    hidden: True
   - initial: nal01
     name: opencontrail_analytics_node01_hostname
     type: TEXT
@@ -433,6 +440,7 @@ STEP3_CTX = '''
     name: openstack_gateway_node01_tenant_address
     type: IP
   - initial: 10.167.6
+    help_text: "Vydefaultovat z tenant_subnetu"
     name: openstack_compute_rack01_tenant_subnet
     type: IP
   - initial: {{ control_network_subnet | subnet(80) }}
@@ -504,6 +512,7 @@ STEP3_CTX = '''
     name: openstack_gateway_node02_address
     type: IP
   - initial: 10.167.4
+    help_text: "Vydefaultovat z control subnetu"
     name: openstack_compute_rack01_sigle_subnet
     type: IP
   - initial: {{ control_network_subnet | subnet(52) }}
@@ -569,9 +578,6 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(75) }}
     name: openstack_telemetry_address
     type: IP
-  - initial: vxlan
-    name: openstack_ovs_encapsulation_type
-    type: TEXT
   - initial: ctl03
     name: openstack_control_node03_hostname
     type: TEXT
@@ -586,34 +592,49 @@ STEP3_CTX = '''
     type: TEXT
   - initial: '16'
     name: openstack_nova_compute_hugepages_count
-    type: IP
+    type: TEXT
+    requires_or:
+      - openstack_nfv_dpdk_enabled: True
+      - openstack_nova_compute_nfv_req_enabled: True
   - initial: ctl
     name: openstack_control_hostname
     type: TEXT
   - initial: 1,2,3,4,5,7,8,9,10,11
     name: openstack_nova_cpu_pinning
     type: TEXT
+    requires_or:
+      - openstack_nfv_dpdk_enabled: True
+      - openstack_nova_compute_nfv_req_enabled: True 
   - initial: 'False'
     name: openstack_ovs_dvr_enabled
     type: BOOL
+    requires:
+      - openstack_network_engine: "ovs"
   - initial: eth2
     name: gateway_primary_second_nic
     type: TEXT
   - initial: eth7
     name: openstack_nfv_sriov_pf_nic
     type: TEXT
+    requires:
+      - openstack_nfv_sriov_enabled: True
   - initial: mdb
     name: openstack_telemetry_hostname
     type: TEXT
   - initial: 2416:2420
     name: openstack_ovs_encapsulation_vlan_range
     type: TEXT
+    requires:
+      - openstack_network_engine: "ovs"
+      - openstack_ovs_encapsulation_type: "vlan" 
   - initial: eth2
     name: compute_primary_second_nic
     type: TEXT
   - initial: '7'
     name: openstack_nfv_sriov_numvfs
-    type: IP
+    type: TEXT
+    requires:
+      - openstack_nfv_sriov_enabled: True
   - initial: {{ control_network_subnet | subnet(12) }}
     name: openstack_control_node02_address
     type: IP
