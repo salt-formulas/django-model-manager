@@ -283,7 +283,7 @@ STEP3_CTX = '''
   - initial: cid
     name: cicd_control_vip_hostname
     type: TEXT
-  - initial: 'False'
+  - initial: False
     name: openldap_enabled
     type: BOOL
 - label: "Kubernetes product parameters"
@@ -622,7 +622,7 @@ STEP3_CTX = '''
     requires_or:
       - openstack_nfv_dpdk_enabled: True
       - openstack_nova_compute_nfv_req_enabled: True 
-  - initial: 'False'
+  - initial: False
     name: openstack_ovs_dvr_enabled
     type: BOOL
     requires:
