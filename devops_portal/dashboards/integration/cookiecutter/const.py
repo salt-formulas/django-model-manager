@@ -1,6 +1,13 @@
 STEP1_CTX = '''
 - name: "base"
   label: "Base"
+  doc: |
+    Base fieldset
+    =============
+
+    You can use retructured text to document parameters in this step
+
+    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Pellentesque arcu. Etiam dui sem, fermentum vitae, sagittis id, malesuada in, quam. Vivamus porttitor turpis ac leo. Integer imperdiet lectus quis justo. Quisque tincidunt scelerisque libero. Duis sapien nunc, commodo et, interdum suscipit, sollicitudin et, dolor. Nullam at arcu a est sollicitudin euismod. In enim a arcu imperdiet malesuada. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Mauris tincidunt sem sed arcu.
   fields:
     - name: "cluster_name"
       type: "TEXT"
@@ -26,6 +33,11 @@ STEP1_CTX = '''
             - "Physical"
 - name: "services"
   label: "Services"
+  doc: |
+    Services fieldset
+    =================
+
+    Et harum quidem rerum facilis est et expedita distinctio. Aliquam erat volutpat. Mauris dictum facilisis augue. Sed convallis magna eu sem. Vestibulum fermentum tortor id mi. Nunc auctor. Maecenas libero. Sed elit dui, pellentesque a, faucibus vel, interdum nec, diam. Aenean fermentum risus id tortor. Etiam commodo dui eget wisi. Sed convallis magna eu sem. In sem justo, commodo ut, suscipit at, pharetra vitae, orci. Integer in sapien. Duis pulvinar. Integer tempor. Sed ac dolor sit amet purus malesuada congue. Maecenas sollicitudin.
   fields:
     - name: "platform"
       type: "CHOICE"
@@ -49,6 +61,11 @@ STEP1_CTX = '''
       label: "CI/CD enabled"
 - name: "networking"
   label: "Networking"
+  doc: |
+    Networking fieldset
+    ===================
+
+    Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? Nullam eget nisl. Fusce suscipit libero eget elit. Curabitur vitae diam non enim vestibulum interdum. Nullam feugiat, turpis at pulvinar vulputate, erat libero tristique tellus, nec bibendum odio risus sit amet ante. Donec quis nibh at felis congue commodo. Nunc tincidunt ante vitae massa. Praesent dapibus. Fusce wisi. Duis risus. Integer tempor.=
   fields:
     - name: "dns_server01"
       type: "IP"
