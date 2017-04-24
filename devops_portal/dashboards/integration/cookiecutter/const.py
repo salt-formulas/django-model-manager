@@ -457,10 +457,9 @@ STEP3_CTX = '''
   - initial: {{ tenant_network_subnet | subnet(6) }}
     name: openstack_gateway_node01_tenant_address
     type: IP
-  - initial: 10.167.6
-    help_text: "Vydefaultovat z tenant_subnetu"
+  - initial: {{ ".".join(tenant_network_subnet.split(".")[:3]) }}
     name: openstack_compute_rack01_tenant_subnet
-    type: IP
+    type: TEXT
   - initial: {{ control_network_subnet | subnet(80) }}
     name: openstack_proxy_address
     type: IP
@@ -529,8 +528,7 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(225) }}
     name: openstack_gateway_node02_address
     type: IP
-  - initial: 10.167.4
-    help_text: "Vydefaultovat z control subnetu"
+  - initial: {{ ".".join(control_network_subnet.split(".")[:3]) }}
     name: openstack_compute_rack01_sigle_subnet
     type: IP
   - initial: {{ control_network_subnet | subnet(52) }}
