@@ -329,14 +329,7 @@ class GeneratedAction(workflows.Action):
 
         rendered_context = self.render_context(context)
         for fieldset in rendered_context:
-            skip = False
-            if context and 'requires' in fieldset:
-                for req in fieldset['requires']:
-                    key = req.keys()[0]
-                    value = req.values()[0]
-                    if (not key in context) or (key in context and not value == context[key]):
-                        skip = True
-            if skip:
+            if not self.requirements_met(fieldset, context):
                 continue
 
             fieldset_name = fieldset.get('name')
@@ -349,15 +342,7 @@ class GeneratedAction(workflows.Action):
             )
             # iterate over fields dictionary
             for field in fields:
-                skip = False
-                if context and 'requires' in field:
-                    for req in field['requires']:
-                        key = req.keys()[0]
-                        value = req.values()[0]
-                        if (not key in context) or (key in context and not value == context[key]):
-                            skip = True
-
-                if skip:
+                if not self.requirements_met(field, context):
                     continue
 
                 # get field schema from FIELDS and set params
@@ -414,6 +399,27 @@ class GeneratedAction(workflows.Action):
         if not isinstance(ctx, list):
             return []
         return ctx
+
+    def requirements_met(self, item, context):
+        """Return True if all requirements for this field/fieldset are met
+        """
+        if context and 'requires' in item:
+            for req in item['requires']:
+                key = req.keys()[0]
+                value = req.values()[0]
+                if (not key in context) or (key in context and not value == context[key]):
+                    return False
+        if context and 'requires_or' in item:
+            score = 0
+            for req in item['requires_or']:
+                key = req.keys()[0]
+                value = req.values()[0]
+                if key in context and value == context[key]:
+                    score += 1
+            if score == 0:
+                return False
+
+        return True
 
 
 class GeneratedStep(workflows.Step):
