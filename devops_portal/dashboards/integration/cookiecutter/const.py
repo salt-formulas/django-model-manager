@@ -439,10 +439,6 @@ STEP3_CTX = '''
   - initial: {{ control_network_subnet | subnet(21) }}
     name: opencontrail_control_node01_address
     type: IP
-  - initial: bond0.${_param:tenant_vlan}
-    name: opencontrail_compute_iface
-    type: TEXT
-    hidden: True
   - initial: {{ control_network_subnet | subnet(20) }}
     name: opencontrail_control_address
     type: IP
