@@ -372,6 +372,8 @@ class GeneratedAction(workflows.Action):
                 field_kw['label'] = field.get('label', None) if 'label' in field else self.deslugify(field['name'])
                 field_kw['help_text'] = field.get('help_text', None)
                 field_kw['initial'] = field.get('initial', None)
+                if 'required' in field:
+                    field_kw['required'] = field['required']
                 # template specific params
                 if 'CHOICE' in field['type']:
                     field_kw['choices'] = field['choices']

@@ -327,7 +327,8 @@ STEP3_CTX = '''
     type: TEXT
   - help_text: Private key for Jenkins. It is generated automatically.
     hidden: true
-    initial: '"{{ private_key|indent(6) }}"'
+    initial: |-
+      {{ private_key|indent(6) }}
     name: cicd_private_key
     type: LONG_TEXT
   - help_text: Public key for Jenkins. It is generated automatically.
@@ -918,19 +919,5 @@ STEP3_CTX = '''
   name: stacklight
   requires:
   - stacklight_enabled: true
-'''
-
-STEP4_CTX = '''
-- name: "base"
-  label: "Base"
-  fields:
-    - name: "reclass_model_repository"
-      type: "TEXT"
-      help_text: "URL to empty repository where the generated model should be committed to."
-      required: False
-    - name: "email_address"
-      type: "TEXT"
-      help_text: "E-mail address where the generated model should be sent to."
-      required: False
 '''
 
