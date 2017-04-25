@@ -19,9 +19,9 @@ JENKINS_CLIENT = None
 if not JENKINS_CLIENT:
 
     try:
-        jenkins_url = settings.HORIZON_JENKINS_URL
-        jenkins_user = settings.HORIZON_JENKINS_USERNAME
-        jenkins_pass = settings.HORIZON_JENKINS_PASSWORD
+        jenkins_url = settings.JENKINS_API_URL
+        jenkins_user = settings.JENKINS_API_USERNAME
+        jenkins_pass = settings.JENKINS_API_PASSWORD
     except AttributeError as e:
         attr = e.message.split(' ')[-1]
         raise ImproperlyConfigured("The %s setting must not be empty." % attr)
