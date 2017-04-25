@@ -9,6 +9,11 @@ bcrypt==3.1.3
 cryptography==1.8.1
 python-jenkins==0.4.14
 docutils==0.13.1
+fasteners==0.14.1
+rfc3986==0.4.1
+requests==2.13.0
+keystoneauth1==2.19.0
+prettytable==0.7.2
 
 # XStatic fix
 XStatic-Magic-Search==0.2.5.1
