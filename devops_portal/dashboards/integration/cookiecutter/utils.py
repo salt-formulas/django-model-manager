@@ -403,8 +403,9 @@ class GeneratedAction(workflows.Action):
             env.filters[fltr[0]] = fltr[1]
         for fnc in CUSTOM_FUNCTIONS:
             env.globals[fnc[0]] = fnc[1]
-        tmpl = env.from_string(self.source_context)
-        parsed_source = env.parse(self.source_context)
+        source_context = self.source_context
+        tmpl = env.from_string(source_context)
+        parsed_source = env.parse(source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
             if key not in env.globals:
@@ -413,10 +414,10 @@ class GeneratedAction(workflows.Action):
         try:
             ctx = yaml.load(tmpl.render(context))
         except:
-            ctx = yaml.load(self.source_context)
-        if not isinstance(ctx, list):
-            return []
-        return ctx
+            ctx = yaml.load(source_context)
+        if not isinstance(ctx, dict):
+            return {}
+        return ctx[self.slug]
 
     def render_doc(self, value, header_level=None, report_level=None):
         settings_overrides = DOCUTILS_RENDERER_SETTINGS.copy()
@@ -492,8 +493,9 @@ class GeneratedStep(workflows.Step):
             env.filters[fltr[0]] = fltr[1]
         for fnc in CUSTOM_FUNCTIONS:
             env.globals[fnc[0]] = fnc[1]
-        tmpl = env.from_string(self.source_context)
-        parsed_source = env.parse(self.source_context)
+        source_context = self.source_context
+        tmpl = env.from_string(source_context)
+        parsed_source = env.parse(source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
             if key not in env.globals:
@@ -501,10 +503,10 @@ class GeneratedStep(workflows.Step):
         try:
             ctx = yaml.load(tmpl.render(context))
         except:
-            ctx = yaml.load(self.source_context)
-        if not isinstance(ctx, list):
-            return []
-        return ctx
+            ctx = yaml.load(source_context)
+        if not isinstance(ctx, dict):
+            return {}
+        return ctx[self.action_class.slug]
 
 
 class AsyncWorkflowView(workflows.WorkflowView):

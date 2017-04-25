@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from django import forms
 from horizon import workflows
 
-from .const import STEP1_CTX, STEP2_CTX, STEP3_CTX
+from .const import CTX
 from .utils import GeneratedAction
 
 
@@ -12,30 +12,33 @@ class GeneralParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = STEP1_CTX
+    source_context = CTX
 
     class Meta(object):
         name = _("General cluster paramaters")
+        slug = "general_params_action"
 
 
 class InfraParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = STEP2_CTX
+    source_context = CTX
 
     class Meta(object):
         name = _("Cluster infrastructure parameters")
+        slug = "infra_params_action"
 
 
 class ProductParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = STEP3_CTX
+    source_context = CTX
 
     class Meta(object):
         name = _("Service specific cluster parameters")
+        slug = "product_params_action"
 
 
 def should_use_block(value):
@@ -68,7 +71,7 @@ class CookiecutterContextAction(workflows.Action):
     def __init__(self, request, context, *args, **kwargs):
         super(CookiecutterContextAction, self).__init__(
             request, context, *args, **kwargs)
-        cookiecutter_ctx = {'default_context': {k: v for (k, v) in context.items() if v}}
+        cookiecutter_ctx = {'default_context': {k: v for (k, v) in context.items() if v is not None}}
         yaml.representer.BaseRepresenter.represent_scalar = my_represent_scalar
         self.fields['cookiecutter_context'].initial = yaml.safe_dump(cookiecutter_ctx, default_flow_style=False)
 

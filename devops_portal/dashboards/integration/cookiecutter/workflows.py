@@ -5,23 +5,23 @@ from horizon import workflows
 
 from .actions import (GeneralParamsAction, InfraParamsAction, ProductParamsAction,
     CookiecutterContextAction)
-from .const import STEP1_CTX, STEP2_CTX, STEP3_CTX
+from .const import CTX
 from .utils import GeneratedStep
 
 
 class GeneralParamsStep(GeneratedStep):
     action_class = GeneralParamsAction
-    source_context = STEP1_CTX
+    source_context = CTX
 
 
 class InfraParamsStep(GeneratedStep):
     action_class = InfraParamsAction
-    source_context = STEP2_CTX
+    source_context = CTX
 
 
 class ProductParamsStep(GeneratedStep):
     action_class = ProductParamsAction
-    source_context = STEP3_CTX
+    source_context = CTX
 
 
 class CookiecutterContextStep(workflows.Step):
