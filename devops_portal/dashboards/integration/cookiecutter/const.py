@@ -334,9 +334,18 @@ product_params_action:
       name: cicd_public_key
       type: LONG_TEXT
     - help_text: enable openldap authentication
-      initial: false
+      initial: true
       name: openldap_enabled
       type: BOOL
+    - initial: "${_param:cluster_name}"
+      name: openldap_organisation
+      type: TEXT
+    - initial: "dc=${_param:cluster_name},dc=local"
+      name: openldap_dn
+      type: TEXT
+    - initial: "${_param:cluster_public_host}"
+      name: openldap_domain
+      type: TEXT
     label: CI/CD product parameters
     name: cicd
     requires:
