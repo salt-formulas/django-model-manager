@@ -143,12 +143,15 @@ infra_params_action:
     fields:
       - name: "salt_master_address"
         type: "IP"
+        help_text: "IP address of salt master on control network"
         initial: "{{ control_network_subnet | subnet(90) }}"
       - name: "salt_master_management_address"
         type: "IP"
+        help_text: "IP address of salt master on management network"
         initial: "{{ deploy_network_subnet | subnet(90) }}"
       - name: "salt_master_hostname"
         type: "TEXT"
+        help_text: "hostname of salt master"
         initial: "cfg01"
       - initial: "{{ 32|generate_password }}"
         name: salt_api_password
@@ -168,6 +171,18 @@ infra_params_action:
         help_text: "Generated reclass model will be commited to this repo."
         requires: 
           - publication_method: "commit"
+      - name: "reclass_model_branch"
+        type: "TEXT"
+        initial: "master"
+        help_text: "Generated reclass model will be commited to this branch."
+        requires: 
+          - publication_method: "commit"
+      - name: "reclass_model_credentials"
+        type: "TEXT"
+        initial: github-credentials
+        help_text: "These credentials will be used to commit generated reclass."
+        requires: 
+          - publication_method: "commit"
   - name: "openstack_networking"
     label: "OpenStack Networking"
     doc: |
@@ -178,12 +193,14 @@ infra_params_action:
       - platform: "openstack_enabled"
     fields:
       - name: "openstack_network_engine"
+        help_text: "enables opencontrail sub-cluster if 'opencontrail'. Possible option is ovs and opencontrail"
         type: "TEXT"
         initial: "opencontrail"
         readonly: True
         requires:
           - opencontrail_enabled: True
       - name: "openstack_network_engine"
+        help_text: "Possible options are ovs and opencontrail, this parameter is set automatically."
         type: "TEXT"
         initial: "ovs"
         readonly: True
@@ -191,18 +208,24 @@ infra_params_action:
           - opencontrail_enabled: False
       - initial: vxlan
         name: openstack_ovs_encapsulation_type
+        help_text: "Encapsulation type is either vlan or vxlan."
         type: TEXT
         requires:
           - opencontrail_enabled: False
       - initial: False
         name: openstack_nfv_sriov_enabled
-        label: 'OpenStack NFV SRIOV enabled'
+        label: "OpenStack NFV SRIOV enabled"
+        help_text: "enable SRIOV"
         type: BOOL
       - initial: False
         name: openstack_nfv_dpdk_enabled
+        label: "OpenStack NFV DPDK enabled"
+        help_text: "enable DPDK"
         type: BOOL
       - initial: False
         name: openstack_nova_compute_nfv_req_enabled
+        label: "OpenStack Nova compute NFV req enabled"
+        help_text: "enable cpu pinning and hugepages without dpdk"
         type: BOOL
 product_params_action:
   - fields:
