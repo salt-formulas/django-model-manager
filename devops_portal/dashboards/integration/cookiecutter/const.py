@@ -8,6 +8,7 @@ general_params_action:
       ====
   
       This section covers basic deployment parameters. Supported deployment type is currently Physical for OpenStack. Kubernetes works with both Physical and Heat.
+
     fields:
       - name: "cluster_name"
         type: "TEXT"
@@ -23,7 +24,7 @@ general_params_action:
         initial: "${_param:openstack_proxy_address}"
       - name: "reclass_repository"
         type: "TEXT"
-        help_text: "URL to reclass metadata repository."
+        help_text: "URL from which salt master will fetch reclass metadata repository."
         initial: "https://github.com/Mirantis/mk-lab-salt-model.git"
       - name: "cookiecutter_template_url"
         type: "TEXT"
@@ -86,7 +87,12 @@ general_params_action:
       Networking
       ==========
   
-      This section covers basic Networking setup. Cookiecutter handles generic setup that includes dedicated management interface and two interfaces for workload. These two interfaces are in bond and have tagged subinterfaces for Control plane and Data plane traffic. Setup for NFV scenarios is not covered and needs to be done manually.
+      This section covers basic Networking setup. Cookiecutter handles generic setup that includes dedicated management interface and two interfaces for workload. These two interfaces are in bond and have tagged subinterfaces for Control plane (Control network/VLAN) and Data plane (Tenant network/VLAN) traffic. Setup for NFV scenarios is not covered and needs to be done manually.
+
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20network.png?raw=true
+        :scale: 100 %
+        :alt: Network diagram
+
     fields:
       - name: "dns_server01"
         type: "IP"
@@ -148,8 +154,26 @@ infra_params_action:
         name: salt_api_password
         type: TEXT
         hidden: True
+  - name: "publication"
+    label: "Publication Options"
+    fields:
+      - name: "email_address"
+        type: "TEXT"
+        help_text: "Generated reclass model will be sent to this address."
+        requires: 
+          - publication_method: "email"
+      - name: "reclass_model_url"
+        type: "TEXT"
+        initial: {{ reclass_repository }}
+        help_text: "Generated reclass model will be commited to this repo."
+        requires: 
+          - publication_method: "commit"
   - name: "openstack_networking"
     label: "OpenStack Networking"
+    doc: |
+      OpenStack Networking
+      ====================
+      NFV feature generation is experimental. nfv req enabled parameter is for enabling hugepages and cpu pinning without dpdk. 
     requires:
       - platform: "openstack_enabled"
     fields:
@@ -288,6 +312,16 @@ product_params_action:
       type: IP
     label: Infrastructure product parameters
     name: infra
+    doc: |
+      Infrastructure product parameters
+      =================================
+  
+      This section covers KVM nodes which hosts Control plane VMs. By default cookicutter uses three KVM nodes. These nodes can host OpenStack Control plane, CI/CD, StackLight or OpenContrail VMs based on previous selection.
+
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20kvm.png?raw=true
+        :scale: 100 %
+        :alt: KVM diagram
+
   - fields:
     - help_text: IP address of cicd control node01
       initial: '{{ control_network_subnet | subnet(91) }}'
@@ -348,6 +382,14 @@ product_params_action:
       type: TEXT
     label: CI/CD product parameters
     name: cicd
+    doc: |
+      CI/CD product parameters
+      =================================
+  
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20cicd.png?raw=true
+        :scale: 100 %
+        :alt: StackLight control diagram
+
     requires:
     - cicd_enabled: true
   - fields:
@@ -552,6 +594,22 @@ product_params_action:
       type: TEXT
     label: OpenContrail service parameters
     name: opencontrail
+    doc: |
+      OpenContrail service parameters
+      =================================
+  
+      OpenContrail Control plane runs on six VMs in total - three for Control and three for Analytics.
+
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20opencontrail.png?raw=true
+        :scale: 100 %
+        :alt: OpenContrail control diagram
+
+      OpenContrail kernel vRouter setup by cookiecutter:
+
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20compute.png?raw=true
+        :scale: 100 %
+        :alt: compute diagram
+
     requires:
     - opencontrail_enabled: true
   - fields:
@@ -567,10 +625,14 @@ product_params_action:
       initial: eth1
       name: gateway_primary_first_nic
       type: TEXT
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: Second NIC in OVS gateway bond
       initial: eth2
       name: gateway_primary_second_nic
       type: TEXT
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: compute hostname prefix
       initial: cmp
       name: openstack_compute_rack01_hostname
@@ -651,38 +713,56 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(224) }}'
       name: openstack_gateway_node01_address
       type: IP
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: hostname of gateway node01
       initial: gtw01
       name: openstack_gateway_node01_hostname
       type: TEXT
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: IP tenant address of gateway node01
       initial: '{{ tenant_network_subnet | subnet(6) }}'
       name: openstack_gateway_node01_tenant_address
       type: IP
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: IP address of gateway node02
       initial: '{{ control_network_subnet | subnet(225) }}'
       name: openstack_gateway_node02_address
       type: IP
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: hostname of gateway node02
       initial: gtw02
       name: openstack_gateway_node02_hostname
       type: TEXT
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: IP tenant address of gateway node02
       initial: '{{ tenant_network_subnet | subnet(7) }}'
       name: openstack_gateway_node02_tenant_address
       type: IP
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: IP address of gateway node03
       initial: '{{ control_network_subnet | subnet(226) }}'
       name: openstack_gateway_node03_address
       type: IP
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: hostname of gateway node03
       initial: gtw03
       name: openstack_gateway_node03_hostname
       type: TEXT
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: IP tenant address of gateway node03
       initial: '{{ tenant_network_subnet | subnet(8) }}'
       name: openstack_gateway_node03_tenant_address
       type: IP
+      requires:
+        - openstack_network_engine: 'ovs'
     - help_text: IP VIP address of message queue cluster on control network
       initial: '{{ control_network_subnet | subnet(40) }}'
       name: openstack_message_queue_address
@@ -822,6 +902,14 @@ product_params_action:
       type: TEXT
     label: OpenStack product parameters
     name: openstack
+    doc: |
+      OpenStack product parameters
+      =================================
+  
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20openstack.png?raw=true
+        :scale: 100 %
+        :alt: OpenStack control diagram
+
     requires:
     - platform: openstack_enabled
   - fields:
@@ -923,6 +1011,14 @@ product_params_action:
       type: TEXT
     label: StackLight product parameters
     name: stacklight
+    doc: |
+      StackLight product parameters
+      =================================
+  
+      .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20stacklight.png?raw=true
+        :scale: 100 %
+        :alt: StackLight control diagram
+
     requires:
     - stacklight_enabled: true
 '''
