@@ -5,11 +5,13 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 from django import forms
 from django import http
+from django import shortcuts
 from django import template
 from django.conf import settings
 from django.utils.encoding import force_text, force_bytes
 from django.utils.translation import ugettext_lazy as _
 from docutils.core import publish_parts
+from horizon import messages
 from horizon import workflows
 from ipaddress import IPv4Network
 from jinja2 import Environment, meta, exceptions
@@ -473,9 +475,6 @@ class GeneratedStep(workflows.Step):
             if field['name'] not in contributes:
                 contributes.append(field['name'])
         self.contributes = tuple(contributes)
-
-    #def _verify_contributions(self, context):
-    #    return True
 
     def contribute(self, data, context):
         super(GeneratedStep, self).contribute(data, context)

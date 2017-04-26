@@ -1,3 +1,5 @@
+from devops_portal.api.jenkins import jenkins_client
+from django.conf import settings
 from django.utils.encoding import iri_to_uri
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _
@@ -26,6 +28,7 @@ class ProductParamsStep(GeneratedStep):
 
 class CookiecutterContextStep(workflows.Step):
     action_class = CookiecutterContextAction
+    contributes = ('cookiecutter_context',)
 
 
 class CreateCookiecutterContext(workflows.Workflow):
@@ -36,6 +39,17 @@ class CreateCookiecutterContext(workflows.Workflow):
     finalize_button_name = _("Confirm")
     success_message = _('Your request was successfully submitted.')
     failure_message = _('Your request could not be submitted, please try again later.')
+
+    def __init__(self, *args, **kwargs):
+        super(CreateCookiecutterContext, self).__init__(*args, **kwargs)
+        # contribute choice field options to workflow context as Bools
+        context = self.context
+        for step in self.steps:
+            choice_fields = [obj for obj in step.action.fields.values() if hasattr(obj, 'choices')]
+            choices = [chc[0] for fld in choice_fields for chc in fld.choices]
+            for choice in choices:
+                if choice not in context.keys():
+                    context[choice] = True if choice in context.values() else False
 
     def get_success_url(self):
         request = self.request
@@ -55,5 +69,18 @@ class CreateCookiecutterContext(workflows.Workflow):
         """Handles any final processing for this workflow. Should return a
         boolean value indicating success.
         """
-        return True
+        job_name = getattr(settings, 'COOKIECUTTER_JENKINS_JOB')
+        job_ctx = {
+            'COOKIECUTTER_TEMPLATE_BRANCH': 'master',
+            'COOKIECUTTER_TEMPLATE_CONTEXT': context.get('cookiecutter_context', {}),
+            'COOKIECUTTER_TEMPLATE_CREDENTIALS': 'github-credentials',
+            'COOKIECUTTER_TEMPLATE_PATH': './',
+            'COOKIECUTTER_TEMPLATE_URL': 'git@github.com:Mirantis/mk2x-cookiecutter-reclass-model.git',
+            'EMAIL_ADDRESS': 'master',
+            'RECLASS_MODEL_BRANCH': 'master',
+            'RECLASS_MODEL_CREDENTIALS': 'gerrit',
+            'RECLASS_MODEL_URL': ''
+        }
+
+        return jenkins_client.build_wf(job_name, job_ctx)
 
