@@ -4,13 +4,20 @@ import xml.etree.ElementTree as ET
 
 import jenkins
 import json
+import logging
+import requests
+import urlparse
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request
 
+LOG = logging.getLogger(__name__)
+
 # Requires Pipeline Stage View plugin
+BUILD_WF = '%(folder_url)sjob/%(short_name)s/build'
+BUILD_WITH_PARAMS_WF = '%(folder_url)sjob/%(short_name)s/buildWithParameters'
 WF_NODE_LOG = '%(folder_url)sjob/%(short_name)s/%(number)d/execution/node/%(node)s/wfapi/log'
 WF_BUILD_INFO = '%(folder_url)sjob/%(short_name)s/%(number)d/wfapi/describe'
 
@@ -116,6 +123,29 @@ class JenkinsClientExtension(object):
             raise jenkins.JenkinsException('job[%s] number[%d] does not exist'
                                            % (name, number))
 
+    def build_wf(self, name, params):
+        '''Get build log for execution node. Requires Pipeline Stage View plugin.
+
+        :param name: Job name, ``str``
+        :param params: Job parameters, ``dict``
+        :returns: True if API post succeeded ``bool``
+        '''
+        base_path = getattr(settings, 'JENKINS_API_URL')
+        folder_url, short_name = self.client._get_job_folder(name)
+        ext_path = "%(folder_url)sjob/%(short_name)s/buildWithParameters" % {'folder_url': folder_url, 'short_name': short_name}
+        url = urlparse.urljoin(base_path, ext_path)
+        headers = {
+            'content-type': 'application/x-www-form-urlencoded',
+            'Authorization': self.client.auth
+        }
+        try:
+            response = requests.post(url, headers=headers, data=params)
+        except Exception as e:
+            msg = "Build WF request failed: %s" % repr(e)
+            LOG.exception(msg)
+            return False
+
+        return True
 
 extension = JenkinsClientExtension()
 extension.client = JENKINS_CLIENT

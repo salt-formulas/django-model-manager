@@ -76,11 +76,14 @@ class CreateCookiecutterContext(workflows.Workflow):
             'COOKIECUTTER_TEMPLATE_CREDENTIALS': 'github-credentials',
             'COOKIECUTTER_TEMPLATE_PATH': './',
             'COOKIECUTTER_TEMPLATE_URL': 'git@github.com:Mirantis/mk2x-cookiecutter-reclass-model.git',
-            'EMAIL_ADDRESS': 'master',
+            'EMAIL_ADDRESS': '',
             'RECLASS_MODEL_BRANCH': 'master',
             'RECLASS_MODEL_CREDENTIALS': 'gerrit',
             'RECLASS_MODEL_URL': ''
         }
+        for param in job_ctx:
+            if param.lower() in context and context.get(param.lower(), None):
+                job_ctx[param] = context[param.lower()]
 
         return jenkins_client.build_wf(job_name, job_ctx)
 
