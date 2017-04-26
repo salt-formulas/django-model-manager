@@ -39,6 +39,7 @@ class CreateCookiecutterContext(workflows.Workflow):
     finalize_button_name = _("Confirm")
     success_message = _('Your request was successfully submitted.')
     failure_message = _('Your request could not be submitted, please try again later.')
+    success_url = "horizon:integration:cookiecutter:index"
 
     def __init__(self, *args, **kwargs):
         super(CreateCookiecutterContext, self).__init__(*args, **kwargs)
@@ -50,20 +51,6 @@ class CreateCookiecutterContext(workflows.Workflow):
             for choice in choices:
                 if choice not in context.keys():
                     context[choice] = True if choice in context.values() else False
-
-    def get_success_url(self):
-        request = self.request
-        success_url = None
-
-        if request.method in ("POST", "PUT"):
-            referrer = request.META.get('HTTP_REFERER')
-            if referrer and is_safe_url(referrer, request.get_host()):
-                success_url = referrer
-
-        if not success_url:
-            success_url = iri_to_uri(request.get_full_path())
-
-        return success_url
 
     def handle(self, request, context):
         """Handles any final processing for this workflow. Should return a
