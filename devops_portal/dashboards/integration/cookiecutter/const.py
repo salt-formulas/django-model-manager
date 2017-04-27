@@ -103,20 +103,24 @@ general_params_action:
         help_text: "IP address of dns01 server"
         initial: "8.8.8.8"
         label: "DNS Server 01"
+        width: half
       - name: "dns_server02"
         type: "IP"
         help_text: "IP address of dns02 server"
         initial: "8.8.4.4"
         label: "DNS Server 02"
+        width: half
       - name: "deploy_network_subnet"
         type: IP
         help_text: "IP address of deploy network with network mask"
         initial: "10.0.0.0/24"
         mask: True
+        width: half
       - name: "deploy_network_gateway"
         type: IP
         help_text: "IP gateway address of deploy network"
         initial: "10.0.0.1"
+        width: half
       - name: "control_network_subnet"
         type: IP
         help_text: "IP address of control network with network mask"
@@ -127,20 +131,24 @@ general_params_action:
         help_text: "IP address of tenant network with network mask"
         initial: "10.0.2.0/24"
         mask: True
+        width: half
       - name: "tenant_network_gateway"
         type: IP
         help_text: "IP gateway address of tenant network"
         initial: "10.0.2.1"
+        width: half
       - name: "control_vlan"
         type: TEXT
         help_text: "Contrail plane vlan ID"
         initial: "10"
         label: "Control VLAN"
+        width: half
       - name: "tenant_vlan"
         type: TEXT
         help_text: "Data plane vlan ID"
         initial: "20"
         label: "Tenant VLAN"
+        width: half
 infra_params_action:
   - name: "salt"
     label: "Salt Master"
@@ -231,6 +239,15 @@ infra_params_action:
         label: "OpenStack Nova compute NFV req enabled"
         help_text: "enable cpu pinning and hugepages without dpdk"
         type: BOOL
+  - name: "cicd_params"
+    label: "CI/CD"
+    requires:
+      - cicd_enabled: True
+    fields:
+    - help_text: enable openldap authentication
+      initial: true
+      name: openldap_enabled
+      type: BOOL
 product_params_action:
   - fields:
     - help_text: IP mask of control network
@@ -243,9 +260,9 @@ product_params_action:
       initial: '{{ deploy_network_subnet | netmask }}'
       name: deploy_network_netmask
       type: IP
-    - help_text: NIC that is used for pxe of KVM servers
-      initial: eth0
-      name: infra_deploy_nic
+    - help_text: hostname of a KVM node01
+      initial: kvm01
+      name: infra_kvm01_hostname
       requires:
       - deployment_type: physical
       type: TEXT
@@ -255,15 +272,17 @@ product_params_action:
       requires:
       - deployment_type: physical
       type: IP
+      width: half
     - help_text: IP address of a KVM node01 on management network
       initial: '{{ deploy_network_subnet | subnet(241) }}'
       name: infra_kvm01_deploy_address
       requires:
       - deployment_type: physical
       type: IP
-    - help_text: hostname of a KVM node01
-      initial: kvm01
-      name: infra_kvm01_hostname
+      width: half
+    - help_text: hostname of a KVM node02
+      initial: kvm02
+      name: infra_kvm02_hostname
       requires:
       - deployment_type: physical
       type: TEXT
@@ -273,15 +292,17 @@ product_params_action:
       requires:
       - deployment_type: physical
       type: IP
+      width: half
     - help_text: IP address of KVM node02 on management network
       initial: '{{ deploy_network_subnet | subnet(242) }}'
       name: infra_kvm02_deploy_address
       requires:
       - deployment_type: physical
       type: IP
-    - help_text: hostname of a KVM node02
-      initial: kvm02
-      name: infra_kvm02_hostname
+      width: half
+    - help_text: hostname of a KVM node03
+      initial: kvm03
+      name: infra_kvm03_hostname
       requires:
       - deployment_type: physical
       type: TEXT
@@ -291,36 +312,40 @@ product_params_action:
       requires:
       - deployment_type: physical
       type: IP
+      width: half
     - help_text: IP address of KVM node03 on management network
       initial: '{{ deploy_network_subnet | subnet(243) }}'
       name: infra_kvm03_deploy_address
       requires:
       - deployment_type: physical
       type: IP
-    - help_text: hostname of a KVM node03
-      initial: kvm03
-      name: infra_kvm03_hostname
-      requires:
-      - deployment_type: physical
-      type: TEXT
+      width: half
     - help_text: IP VIP address of KVM cluster
       initial: '{{ control_network_subnet | subnet(240) }}'
       name: infra_kvm_vip_address
       requires:
       - deployment_type: physical
       type: IP
+    - help_text: NIC that is used for pxe of KVM servers
+      initial: eth0
+      name: infra_deploy_nic
+      requires:
+      - deployment_type: physical
+      type: TEXT
     - help_text: First NIC in KVM bond
       initial: eth1
       name: infra_primary_first_nic
       requires:
       - deployment_type: physical
       type: TEXT
+      width: half
     - help_text: Second NIC in KVM bond
       initial: eth2
       name: infra_primary_second_nic
       requires:
       - deployment_type: physical
       type: TEXT
+      width: half
     - help_text: number of compute nodes to be generated
       initial: '100'
       name: openstack_compute_count
@@ -346,7 +371,8 @@ product_params_action:
       This section covers KVM nodes which hosts Control plane VMs. By default cookicutter uses three KVM nodes. These nodes can host OpenStack Control plane, CI/CD, StackLight or OpenContrail VMs based on previous selection.
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20kvm.png?raw=true
-        :scale: 100 %
+        :width: 50 %
+        :align: center
         :alt: KVM diagram
 
   - fields:
@@ -354,35 +380,42 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(91) }}'
       name: cicd_control_node01_address
       type: IP
+      width: half
     - help_text: hostname of cicd control node01
       initial: cid01
       name: cicd_control_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of cicd control node02
       initial: '{{ control_network_subnet | subnet(92) }}'
       name: cicd_control_node02_address
       type: IP
+      width: half
     - help_text: hostname of cicd control node02
-      hidden: true
       initial: cid02
       name: cicd_control_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of cicd control node03
       initial: '{{ control_network_subnet | subnet(93) }}'
       name: cicd_control_node03_address
       type: IP
+      width: half
     - help_text: hostname of cicd control node03
       initial: cid03
       name: cicd_control_node03_hostname
       type: TEXT
+      width: half
     - help_text: IP VIP address of cicd control cluster
       initial: '{{ control_network_subnet | subnet(90) }}'
       name: cicd_control_vip_address
       type: IP
+      width: half
     - help_text: hostname of cicd control cluster
       initial: cid
       name: cicd_control_vip_hostname
       type: TEXT
+      width: half
     - help_text: Private key for Jenkins. It is generated automatically.
       hidden: true
       initial: |-
@@ -394,19 +427,21 @@ product_params_action:
       initial: '{{ public_key }}'
       name: cicd_public_key
       type: LONG_TEXT
-    - help_text: enable openldap authentication
-      initial: true
-      name: openldap_enabled
-      type: BOOL
     - initial: "${_param:cluster_name}"
       name: openldap_organisation
       type: TEXT
+      requires:
+      - openldap_enabled: True 
     - initial: "dc=${_param:cluster_name},dc=local"
       name: openldap_dn
       type: TEXT
+      requires:
+      - openldap_enabled: True 
     - initial: "${_param:cluster_public_host}"
       name: openldap_domain
       type: TEXT
+      requires:
+      - openldap_enabled: True 
     label: CI/CD product parameters
     name: cicd
     doc: |
@@ -414,7 +449,8 @@ product_params_action:
       =================================
   
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20cicd.png?raw=true
-        :scale: 100 %
+        :width: 50 %
+        :align: center
         :alt: StackLight control diagram
 
     requires:
@@ -468,14 +504,17 @@ product_params_action:
       initial: 10.167.2.101
       name: kubernetes_compute_node01_single_address
       type: IP
+      width: half
     - help_text: IP address of kubernetes compute node02
       initial: 172.17.10.106
       name: kubernetes_compute_node02_address
       type: IP
+      width: half
     - help_text: ''
       initial: '{{ deploy_network_subnet | subnet(102) }}'
       name: kubernetes_compute_node02_deploy_address
       type: IP
+      width: half
     - help_text: hostname of kubernetes compute node02
       initial: cmp02
       name: kubernetes_compute_node02_hostname
@@ -492,10 +531,12 @@ product_params_action:
       initial: 172.16.10.107
       name: kubernetes_control_node01_address
       type: IP
+      width: half
     - help_text: ''
       initial: '{{ deploy_network_subnet | subnet(11) }}'
       name: kubernetes_control_node01_deploy_address
       type: IP
+      width: half
     - help_text: hostname of kubernetes control node01
       initial: ctl01
       name: kubernetes_control_node01_hostname
@@ -504,10 +545,12 @@ product_params_action:
       initial: 172.16.10.108
       name: kubernetes_control_node02_address
       type: IP
+      width: half
     - help_text: ''
       initial: '{{ deploy_network_subnet | subnet(12) }}'
       name: kubernetes_control_node02_deploy_address
       type: IP
+      width: half
     - help_text: hostname of kubernetes control node02
       initial: ctl02
       name: kubernetes_control_node02_hostname
@@ -516,10 +559,12 @@ product_params_action:
       initial: 172.16.10.109
       name: kubernetes_control_node03_address
       type: IP
+      width: half
     - help_text: ''
       initial: '{{ deploy_network_subnet | subnet(13) }}'
       name: kubernetes_control_node03_deploy_address
       type: IP
+      width: half
     - help_text: hostname of kubernetes control node03
       initial: ctl03
       name: kubernetes_control_node03_hostname
@@ -537,34 +582,42 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(30) }}'
       name: opencontrail_analytics_address
       type: IP
+      width: half
     - help_text: ''
       initial: nal
       name: opencontrail_analytics_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a opencontrail analytics node01 on control network
       initial: '{{ control_network_subnet | subnet(31) }}'
       name: opencontrail_analytics_node01_address
       type: IP
+      width: half
     - help_text: hostname of a opencontrail analytics node01 on control network
       initial: nal01
       name: opencontrail_analytics_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a opencontrail analytics node02 on control network
       initial: '{{ control_network_subnet | subnet(32) }}'
       name: opencontrail_analytics_node02_address
       type: IP
+      width: half
     - help_text: hostname of a opencontrail analytics node02 on control network
       initial: nal02
       name: opencontrail_analytics_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a opencontrail analytics node03 on control network
       initial: '{{ control_network_subnet | subnet(33) }}'
       name: opencontrail_analytics_node03_address
       type: IP
+      width: half
     - help_text: hostname of a opencontrail analytics node03 on control network
       initial: nal03
       name: opencontrail_analytics_node03_hostname
       type: TEXT
+      width: half
     - help_text: mask that is used in opencontrail. Automatically taken from tenant
         network.
       hidden: true
@@ -575,50 +628,62 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(20) }}'
       name: opencontrail_control_address
       type: IP
+      width: half
     - help_text: hostname of opencontrail control cluster
       initial: ntw
       name: opencontrail_control_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a opencontrail control node01 on control network
       initial: '{{ control_network_subnet | subnet(21) }}'
       name: opencontrail_control_node01_address
       type: IP
+      width: half
     - help_text: hostname of a opencontrail control node01 on control network
       initial: ntw01
       name: opencontrail_control_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a opencontrail control node02 on control network
       initial: '{{ control_network_subnet | subnet(22) }}'
       name: opencontrail_control_node02_address
       type: IP
+      width: half
     - help_text: hostname of a opencontrail control node02 on control network
       initial: ntw02
       name: opencontrail_control_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a opencontrail control node03 on control network
       initial: '{{ control_network_subnet | subnet(23) }}'
       name: opencontrail_control_node03_address
       type: IP
+      width: half
     - help_text: hostname of a opencontrail control node03 on control network
       initial: ntw03
       name: opencontrail_control_node03_hostname
       type: TEXT
+      width: half
     - help_text: IP address of opencontrail gateway 01 router for BGP
       initial: '{{ control_network_subnet | subnet(100) }}'
       name: opencontrail_router01_address
       type: IP
+      width: half
     - help_text: hostname of opencontrail gateway 01 router
       initial: rtr01
       name: opencontrail_router01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of opencontrail gateway 02 router for BGP
       initial: '{{ control_network_subnet | subnet(101) }}'
       name: opencontrail_router02_address
       type: IP
+      width: half
     - help_text: hostname of opencontrail gateway 02 router
       initial: rtr02
       name: opencontrail_router02_hostname
       type: TEXT
+      width: half
     label: OpenContrail service parameters
     name: opencontrail
     doc: |
@@ -628,13 +693,15 @@ product_params_action:
       OpenContrail Control plane runs on six VMs in total - three for Control and three for Analytics.
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20opencontrail.png?raw=true
-        :scale: 100 %
+        :width: 50 %
+        :align: center
         :alt: OpenContrail control diagram
 
       OpenContrail kernel vRouter setup by cookiecutter:
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20compute.png?raw=true
-        :scale: 100 %
+        :width: 50 %
+        :align: center
         :alt: compute diagram
 
     requires:
@@ -644,20 +711,24 @@ product_params_action:
       initial: eth1
       name: compute_primary_first_nic
       type: TEXT
+      width: half
     - help_text: Second NIC in OpenStack compute bond
       initial: eth2
       name: compute_primary_second_nic
       type: TEXT
+      width: half
     - help_text: First NIC in OVS gateway bond
       initial: eth1
       name: gateway_primary_first_nic
       type: TEXT
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: Second NIC in OVS gateway bond
       initial: eth2
       name: gateway_primary_second_nic
       type: TEXT
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: compute hostname prefix
@@ -668,102 +739,125 @@ product_params_action:
       initial: '{{ ".".join(control_network_subnet.split(".")[:3]) }}'
       name: openstack_compute_rack01_sigle_subnet
       type: IP
+      width: half
     - help_text: data plane network prefix for compute nodes
       initial: '{{ ".".join(tenant_network_subnet.split(".")[:3]) }}'
       name: openstack_compute_rack01_tenant_subnet
       type: TEXT
+      width: half
     - help_text: IP VIP address of control cluster on control network
       initial: '{{ control_network_subnet | subnet(10) }}'
       name: openstack_control_address
       type: IP
+      width: half
     - help_text: hostname of VIP control cluster
       initial: ctl
       name: openstack_control_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a control node01 on control network
       initial: '{{ control_network_subnet | subnet(11) }}'
       name: openstack_control_node01_address
       type: IP
+      width: half
     - help_text: hostname of a control node01
       initial: ctl01
       name: openstack_control_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a control node02 on control network
       initial: '{{ control_network_subnet | subnet(12) }}'
       name: openstack_control_node02_address
       type: IP
+      width: half
     - help_text: hostname of a control node02
       initial: ctl02
       name: openstack_control_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a control node03 on control network
       initial: '{{ control_network_subnet | subnet(13) }}'
       name: openstack_control_node03_address
       type: IP
+      width: half
     - help_text: hostname of a control node03
       initial: ctl03
       name: openstack_control_node03_hostname
       type: TEXT
+      width: half
     - help_text: IP VIP address of database cluster on control network
       initial: '{{ control_network_subnet | subnet(50) }}'
       name: openstack_database_address
       type: IP
+      width: half
     - help_text: hostname of VIP database cluster
       initial: dbs
       name: openstack_database_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a database node01 on control network
       initial: '{{ control_network_subnet | subnet(51) }}'
       name: openstack_database_node01_address
       type: IP
+      width: half
     - help_text: hostname of a database node01
       initial: dbs01
       name: openstack_database_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a database node02 on control network
       initial: '{{ control_network_subnet | subnet(52) }}'
       name: openstack_database_node02_address
       type: IP
+      width: half
     - help_text: hostname of a database node02
       initial: dbs02
       name: openstack_database_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a database node03 on control network
       initial: '{{ control_network_subnet | subnet(53) }}'
       name: openstack_database_node03_address
       type: IP
+      width: half
     - help_text: hostname of a database node03
       initial: dbs03
       name: openstack_database_node03_hostname
       type: TEXT
+      width: half
     - help_text: IP address of gateway node01
       initial: '{{ control_network_subnet | subnet(224) }}'
       name: openstack_gateway_node01_address
       type: IP
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: hostname of gateway node01
       initial: gtw01
       name: openstack_gateway_node01_hostname
       type: TEXT
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: IP tenant address of gateway node01
       initial: '{{ tenant_network_subnet | subnet(6) }}'
       name: openstack_gateway_node01_tenant_address
       type: IP
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: IP address of gateway node02
       initial: '{{ control_network_subnet | subnet(225) }}'
       name: openstack_gateway_node02_address
       type: IP
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: hostname of gateway node02
       initial: gtw02
       name: openstack_gateway_node02_hostname
       type: TEXT
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: IP tenant address of gateway node02
@@ -776,12 +870,14 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(226) }}'
       name: openstack_gateway_node03_address
       type: IP
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: hostname of gateway node03
       initial: gtw03
       name: openstack_gateway_node03_hostname
       type: TEXT
+      width: half
       requires:
         - openstack_network_engine: 'ovs'
     - help_text: IP tenant address of gateway node03
@@ -794,34 +890,42 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(40) }}'
       name: openstack_message_queue_address
       type: IP
+      width: half
     - help_text: hostname of VIP message queue cluster
       initial: msg
       name: openstack_message_queue_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a message queue node01 on control network
       initial: '{{ control_network_subnet | subnet(41) }}'
       name: openstack_message_queue_node01_address
       type: IP
+      width: half
     - help_text: hostname of a message queue node01
       initial: msg01
       name: openstack_message_queue_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a message queue node02 on control network
       initial: '{{ control_network_subnet | subnet(42) }}'
       name: openstack_message_queue_node02_address
       type: IP
+      width: half
     - help_text: hostname of a message queue node02
       initial: msg02
       name: openstack_message_queue_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a message queue node03 on control network
       initial: '{{ control_network_subnet | subnet(43) }}'
       name: openstack_message_queue_node03_address
       type: IP
+      width: half
     - help_text: hostname of a message queue node03
       initial: msg03
       name: openstack_message_queue_node03_hostname
       type: TEXT
+      width: half
     - help_text: Tag of the physical network the sriov interface belongs to
       initial: physnet1
       name: openstack_nfv_sriov_network
@@ -871,58 +975,72 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(80) }}'
       name: openstack_proxy_address
       type: IP
+      width: half
     - help_text: hostname of VIP proxy cluster
       initial: prx
       name: openstack_proxy_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a proxy node01 on control network
       initial: '{{ control_network_subnet | subnet(81) }}'
       name: openstack_proxy_node01_address
       type: IP
+      width: half
     - help_text: hostname of a proxy node01
       initial: prx01
       name: openstack_proxy_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a proxy node02 on control network
       initial: '{{ control_network_subnet | subnet(82) }}'
       name: openstack_proxy_node02_address
       type: IP
+      width: half
     - help_text: hostname of a proxy node02
       initial: prx02
       name: openstack_proxy_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP VIP address of telemetry cluster on control network
       initial: '{{ control_network_subnet | subnet(75) }}'
       name: openstack_telemetry_address
       type: IP
+      width: half
     - help_text: hostname of VIP telemetry cluster
       initial: mdb
       name: openstack_telemetry_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a telemetry node01 on control network
       initial: '{{ control_network_subnet | subnet(76) }}'
       name: openstack_telemetry_node01_address
       type: IP
+      width: half
     - help_text: hostname of a telemetry node01
       initial: mdb01
       name: openstack_telemetry_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a telemetry node02 on control network
       initial: '{{ control_network_subnet | subnet(77) }}'
       name: openstack_telemetry_node02_address
       type: IP
+      width: half
     - help_text: hostname of a telemetry node02
       initial: mdb02
       name: openstack_telemetry_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of a telemetry node03 on control network
       initial: '{{ control_network_subnet | subnet(78) }}'
       name: openstack_telemetry_node03_address
       type: IP
+      width: half
     - help_text: hostname of a telemetry node03
       initial: mdb03
       name: openstack_telemetry_node03_hostname
       type: TEXT
+      width: half
     - help_text: version of OpenStack
       initial: mitaka
       name: openstack_version
@@ -934,7 +1052,8 @@ product_params_action:
       =================================
   
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20openstack.png?raw=true
-        :scale: 100 %
+        :width: 50 %
+        :align: center
         :alt: OpenStack control diagram
 
     requires:
@@ -944,98 +1063,122 @@ product_params_action:
       initial: '{{ control_network_subnet | subnet(60) }}'
       name: stacklight_log_address
       type: IP
+      width: half
     - help_text: hostname of stacklight logging cluster
       initial: log
       name: stacklight_log_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight logging node01
       initial: '{{ control_network_subnet | subnet(61) }}'
       name: stacklight_log_node01_address
       type: IP
+      width: half
     - help_text: hostname of stacklight logging node01
       initial: log01
       name: stacklight_log_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight logging node02
       initial: '{{ control_network_subnet | subnet(62) }}'
       name: stacklight_log_node02_address
       type: IP
+      width: half
     - help_text: hostname of stacklight logging node02
       initial: log02
       name: stacklight_log_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight logging node03
       initial: '{{ control_network_subnet | subnet(63) }}'
       name: stacklight_log_node03_address
       type: IP
+      width: half
     - help_text: hostname of stacklight logging node03
       initial: log03
       name: stacklight_log_node03_hostname
       type: TEXT
+      width: half
     - help_text: IP VIP address of stacklight monitoring cluster
       initial: '{{ control_network_subnet | subnet(70) }}'
       name: stacklight_monitor_address
       type: IP
+      width: half
     - help_text: hostname of stacklight monitoring cluster
       initial: mon
       name: stacklight_monitor_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight monitoring node01
       initial: '{{ control_network_subnet | subnet(71) }}'
       name: stacklight_monitor_node01_address
       type: IP
+      width: half
     - help_text: hostname of stacklight monitoring node01
       initial: mon01
       name: stacklight_monitor_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight monitoring node02
       initial: '{{ control_network_subnet | subnet(72) }}'
       name: stacklight_monitor_node02_address
       type: IP
+      width: half
     - help_text: hostname of stacklight monitoring node02
       initial: mon02
       name: stacklight_monitor_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight monitoring node03
       initial: '{{ control_network_subnet | subnet(73) }}'
       name: stacklight_monitor_node03_address
       type: IP
+      width: half
     - help_text: hostname of stacklight monitoring node03
       initial: mon03
       name: stacklight_monitor_node03_hostname
       type: TEXT
+      width: half
     - help_text: IP VIP address of stacklight telemetry cluster
       initial: '{{ control_network_subnet | subnet(85) }}'
       name: stacklight_telemetry_address
       type: IP
+      width: half
     - help_text: hostname of stacklight telemetry cluster
       initial: mtr
       name: stacklight_telemetry_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight telemetry node01
       initial: '{{ control_network_subnet | subnet(86) }}'
       name: stacklight_telemetry_node01_address
       type: IP
+      width: half
     - help_text: hostname of stacklight telemetry node01
       initial: mtr01
       name: stacklight_telemetry_node01_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight telemetry node02
       initial: '{{ control_network_subnet | subnet(87) }}'
       name: stacklight_telemetry_node02_address
       type: IP
+      width: half
     - help_text: hostname of stacklight telemetry node02
       initial: mtr02
       name: stacklight_telemetry_node02_hostname
       type: TEXT
+      width: half
     - help_text: IP address of stacklight telemetry node03
       initial: '{{ control_network_subnet | subnet(88) }}'
       name: stacklight_telemetry_node03_address
       type: IP
+      width: half
     - help_text: hostname of stacklight telemetry node03
       initial: mtr03
       name: stacklight_telemetry_node03_hostname
       type: TEXT
+      width: half
     label: StackLight product parameters
     name: stacklight
     doc: |
@@ -1043,7 +1186,8 @@ product_params_action:
       =================================
   
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20stacklight.png?raw=true
-        :scale: 100 %
+        :width: 50 %
+        :align: center
         :alt: StackLight control diagram
 
     requires:
