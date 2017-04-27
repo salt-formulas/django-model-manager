@@ -87,10 +87,10 @@ general_params_action:
       Networking
       ==========
   
-      This section covers basic Networking setup. Cookiecutter handles generic setup that includes dedicated management interface and two interfaces for workload. These two interfaces are in bond and have tagged subinterfaces for Control plane (Control network/VLAN) and Data plane (Tenant network/VLAN) traffic. Setup for NFV scenarios is not covered and needs to be done manually.
+      This section covers basic Networking setup. Cookiecutter handles generic setup that includes dedicated management interface and two interfaces for workload. These two interfaces are in bond and have tagged subinterfaces for Control plane (Control network/VLAN) and Data plane (Tenant network/VLAN) traffic. The pxe interface is not managed and it is leaved to default DHCP from installation. Control plane and Data plane has static assign. Setup for NFV scenarios is not covered and needs to be done manually.
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20network.png?raw=true
-        :scale: 100 %
+        :width: 80 %
         :alt: Network diagram
 
     fields:
