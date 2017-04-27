@@ -22,44 +22,47 @@ class Fieldset(forms.Field):
         super(Fieldset, self).__init__(*args, **kwargs)
 
 
-class CharField(forms.CharField):
+class FieldMixin(object):
+    """
+    Mixin extending custom fields
+    """
+    def __init__(self, *args, **kwargs):
+        if 'width' in kwargs:
+            width = kwargs.pop('width')
+            self.width = width if width in ['full', 'half'] else 'full'
+        if 'fieldset' in kwargs:
+            self.fieldset = kwargs.pop('fieldset')
+        super(FieldMixin, self).__init__(*args, **kwargs)
+
+
+class CharField(FieldMixin, forms.CharField):
     """
     Custom CharField with fieldset attribute
     """
-    def __init__(self, *args, **kwargs):
-        if kwargs.get("fieldset", None):
-            self.fieldset = kwargs.pop('fieldset')
-        super(CharField, self).__init__(*args, **kwargs)
+    pass
 
 
-class BooleanField(forms.BooleanField):
+class BooleanField(FieldMixin, forms.BooleanField):
     """
     Custom BooleanField with fieldset attribute
     """
-    def __init__(self, *args, **kwargs):
-        if kwargs.get("fieldset", None):
-            self.fieldset = kwargs.pop('fieldset')
-        super(BooleanField, self).__init__(*args, **kwargs)
+    pass
 
 
-class IPField(horizon_forms.IPField):
+class IPField(FieldMixin, horizon_forms.IPField):
     """
     Custom IPField with fieldset attribute
     """
-    def __init__(self, *args, **kwargs):
-        if kwargs.get("fieldset", None):
-            self.fieldset = kwargs.pop('fieldset')
-        super(IPField, self).__init__(*args, **kwargs)
+    pass
 
 
-class ChoiceField(forms.ChoiceField):
+class ChoiceField(FieldMixin, forms.ChoiceField):
     """
     Custom ChoiceField with fieldset attribute
     """
     def __init__(self, *args, **kwargs):
-        if kwargs.get("fieldset", None):
-            self.fieldset = kwargs.pop('fieldset')
-            self.extend_context = kwargs.pop('extend_context', False)
+        if 'extend_context' in kwargs:
+            self.extend_context = kwargs.pop('extend_context')
         super(ChoiceField, self).__init__(*args, **kwargs)
 
 

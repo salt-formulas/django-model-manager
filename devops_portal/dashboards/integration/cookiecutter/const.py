@@ -14,10 +14,12 @@ general_params_action:
         type: "TEXT"
         help_text: "Name of the cluster, used as cluster/<cluster_name>/ in directory structure."
         initial: "deployment_name"
+        width: half
       - name: "cluster_domain"
         type: "TEXT"
         help_text: "Domain name part of FQDN of cluster in the cluster."
         initial: "deploy-name.local"
+        width: half
       - name: "public_host"
         type: "TEXT"
         help_text: "Name or IP of public endpoint of the deployment."
@@ -92,6 +94,7 @@ general_params_action:
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20network.png?raw=true
         :width: 80 %
+        :align: center
         :alt: Network diagram
 
     fields:

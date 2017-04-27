@@ -15,7 +15,7 @@ class GeneralParamsAction(GeneratedAction):
     source_context = CTX
 
     class Meta(object):
-        name = _("General cluster paramaters")
+        name = _("General parameters")
         slug = "general_params_action"
 
 
@@ -26,7 +26,7 @@ class InfraParamsAction(GeneratedAction):
     source_context = CTX
 
     class Meta(object):
-        name = _("Cluster infrastructure parameters")
+        name = _("Infrastructure parameters")
         slug = "infra_params_action"
 
 
@@ -37,7 +37,7 @@ class ProductParamsAction(GeneratedAction):
     source_context = CTX
 
     class Meta(object):
-        name = _("Service specific cluster parameters")
+        name = _("Product parameters")
         slug = "product_params_action"
 
 
@@ -80,5 +80,5 @@ class CookiecutterContextAction(workflows.Action):
         self.initial['cookiecutter_context'] = self.fields['cookiecutter_context'].initial
 
     class Meta(object):
-        name = _("Cookiecutter context")
+        name = _("Output summary")
 
