@@ -1,6 +1,6 @@
-PANEL = 'overview'
-PANEL_GROUP = 'models'
-PANEL_DASHBOARD = 'integration'
+#PANEL = 'overview'
+#PANEL_GROUP = 'models'
+#PANEL_DASHBOARD = 'integration'
 
-ADD_PANEL = \
-    'devops_portal.dashboards.integration.overview.panel.Overview'
+#ADD_PANEL = \
+#    'devops_portal.dashboards.integration.overview.panel.Overview'

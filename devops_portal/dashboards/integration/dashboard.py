@@ -7,7 +7,7 @@ class Integration(horizon.Dashboard):
 
     name = getattr(settings, 'DEVOPS_PORTAL_NAME', _("Integration Dashboard"))
     slug = "integration"
-    default_panel = "overview"
+    default_panel = "cookiecutter"
 
     def nav(self, context):
         dash = context['request'].horizon.get('dashboard', None)

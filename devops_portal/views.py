@@ -3,7 +3,7 @@ from django import shortcuts
 import django.views.decorators.vary
 from django.core.urlresolvers import reverse_lazy
 
-HOME = reverse_lazy('horizon:integration:overview:index')
+HOME = reverse_lazy('horizon:integration:cookiecutter:index')
 
 
 def get_user_home(user):
