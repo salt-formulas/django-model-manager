@@ -1,4 +1,4 @@
-import copy, bcrypt, json, requests, socket, yaml
+import copy, crypt, json, requests, socket, yaml
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -210,7 +210,7 @@ def generate_password(length):
         ------
         Jda0HK9rM4UETFzZllDPbu8i2szzKbMM
     """
-    chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNpPqQrRsStTuUvVwWxXyYzZ1234567890!@#$"
+    chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNpPqQrRsStTuUvVwWxXyYzZ1234567890"
 
     return "".join(chars[ord(c) % len(chars)] for c in urandom(length))
 
@@ -233,9 +233,11 @@ def hash_password(password):
         ------
         $2b$12$HXXew12E9mN3NIXv/egSDurU.dshYQRepBoeY.6bfbOOS5IyFVIBa
     """
-    salt = bcrypt.gensalt()
+    chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNpPqQrRsStTuUvVwWxXyYzZ"
+    salt_str = "".join(chars[ord(c) % len(chars)] for c in urandom(8))
+    salt = "$6$%s$" % salt_str
 
-    return bcrypt.hashpw(bytes(password), salt)
+    return crypt.crypt(password, salt)
 
 
 CUSTOM_FILTERS = [
@@ -379,6 +381,7 @@ class GeneratedAction(workflows.Action):
                 # template specific params
                 if 'CHOICE' in field['type']:
                     field_kw['choices'] = field['choices']
+                    field_kw['extend_context'] = field.get('extend_context', False)
                 if 'IP' in field['type'] and 'mask' in field:
                     field_kw['mask'] = field['mask']
                 # declare field on self
@@ -479,7 +482,7 @@ class GeneratedStep(workflows.Step):
     def contribute(self, data, context):
         super(GeneratedStep, self).contribute(data, context)
         # update shared context with option Bool values according to choices made in ChoiceList fields
-        choice_fields = [obj for obj in self.action.fields.values() if hasattr(obj, 'choices')]
+        choice_fields = [obj for obj in self.action.fields.values() if hasattr(obj, 'choices') and getattr(obj, 'extend_context',  False)]
         choices = [chc[0] for fld in choice_fields for chc in fld.choices]
         for choice in choices:
             context[choice] = True if choice in context.values() else False

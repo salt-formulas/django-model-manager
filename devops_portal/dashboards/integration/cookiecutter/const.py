@@ -66,6 +66,7 @@ general_params_action:
           - - "kubernetes_enabled"
             - "Kubernetes"
         initial: "openstack_enabled"
+        extend_context: True
       - name: "opencontrail_enabled"
         type: "BOOL"
         help_text: "Enable OpenContrail sub-cluster"

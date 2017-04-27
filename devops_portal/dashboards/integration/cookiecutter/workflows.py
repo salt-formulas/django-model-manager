@@ -47,7 +47,7 @@ class CreateCookiecutterContext(workflows.Workflow):
         # contribute choice field options to workflow context as Bools
         context = self.context
         for step in self.steps:
-            choice_fields = [obj for obj in step.action.fields.values() if hasattr(obj, 'choices')]
+            choice_fields = [obj for obj in step.action.fields.values() if hasattr(obj, 'choices') and getattr(obj, 'extend_context', False)]
             choices = [chc[0] for fld in choice_fields for chc in fld.choices]
             for choice in choices:
                 if choice not in context.keys():

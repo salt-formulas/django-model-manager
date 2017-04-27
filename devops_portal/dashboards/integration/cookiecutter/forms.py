@@ -54,11 +54,12 @@ class IPField(horizon_forms.IPField):
 
 class ChoiceField(forms.ChoiceField):
     """
-    Custom ThemableChoiceField with fieldset attribute
+    Custom ChoiceField with fieldset attribute
     """
     def __init__(self, *args, **kwargs):
         if kwargs.get("fieldset", None):
             self.fieldset = kwargs.pop('fieldset')
+            self.extend_context = kwargs.pop('extend_context', False)
         super(ChoiceField, self).__init__(*args, **kwargs)
 
 
