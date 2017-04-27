@@ -25,15 +25,18 @@ class IndexView(tables.DataTableView):
 
     def get_data(self):
         job_id = getattr(settings, 'COOKIECUTTER_JENKINS_JOB')
-        info = jenkins_client.get_job_info(job_id, depth=1)
-        builds = info.get('builds', [])
-        for build in builds:
-            if 'result' not in build:
-                build['result'] = 'UNKNOWN'
-            elif build['result'] == None:
-                build['result'] = 'BUILDING'
-            if build['result'] not in [chc[0] for chc in STATUS_CHOICES]:
-                build['result'] = 'UNKNOWN'
+        try:
+            info = jenkins_client.get_job_info(job_id, depth=1)
+            builds = info.get('builds', [])
+            for build in builds:
+                if 'result' not in build:
+                    build['result'] = 'UNKNOWN'
+                elif build['result'] == None:
+                    build['result'] = 'BUILDING'
+                if build['result'] not in [chc[0] for chc in STATUS_CHOICES]:
+                    build['result'] = 'UNKNOWN'
+        except:
+            builds = []
 
         return builds
 

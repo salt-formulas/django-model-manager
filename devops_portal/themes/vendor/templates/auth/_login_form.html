@@ -1,6 +1,45 @@
 {% load i18n %}
 
 {% block pre_login %}
+<style>
+body#splash {
+  background-image: url(https://cdn.mirantis.com/wp-content/uploads/2017/04/homepage-hero-bg-2200x1298.jpg);
+  background-color: #182627;
+}
+.login .form-control {
+  border-radius: 0px;
+  box-shadow: none !important;
+}
+#loginBtn,
+#loginBtn:hover,
+#loginBtn:active,
+#loginBtn:visited {
+  background-color: #d42f1a;
+  border-color: #d42f1a;
+}
+.login {
+  margin-top: calc(50vh - 130px);
+}
+.login .panel {
+  padding: 10px 20px;
+  border-radius: 0px;
+  box-shadow: none;
+  border: none;
+  background-color: rgba(49,49,49,.7);
+}
+.login .panel-footer {
+  background-color: transparent;
+  border-top: none;
+  padding-top: 0px;
+}
+.login form label {
+  color: #fff;
+}
+.topbar .navbar-inverse {
+  background-color: rgba(49,49,49,.7);
+  border: none;
+}
+</style>
 <form id="" class="ng-pristine ng-valid ng-scope"
       method="POST"
       action="{% url 'login' %}"
@@ -10,15 +49,15 @@
 {% endblock %}
 
   <div class="panel panel-default">
+    {% if 'is_modal' in request.GET or 'is_modal' in request.POST %}
     <div class="panel-heading {% if 'is_modal' not in request.GET and 'is_modal' not in request.POST %}login-brand{% endif %}">
       {% block login_header %}
-        {% if 'is_modal' in request.GET or 'is_modal' in request.POST %}
           <h3 class="login-title">
             {% trans 'Log in' %}
           </h3>
-        {% endif %}
       {% endblock %}
     </div>
+    {% endif %}
     <div class="panel-body">
     {% block login_body %}
       {% comment %}
