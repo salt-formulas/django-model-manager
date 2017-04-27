@@ -10,7 +10,7 @@ from horizon import tables
 from horizon import tabs
 from horizon import workflows
 
-from .tables import CookiecutterTable
+from .tables import CookiecutterTable, STATUS_CHOICES
 from .tabs import DetailTabGroup
 from .utils import AsyncWorkflowView
 from .workflows import CreateCookiecutterContext
@@ -25,7 +25,17 @@ class IndexView(tables.DataTableView):
 
     def get_data(self):
         job_id = getattr(settings, 'COOKIECUTTER_JENKINS_JOB')
-        return jenkins_client.get_builds(job_id)
+        info = jenkins_client.get_job_info(job_id, depth=1)
+        builds = info.get('builds', [])
+        for build in builds:
+            if 'result' not in build:
+                build['result'] = 'UNKNOWN'
+            elif build['result'] == None:
+                build['result'] = 'BUILDING'
+            if build['result'] not in [chc[0] for chc in STATUS_CHOICES]:
+                build['result'] = 'UNKNOWN'
+
+        return builds
 
 
 class CreateView(AsyncWorkflowView):

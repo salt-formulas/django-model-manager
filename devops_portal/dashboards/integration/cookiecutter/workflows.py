@@ -4,6 +4,7 @@ from django.utils.encoding import iri_to_uri
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
+from time import sleep
 
 from .actions import (GeneralParamsAction, InfraParamsAction, ProductParamsAction,
     CookiecutterContextAction)
@@ -72,5 +73,18 @@ class CreateCookiecutterContext(workflows.Workflow):
             if param.lower() in context and context.get(param.lower(), None):
                 job_ctx[param] = context[param.lower()]
 
-        return jenkins_client.build_wf(job_name, job_ctx)
+        result = jenkins_client.build_wf(job_name, job_ctx)
+        if result:
+            # this can delay result for 4, 7 or 10 seconds, but it will attempt
+            # to load the overview page after the job started, so it can poll
+            # the job status using Horizon async row functionality
+            sleep(1)
+            for idx in [1, 2, 3]:
+                info = jenkins_client.get_job_info(job_name)
+                if info.get('inQueue', False):
+                    return result
+                else:
+                    sleep(3)
+
+        return result
 
