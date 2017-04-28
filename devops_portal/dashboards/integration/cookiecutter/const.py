@@ -346,6 +346,25 @@ product_params_action:
       - deployment_type: physical
       type: TEXT
       width: half
+    - name: "infra_bond_mode"
+      help_text: Bond mode for KVM nodes
+      type: "CHOICE"
+      initial: "active-backup"
+      choices:
+        - - "active-backup"
+          - "active-backup"
+        - - "balance-xor"
+          - "balance-xor"
+        - - "broadcast"
+          - "broadcast"
+        - - "802.3ad"
+          - "802.3ad"
+        - - "balance-tlb"
+          - "balance-tlb"
+        - - "balance-alb"
+          - "balance-alb"
+      requires:
+      - deployment_type: physical
     - help_text: number of compute nodes to be generated
       initial: '100'
       name: openstack_compute_count
@@ -371,7 +390,7 @@ product_params_action:
       This section covers KVM nodes which hosts Control plane VMs. By default cookicutter uses three KVM nodes. These nodes can host OpenStack Control plane, CI/CD, StackLight or OpenContrail VMs based on previous selection.
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20kvm.png?raw=true
-        :width: 50 %
+        :width: 70 %
         :align: center
         :alt: KVM diagram
 
@@ -449,7 +468,7 @@ product_params_action:
       =================================
   
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20cicd.png?raw=true
-        :width: 50 %
+        :width: 70 %
         :align: center
         :alt: StackLight control diagram
 
@@ -693,14 +712,14 @@ product_params_action:
       OpenContrail Control plane runs on six VMs in total - three for Control and three for Analytics.
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20opencontrail.png?raw=true
-        :width: 50 %
+        :width: 70 %
         :align: center
         :alt: OpenContrail control diagram
 
       OpenContrail kernel vRouter setup by cookiecutter:
 
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20compute.png?raw=true
-        :width: 50 %
+        :width: 70 %
         :align: center
         :alt: compute diagram
 
@@ -717,6 +736,25 @@ product_params_action:
       name: compute_primary_second_nic
       type: TEXT
       width: half
+    - name: "compute_bond_mode"
+      help_text: Bond mode for Compute nodes
+      type: "CHOICE"
+      initial: "active-backup"
+      choices:
+        - - "active-backup"
+          - "active-backup"
+        - - "balance-xor"
+          - "balance-xor"
+        - - "broadcast"
+          - "broadcast"
+        - - "802.3ad"
+          - "802.3ad"
+        - - "balance-tlb"
+          - "balance-tlb"
+        - - "balance-alb"
+          - "balance-alb"
+      requires:
+      - deployment_type: physical
     - help_text: First NIC in OVS gateway bond
       initial: eth1
       name: gateway_primary_first_nic
@@ -737,7 +775,7 @@ product_params_action:
       type: TEXT
     - help_text: control plane network prefix for compute nodes
       initial: '{{ ".".join(control_network_subnet.split(".")[:3]) }}'
-      name: openstack_compute_rack01_sigle_subnet
+      name: openstack_compute_rack01_single_subnet
       type: IP
       width: half
     - help_text: data plane network prefix for compute nodes
@@ -1052,7 +1090,7 @@ product_params_action:
       =================================
   
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20openstack.png?raw=true
-        :width: 50 %
+        :width: 70 %
         :align: center
         :alt: OpenStack control diagram
 
@@ -1186,7 +1224,7 @@ product_params_action:
       =================================
   
       .. figure:: https://github.com/mceloud/images/blob/master/cookiecutter%20-%20stacklight.png?raw=true
-        :width: 50 %
+        :width: 70 %
         :align: center
         :alt: StackLight control diagram
 
