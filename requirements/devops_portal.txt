@@ -1,6 +1,9 @@
 Django==1.8
 leonardo-horizon>=2016.8.3
 horizon-contrib>=2016.9.5
+pyparsing==2.2.0
+appdirs==1.4.3
+pathlib==1.0.1
 django-openstack-auth>=3.1.1
 python-keystoneclient!=1.8.0,!=2.1.0,<3.0.0,>=1.6.0
 Jinja2==2.9.6
