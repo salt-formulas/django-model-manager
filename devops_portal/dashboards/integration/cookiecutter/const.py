@@ -507,31 +507,18 @@ product_params_action:
       initial: docker-prod-virtual.docker.mirantis.net/mirantis/kubernetes/hyperkube-amd64:v1.4.6-6
       name: hyperkube_image
       type: TEXT
-    - help_text: IP address of kubernetes compute node01
-      initial: 172.17.10.105
-      name: kubernetes_compute_node01_address
-      type: IP
-    - help_text: ''
-      initial: '{{ deploy_network_subnet | subnet(101) }}'
-      name: kubernetes_compute_node01_deploy_address
-      type: IP
     - help_text: hostname of kubernetes compute node01
       initial: cmp01
       name: kubernetes_compute_node01_hostname
       type: TEXT
     - help_text: ''
-      initial: 10.167.2.101
-      name: kubernetes_compute_node01_single_address
-      type: IP
-      width: half
-    - help_text: IP address of kubernetes compute node02
-      initial: 172.17.10.106
-      name: kubernetes_compute_node02_address
+      initial: '{{ deploy_network_subnet | subnet(101) }}'
+      name: kubernetes_compute_node01_deploy_address
       type: IP
       width: half
     - help_text: ''
-      initial: '{{ deploy_network_subnet | subnet(102) }}'
-      name: kubernetes_compute_node02_deploy_address
+      initial: '{{ control_network_subnet | subnet(101) }}'
+      name: kubernetes_compute_node01_single_address
       type: IP
       width: half
     - help_text: hostname of kubernetes compute node02
@@ -539,15 +526,21 @@ product_params_action:
       name: kubernetes_compute_node02_hostname
       type: TEXT
     - help_text: ''
-      initial: 10.167.2.102
+      initial: '{{ deploy_network_subnet | subnet(102) }}'
+      name: kubernetes_compute_node02_deploy_address
+      type: IP
+      width: half
+    - help_text: ''
+      initial: '{{ control_network_subnet | subnet(102) }}'
       name: kubernetes_compute_node02_single_address
       type: IP
-    - help_text: enable cpu pinning and hugepages without dpdk
+      width: half
+    - help_text: ''
       initial: '{{ control_network_subnet | subnet(10) }}'
       name: kubernetes_control_address
       type: IP
     - help_text: IP address of kubernetes control node01
-      initial: 172.16.10.107
+      initial: '{{ control_network_subnet | subnet(11) }}'
       name: kubernetes_control_node01_address
       type: IP
       width: half
@@ -561,7 +554,7 @@ product_params_action:
       name: kubernetes_control_node01_hostname
       type: TEXT
     - help_text: IP address of kubernetes control node02
-      initial: 172.16.10.108
+      initial: '{{ control_network_subnet | subnet(12) }}'
       name: kubernetes_control_node02_address
       type: IP
       width: half
@@ -575,7 +568,7 @@ product_params_action:
       name: kubernetes_control_node02_hostname
       type: TEXT
     - help_text: IP address of kubernetes control node03
-      initial: 172.16.10.109
+      initial: '{{ control_network_subnet | subnet(13) }}'
       name: kubernetes_control_node03_address
       type: IP
       width: half
