@@ -72,7 +72,7 @@ class CookiecutterContextAction(workflows.Action):
         super(CookiecutterContextAction, self).__init__(
             request, context, *args, **kwargs)
         cookiecutter_ctx = {'default_context': {k: v for (k, v) in context.items() if v is not None and k != 'cookiecutter_context'}}
-        transform_bools = {k: str(v).lower() for (k, v) in cookiecutter_ctx['default_context'].items() if isinstance(v, bool)}
+        transform_bools = {k: str(v) for (k, v) in cookiecutter_ctx['default_context'].items() if isinstance(v, bool)}
         cookiecutter_ctx['default_context'].update(transform_bools)
         yaml.representer.BaseRepresenter.represent_scalar = my_represent_scalar
         self.fields['cookiecutter_context'].initial = yaml.safe_dump(cookiecutter_ctx, default_flow_style=False)
