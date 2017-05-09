@@ -289,16 +289,16 @@ THEME_COLLECTION_DIR = 'themes'
 THEME_COOKIE_NAME = 'theme'
 
 try:
-    from local.local_settings import *  # noqa
-except ImportError:
-    logging.warning("No local_settings file found.")
-
-try:
     with open("/etc/devops_portal/settings.py") as f:
         code = compile(f.read(), "/etc/devops_portal/settings.py", 'exec')
         exec(code)
 except IOError:
     pass
+
+try:
+    from local.local_settings import *  # noqa
+except ImportError:
+    logging.warning("No local_settings file found.")
 
 # allow to drop settings snippets into a local_settings_dir
 LOCAL_SETTINGS_DIR_PATH = os.path.join(ROOT_PATH, "settings", "local", "local_settings.d")
