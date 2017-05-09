@@ -1,4 +1,11 @@
-import copy, crypt, json, requests, socket, yaml
+import copy
+import crypt
+import io
+import json
+import logging
+import requests
+import socket
+import yaml
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -8,117 +15,138 @@ from django import http
 from django import shortcuts
 from django import template
 from django.conf import settings
+from django.core import exceptions as django_exc
 from django.utils.encoding import force_text, force_bytes
 from django.utils.translation import ugettext_lazy as _
 from docutils.core import publish_parts
+from horizon import exceptions as horizon_exc
 from horizon import messages
 from horizon import workflows
 from ipaddress import IPv4Network
-from jinja2 import Environment, meta, exceptions
+from jinja2 import Environment, meta
 from os import urandom
 
 from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField 
 
-'''
-We can get cookiecutter.json using one of the private get_context methods, for example: _get_context_github
+LOG = logging.getLogger(__name__)
 
-{
-    "cluster_name"                              : "deployment_name",
-    "cluster_domain"                            : "deploy-name.local",
-    "public_host"                               : "${_param:openstack_proxy_address}",
-    "reclass_repository"                        : "https://github.com/Mirantis/mk-lab-salt-model.git",
-
-    "deploy_network_netmask"                    : "255.255.255.0",
-    "deploy_network_gateway"                    : "",
-    "control_network_netmask"                   : "255.255.255.0",
-    ...
-}
-
-generate_context method uses get_context method of choice and transforms remote JSON into form fields schema:
-
-    INFRA_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/infra/cookiecutter.json'
-
-    ctx = generate_context('github', 'infra', 'Infra', **{'url': INFRA_JSON_URL})
-    print ctx
-
-Results in:
-    [{
-        'fieldset_name': 'infra',
-        'fieldset_label': _('Infra'),
-        'fields': {
-            'deploy_network_netmask': {'field_template': 'IP', 'kwargs': {'initial': '255.255.255.0'}},
-            'deploy_network_gateway': {'field_template': 'IP'},
-            'control_network_netmask': {'field_template': 'IP', 'kwargs': {'initial': '255.255.255.0'}},
-            'dns_server01': {'field_template': 'IP', 'kwargs': {'initial': '8.8.8.8'}},
-            'dns_server02': {'field_template': 'IP', 'kwargs': {'initial': '8.8.4.4'}},
-            'control_vlan': {'field_template': 'TEXT', 'kwargs': {'initial': '10'}},
-            'tenant_vlan': {'field_template': 'TEXT', 'kwargs': {'initial': '20'}},
-            ...
-        }
-    }]
-    
-'''
 
 ####################################
 # GET CONTEXT FROM REMOTE LOCATION #
 ####################################
 
-INFRA_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/infra/cookiecutter.json'
-CICD_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/cicd/cookiecutter.json'
-KUBERNETES_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/kubernetes/cookiecutter.json'
-OPENCONTRAIL_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/opencontrail/cookiecutter.json'
-OPENSTACK_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/openstack/cookiecutter.json'
-STACKLIGHT_JSON_URL = 'https://api.github.com/repos/Mirantis/mk2x-cookiecutter-reclass-model/contents/cluster_product/stacklight/cookiecutter.json'
+class ContextTemplateCollector(object):
+    '''
+    TODO: document this class
+    '''
+    url = None
+    path = None
+    remote = None
+    username = None
+    password = None
+    token = None
 
+    def __init__(self, *args, **kwargs):
+        default_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
+        default_path = getattr(settings, 'COOKIECUTTER_CONTEXT_PATH', None)
+        default_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
+        default_username = getattr(settings, 'COOKIECUTTER_CONTEXT_USERNAME', None)
+        default_password = getattr(settings, 'COOKIECUTTER_CONTEXT_PASSWORD', None)
+        default_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
 
-def _get_context_github(url):
-    s = requests.Session()
-    token = getattr(settings, 'GITHUB_TOKEN', None)
-    s.headers.update({'Accept': 'application/vnd.github.v3.raw'})
-    if token:
+        self.url = kwargs.get('url', default_url)
+        self.path = kwargs.get('path', default_path)
+        self.remote = kwargs.get('remote', default_remote)
+        self.username = kwargs.get('username', default_username)
+        self.password = kwargs.get('password', default_password)
+        self.token = kwargs.get('token', default_token)
+
+    def _github_collector(self):
+        s = requests.Session()
+        url = self.url
+        token = self.token
+
+        if not url:
+            msg = 'Github repository API URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "github".'
+            raise django_exc.ImproperlyConfigured(msg)
+
+        if not token:
+            msg = 'Github API token is required to be set as COOKIECUTTER_CONTEXT_TOKEN with COOKIECUTTER_CONTEXT_REMOTE = "github".'
+            raise django_exc.ImproperlyConfigured(msg)
+
+        s.headers.update({'Accept': 'application/vnd.github.v3.raw'})
         s.headers.update({'Authorization': 'token ' + str(token)})
-    r = s.get(url)
-    ctx = json.loads(r.text)
+        r = s.get(url)
+        if r.status_code >= 300:
+            try:
+                r_json = json.loads(str(r.text))
+                r_text = r_json['message']
+            except:
+                r_text = r.text
+            msg = "Could not get remote file from Github:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (str(r.status_code), r_text)
+            LOG.error(msg)
+            ctx = ""
+        else:
+            ctx = r.text
 
-    return ctx
+        return ctx
 
+    def _http_collector(self):
+        s = requests.Session()
+        url = self.url
+        username = self.username
+        password = self.password
 
-def _is_ipaddress(addr):
-    try:
-        socket.inet_aton(addr)
-        return True
-    except socket.error:
-        return False
+        if not url:
+            msg = 'HTTP URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "http".'
+            raise django_exc.ImproperlyConfigured(msg)
 
+        if username and password:
+            r = s.get(url, auth=(username, password))
+        else:
+            r = s.get(url)
 
-def generate_context(source, name, label, **kwargs):
-    ctx = {}
-    if 'github' in source:
-        url = kwargs.get('url')
-        ctx = [{
-            'name': name,
-            'label': label,
-            'fields': []
-        }]
-        remote_ctx = _get_context_github(url)
-        if isinstance(remote_ctx, dict):
-            fields = ctx[0]['fields']
-            bool_strings = ['true', 'True', 'false', 'False']
-            for field, value in remote_ctx.items():
-                params = {}
-                params['name'] = field
-                params['type'] = 'TEXT'
-                if value:
-                    if _is_ipaddress(value):
-                        params['type'] = 'IP'
-                    elif value in bool_strings:
-                        params['type'] = 'BOOL'
-                    else:
-                        params['type'] = 'TEXT'
-                    params['initial'] = value
-                fields.append(params)
+        if r.status_code >= 300:
+            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (url, str(r.status_code), r.text)
+            LOG.error(msg)
+            ctx = ""
+        else:
+            ctx = r.text
 
-    return ctx
+        return ctx
+
+    def _localfs_collector(self):
+        path = self.path
+
+        if not path:
+            msg = 'Path to file on local filesystem is required to be set as COOKIECUTTER_CONTEXT_PATH with COOKIECUTTER_CONTEXT_REMOTE = "localfs".'
+            raise django_exc.ImproperlyConfigured(msg)
+
+        try:
+            with io.open(path, 'r') as file_handle:
+                ctx = file_handle.read()
+        except Exception as e:
+            msg = "Could not read file %s: %s" % (path, repr(e))
+            LOG.error(msg)
+            ctx = ""
+
+        return ctx
+
+    def collect_template(self):
+        url = self.url
+        remote = self.remote
+        collector = None
+
+        if 'github' in remote:
+            collector = self._github_collector
+        elif 'http' in remote:
+            collector = self._http_collector
+        elif 'localfs' in remote:
+            collector = self._localfs_collector
+
+        tmpl = collector()
+
+        return tmpl
 
 
 ######################################################
@@ -288,7 +316,13 @@ DOCUTILS_RENDERER_SETTINGS = {
 class GeneratedAction(workflows.Action):
     """ TODO: Document this class
     """
-    source_context = ""
+    default_context_template_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
+    default_context_template_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
+    default_context_template_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
+    context_template_remote = None
+    context_template_url = None
+    context_template_token = None
+
     field_templates = {
         "TEXT": {
             "class": CharField,
@@ -403,13 +437,22 @@ class GeneratedAction(workflows.Action):
     def deslugify(string):
         return str(string).replace('_', ' ').capitalize()
 
+    def get_context_template(self):
+        remote = self.context_template_remote or self.default_context_template_remote
+        url = self.context_template_url or self.default_context_template_url
+        token = self.context_template_token or self.default_context_template_token
+        ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
+        ctx_tmpl = ctx_tmpl_collector.collect_template()
+
+        return ctx_tmpl
+
     def render_context(self, context):
         env = Environment()
         for fltr in CUSTOM_FILTERS:
             env.filters[fltr[0]] = fltr[1]
         for fnc in CUSTOM_FUNCTIONS:
             env.globals[fnc[0]] = fnc[1]
-        source_context = self.source_context
+        source_context = self.get_context_template()
         tmpl = env.from_string(source_context)
         parsed_source = env.parse(source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
@@ -465,7 +508,13 @@ class GeneratedStep(workflows.Step):
     template_name = "integration/cookiecutter/workflow/_workflow_step_with_fieldsets.html"
     depends_on = tuple()
     contributes = tuple()
-    source_context = ""
+
+    default_context_template_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
+    default_context_template_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
+    default_context_template_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
+    context_template_remote = None
+    context_template_url = None
+    context_template_token = None
 
     def __init__(self, *args, **kwargs):
         super(GeneratedStep, self).__init__(*args, **kwargs)
@@ -489,6 +538,15 @@ class GeneratedStep(workflows.Step):
             context[choice] = True if choice in context.values() else False
         return context
 
+    def get_context_template(self):
+        remote = self.context_template_remote or self.default_context_template_remote
+        url = self.context_template_url or self.default_context_template_url
+        token = self.context_template_token or self.default_context_template_token
+        ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
+        ctx_tmpl = ctx_tmpl_collector.collect_template()
+
+        return ctx_tmpl
+
     def render_context(self):
         context = {}
         env = Environment()
@@ -496,7 +554,7 @@ class GeneratedStep(workflows.Step):
             env.filters[fltr[0]] = fltr[1]
         for fnc in CUSTOM_FUNCTIONS:
             env.globals[fnc[0]] = fnc[1]
-        source_context = self.source_context
+        source_context = self.get_context_template()
         tmpl = env.from_string(source_context)
         parsed_source = env.parse(source_context)
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
@@ -579,7 +637,7 @@ class AsyncWorkflowView(workflows.WorkflowView):
             return self.render_to_response(context)
         except Exception:
             success = False
-            exceptions.handle(request)
+            horizon_exc.handle(request)
         if success:
             msg = workflow.format_status_message(workflow.success_message)
             messages.success(request, msg)
