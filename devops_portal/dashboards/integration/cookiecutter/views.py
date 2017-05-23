@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 class IndexView(tables.DataTableView):
     table_class = CookiecutterTable
     template_name = 'integration/cookiecutter/index.html'
-    page_title = _('Cookiecutters')
+    page_title = _('Model Designer')
 
     def get_data(self):
         job_id = getattr(settings, 'COOKIECUTTER_JENKINS_JOB')
@@ -61,4 +61,3 @@ class DetailView(tabs.TabView):
         ctx['title'] = title
 
         return ctx
-
