@@ -12,8 +12,6 @@ class GeneralParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = CTX
-
     class Meta(object):
         name = _("General parameters")
         slug = "general_params_action"
@@ -23,8 +21,6 @@ class InfraParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = CTX
-
     class Meta(object):
         name = _("Infrastructure parameters")
         slug = "infra_params_action"
@@ -34,8 +30,6 @@ class ProductParamsAction(GeneratedAction):
     """
     TODO: document this action
     """
-    source_context = CTX
-
     class Meta(object):
         name = _("Product parameters")
         slug = "product_params_action"

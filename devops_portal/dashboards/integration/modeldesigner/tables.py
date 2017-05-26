@@ -32,7 +32,7 @@ class ShowDetail(tables.LinkAction):
 
 class CreateCookiecutter(tables.LinkAction):
     name = "create_cookiecutter"
-    verbose_name = _("Create Cookiecutter")
+    verbose_name = _("Create Model")
     url = "horizon:integration:modeldesigner:create"
 
     def get_link_url(self, datum=None):
