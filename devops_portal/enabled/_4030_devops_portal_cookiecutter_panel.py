@@ -1,4 +1,4 @@
-PANEL = 'cookiecutter'
+PANEL = 'model-designer'
 PANEL_GROUP = 'project'
 PANEL_DASHBOARD = 'project'
 

@@ -5,9 +5,9 @@ import horizon
 
 class Integration(horizon.Dashboard):
 
-    name = getattr(settings, 'DEVOPS_PORTAL_NAME', _("Integration Dashboard"))
-    slug = "integration"
-    default_panel = "cookiecutter"
+    name = getattr(settings, 'DEVOPS_PORTAL_NAME', _('Integration Dashboard'))
+    slug = 'integration'
+    default_panel = 'modeldesigner'
 
     def nav(self, context):
         dash = context['request'].horizon.get('dashboard', None)
@@ -17,3 +17,4 @@ class Integration(horizon.Dashboard):
 
 
 horizon.register(Integration)
+

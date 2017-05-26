@@ -3,7 +3,7 @@ from django import shortcuts
 import django.views.decorators.vary
 from django.core.urlresolvers import reverse_lazy
 
-HOME = reverse_lazy('horizon:integration:cookiecutter:index')
+HOME = reverse_lazy('horizon:integration:modeldesigner:index')
 
 
 def get_user_home(user):
@@ -16,3 +16,4 @@ def splash(request):
 
     response = shortcuts.redirect(HOME)
     return response
+
