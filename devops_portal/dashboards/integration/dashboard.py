@@ -9,12 +9,5 @@ class Integration(horizon.Dashboard):
     slug = 'integration'
     default_panel = 'modeldesigner'
 
-    def nav(self, context):
-        dash = context['request'].horizon.get('dashboard', None)
-        if dash and dash.slug == self.slug:
-            return True
-        return False
-
-
 horizon.register(Integration)
 
