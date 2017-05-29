@@ -137,7 +137,8 @@ function renderResourceTopology() {
   //d3.json("http://www.stabilityjournal.org/hosted/m23-rebel-support-in-drc/M23-bio.json", function(M23_stories) {
   //  bibinfo = M23_stories;
   
-  d3.json("/static/dashboard/js/edge-bundle-sample.js", function(classes) {
+  //d3.json("/static/dashboard/js/edge-bundle-sample.js", function(classes) {
+  d3.json("{% url 'horizon:delivery:resource_topology:topology_data' %}", function(classes) {
     var nodes = cluster.nodes(packages.root(classes)),
        links = packages.imports(nodes),
        splines = bundle(links);
@@ -176,7 +177,7 @@ function renderResourceTopology() {
   	   .style("fill", function(d) { return color(d.name.split(".")[0]); })
   	   .style("text-anchor",function(d) {return d.x < 180 ? "end":"start";})
          .attr("transform", function(d) {return d.x < 180 ? "rotate(180)" : "rotate(0)"; })
-         .text(function(d) { return d.name.replace("_"," ").replace("_"," ").split(".")[1]; })
+         .text(function(d) { return d.name.replace("_"," ").replace("_"," "); })
         .on("mouseover", mouseover_n)
         .on("mouseout", mouseout);
     
