@@ -3,7 +3,13 @@
 {% block title %}{% trans "Resource Topology" %}{% endblock %}
 
 {% block main %}
-<div id="resource-topology-chart"></div>
+<div class="col-md-8">
+  <h3>Topology chart</h3>
+  <div id="resource-topology-chart"></div>
+</div>
+<div class="col-lg-4">
+  <h3>Resource detail</h3>
+</div>
 <style type="text/css">
 
 path.arc {
@@ -200,8 +206,6 @@ var path = svg.selectAll("path.link")
 
   var formatNumber  = d3.format(',d');
   var nlength = formatNumber(nodes.length)-7;
-  precis_default = "";
-  d3.select(".precis").text(precis_default);
 });
 //});
 
@@ -318,10 +322,6 @@ function mouseover_n(d) {
       .each(updateNodes("target", true));
 
   var k = d.name.split(".").pop();
-//  var nodebib = (bibinfo[k]['rank']+" "+bibinfo[k]['first_name']+" "+bibinfo[k]['last_name']+" : ");
-//  d3.select(".precis").append("p").append("b").text(nodebib);
-//  var nodebio = ("\n"+bibinfo[k]['bio']);
-//  d3.select(".precis").append("p").text(nodebio);
 
   svg.select("#node-" + d.key).classed("selected", true);
 }
@@ -340,12 +340,6 @@ function linkMouseover(d) {
   var s = d.source.key,
       t = d.target.key;
 
-  //some formatting
-  var nodebib = (" "+bibinfo[s]['rank']+" "+bibinfo[s]['first_name']+" "+bibinfo[s]['last_name']+" \u2194 "+bibinfo[t]['rank']+" "+bibinfo[t]['first_name']+" "+bibinfo[t]['last_name']+":  ");
-  d3.select(".precis").append("p").append("b").text(nodebib);
-
-  var nodeconn = ("\n"+bibinfo[t][bibinfo[s]['tag_name']]);
-  d3.select(".precis").append("p").text(nodeconn);
 }
 
 function linkMouseout(d) {
@@ -358,7 +352,6 @@ function linkMouseout(d) {
   svg.select("#node-" + d.target.key)
     .classed("target", false);
 
-  d3.select(".precis").text(precis_default);
 }
 
 function mouseout(d) {
@@ -374,7 +367,6 @@ function mouseout(d) {
 
   svg.select("#node-" + d.key).classed("selected", false);
 
-  d3.select(".precis").text(precis_default);
 }
 
 function updateNodes(name, value) {
