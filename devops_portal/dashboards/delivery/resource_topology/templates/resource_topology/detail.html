@@ -10,6 +10,7 @@
 </div>
 <div class="col-sm-4">
   <h3>{% trans "Resource Detail" %}</h3>
+  <div id="resource-topology-detail"></div>
 </div>
 
 <style type="text/css">
@@ -398,6 +399,15 @@ function renderResourceTopology() {
 
 $( document ).ready(function() {
   renderResourceTopology();
+  $('g.node a').click(function() {
+    console.log('Test');
+  });
+  $(document).on("click", "g.node a", function (ev) {
+    var chart_node = $(this).find('text').html();
+    $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + chart_node, function(pillar) {
+      $('#resource-topology-detail').html(pillar);
+    });
+  });
 });
 </script>
 {% endblock %}
