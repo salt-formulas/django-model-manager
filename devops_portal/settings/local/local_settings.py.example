@@ -13,5 +13,5 @@ SALT_API_URL="http://127.0.0.1:8000"
 SALT_API_USER="saltdev"
 SALT_API_PASSWORD="saltdev"
 SALT_API_EAUTH="pam"
-RECLASS_CLUSTER = 'my_cluster'
+RECLASS_DOMAIN = 'my_cluster.local'
 
