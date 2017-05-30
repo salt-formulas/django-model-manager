@@ -148,7 +148,7 @@ function renderResourceTopology() {
        splines = bundle(links);
   
     var groupData = svg.selectAll("g.group")
-       .data(nodes.filter(function(d) {return (d.key==d.name.split(".")[0]) && d.children;} ))
+       .data(nodes.filter(function(d) {return (d.key==d.name.split("|")[0]) && d.children;} ))
   	 .enter().append("group")
        .attr("class", "group");
   
@@ -178,7 +178,7 @@ function renderResourceTopology() {
   	   .attr("dx", function(d) { return d.x < 180 ? 0 : 0; })
      	   .attr("dy", ".2em")
          .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-  	   .style("fill", function(d) { return color(d.name.split(".")[0]); })
+  	   .style("fill", function(d) { return color(d.name.split("|")[0]); })
   	   .style("text-anchor",function(d) {return d.x < 180 ? "end":"start";})
          .attr("transform", function(d) {return d.x < 180 ? "rotate(180)" : "rotate(0)"; })
          .text(function(d) { return d.name.replace("_"," ").replace("_"," "); })
@@ -219,7 +219,7 @@ function renderResourceTopology() {
           if (!node) {
             node = map[name] = data || {name: name, children: []};
             if (name.length) {
-              node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
+              node.parent = find(name.substring(0, i = name.lastIndexOf("|")));
               node.parent.children.push(node);
               node.key = name.substring(i + 1);
             }
@@ -250,7 +250,7 @@ function renderResourceTopology() {
   
   		 j_found=0;		 
   		 for (j=0; j<map[d.name].imports.length; j++)
-  			if (map[d.name].imports[j].split(".").pop().match(map[i].key))
+  			if (map[d.name].imports[j].split("|").pop().match(map[i].key))
   				j_found = j;
   
   		imports.push({source: map[d.name], target: map[i], link_str: d.lnkstrength[j_found]});
@@ -315,7 +315,7 @@ function renderResourceTopology() {
   	  .style("stroke","red")
         .each(updateNodes("target", true));
   
-    var k = d.name.split(".").pop();
+    var k = d.name.split("|").pop();
   
     svg.select("#node-" + d.key).classed("selected", true);
   }

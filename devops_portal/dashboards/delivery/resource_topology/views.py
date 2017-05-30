@@ -1,4 +1,5 @@
 import logging
+import yaml
 
 from collections import Counter
 from devops_portal.api.salt import salt_client
@@ -11,7 +12,6 @@ from horizon import views
 
 from .tables import ResourceTopologyTable
 
-RECLASS_DOMAIN = getattr(settings, 'RECLASS_DOMAIN', '')
 LOG = logging.getLogger(__name__)
 
 
@@ -55,7 +55,7 @@ def topology_data_view(self, *args, **kwargs):
                 node = node.replace(kwargs.get('domain'), '')[:-1]
             for role in roles:
                 datum = {
-                    'name': ".".join([node, role]),
+                    'name': "|".join([node, role]),
                     'lnkstrength': [],
                     'imports': []
                 }
@@ -69,15 +69,14 @@ def pillar_data_view(self, *args, **kwargs):
     # recreate minion ID from domain and chart node name
     domain = kwargs.get('domain')
     chart_node = kwargs.get('chart_node')
-    minion_id = chart_node.split('.')[0] + '.' + domain
-    system = chart_node.split('.')[1]
-    subsystem = chart_node.split('.')[2]
+    minion_id = chart_node.split('|')[0] + '.' + domain
+    system = chart_node.split('|')[1].split('.')[0]
+    subsystem = chart_node.split('|')[1].split('.')[1]
 
     res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': minion_id}])
     # unwrap response from Salt Master
     pillar = res.get('return', [{'': ''}])[0].values()[0]
     data = pillar.values()[0].get(system, {}).get(subsystem, {})
-    import yaml
     output = yaml.safe_dump(data, default_flow_style=False)
 
     return HttpResponse('<pre>' + output + '</pre>')
