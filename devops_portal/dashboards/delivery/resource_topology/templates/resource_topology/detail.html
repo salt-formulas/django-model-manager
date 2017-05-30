@@ -141,7 +141,7 @@ function renderResourceTopology() {
   //d3.json("http://www.stabilityjournal.org/hosted/m23-rebel-support-in-drc/M23-bio.json", function(M23_stories) {
   //  bibinfo = M23_stories;
   
-  //d3.json("/static/dashboard/js/edge-bundle-sample.js", function(classes) {
+  //d3.json("/static/dashboard/js/new-structure-sample.js", function(classes) {
   d3.json("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", function(classes) {
     var nodes = cluster.nodes(packages.root(classes)),
        links = packages.imports(nodes),
