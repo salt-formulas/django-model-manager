@@ -10,3 +10,4 @@ urlpatterns = patterns(
     url(r'^(?P<domain>[\w\.\-]+)/topology_data$', views.topology_data_view, name='topology_data'),
     url(r'^(?P<domain>[\w\.\-]+)/topology_data/(?P<chart_node>[\w\.\-\|]+)$', views.pillar_data_view, name='pillar_data')
 )
+

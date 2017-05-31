@@ -60,8 +60,22 @@ def topology_data_view(self, *args, **kwargs):
                     'imports': []
                 }
                 data.append(datum)
-                
+ 
     return JsonResponse(data, safe=False)
+
+
+'''
+def topology_data_view(self, *args, **kwargs):
+    data = []
+    res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
+    graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph', [])
+    ret = {
+        'result': 'ok',
+        'data': graph_data
+    }
+
+    return JsonResponse(ret)
+'''
 
 
 def pillar_data_view(self, *args, **kwargs):
@@ -85,6 +99,4 @@ def pillar_data_view(self, *args, **kwargs):
     }
 
     return JsonResponse(ret)
-
-
 
