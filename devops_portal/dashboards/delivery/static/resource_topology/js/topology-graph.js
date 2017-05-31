@@ -228,7 +228,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 return "link source-" + d.source.key + " target-" + d.target.key;
             })
             .attr("d", function(d, i) {
-                return line(splines[i]);
+                return graph.line(splines[i]);
             })
             .style("stroke", function(d) {
                 return color_link(d.link_str);
@@ -243,10 +243,6 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
 
                 graph.svg.select("#node-" + d.target.key)
                     .classed("target", true);
-
-                var s = d.source.key,
-                    t = d.target.key;
-                //TODO: wtf?
             })
             .on("mouseout", function linkMouseout(d) {
                 graph.svg.selectAll(active_link).classed("active", false)
@@ -260,9 +256,6 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 graph.svg.select("#node-" + d.target.key)
                     .classed("target", false);
             });
-
-        var formatNumber = d3.format(',d');
-        var nlength = formatNumber(nodes.length) - 7;
     };
 
     this.updateNodes = function(name, value) {
