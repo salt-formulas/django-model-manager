@@ -76,8 +76,15 @@ def pillar_data_view(self, *args, **kwargs):
     res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': minion_id}])
     # unwrap response from Salt Master
     pillar = res.get('return', [{'': ''}])[0].values()[0]
-    data = pillar.values()[0].get(system, {}).get(subsystem, {})
-    output = yaml.safe_dump(data, default_flow_style=False)
+    pillar_data = pillar.values()[0].get(system, {}).get(subsystem, {})
+    pillar_yaml = yaml.safe_dump(pillar_data, default_flow_style=False)
+    html = '<pre>' + pillar_yaml + '</pre>'
+    ret = {
+        'result': 'ok',
+        'html': html
+    }
 
-    return HttpResponse('<pre>' + output + '</pre>')
+    return JsonResponse(ret)
+
+
 
