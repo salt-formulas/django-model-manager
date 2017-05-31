@@ -76,8 +76,12 @@ $(document).ready(function() {
     new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart").init();
     $(document).on("click", "g.node a", function(ev) {
         var chart_node = $(this).find('text').html();
-        $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + chart_node, function(pillar) {
-            $('#resource-topology-detail').html(pillar);
+        $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + chart_node, function(res) {
+            if(res && res.result === 'ok'){
+              $('#resource-topology-detail').html(res.html);
+            }else{
+              console.log("Cannot print pillar data server returns invalid response");
+            }
         });
     });
 });

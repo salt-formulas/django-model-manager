@@ -105,7 +105,13 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
 
         //d3.json("/static/dashboard/js/new-structure-sample.js", function(classes) {
-        d3.json(dataUrl, this.render);
+        d3.json(dataUrl, function(res){
+            if(res && res.result === 'ok'){
+                this.render(res.data);
+            }else{
+                console.log("Cannot create topology graph, server returns error");
+            }
+        });
 
         d3.select(window).on("mousemove", function() {
             if (m0) {
