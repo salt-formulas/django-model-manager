@@ -33,7 +33,7 @@ class CookiecutterContextStep(workflows.Step):
 
 
 class CreateCookiecutterContext(workflows.Workflow):
-    name = _("Create Model")
+    name = _("Create new Deployment Model")
     slug = "create_cookiecutter_context"
     async_wizard = True
     default_steps = (GeneralParamsStep, InfraParamsStep, ProductParamsStep, CookiecutterContextStep)
@@ -87,4 +87,3 @@ class CreateCookiecutterContext(workflows.Workflow):
                     sleep(3)
 
         return result
-
