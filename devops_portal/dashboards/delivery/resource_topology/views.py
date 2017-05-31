@@ -60,8 +60,12 @@ def topology_data_view(self, *args, **kwargs):
                     'imports': []
                 }
                 data.append(datum)
+    ret = {
+        'result': 'ok',
+        'data': data
+    }
  
-    return JsonResponse(data, safe=False)
+    return JsonResponse(ret)
 
 
 '''

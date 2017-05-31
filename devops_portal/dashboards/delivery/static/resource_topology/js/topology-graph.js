@@ -106,8 +106,8 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
 
         //d3.json("/static/dashboard/js/new-structure-sample.js", function(classes) {
         d3.json(dataUrl, function(res){
-            if(res && res.result === 'ok'){
-                this.render(res.data);
+            if(res && res.result === 'ok'){
+                graph.render(res.data);
             }else{
                 console.log("Cannot create topology graph, server returns error");
             }
