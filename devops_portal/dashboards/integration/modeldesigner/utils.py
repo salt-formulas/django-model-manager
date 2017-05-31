@@ -264,8 +264,11 @@ def hash_password(password):
     chars = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNpPqQrRsStTuUvVwWxXyYzZ"
     salt_str = "".join(chars[ord(c) % len(chars)] for c in urandom(8))
     salt = "$6$%s$" % salt_str
+    pw_hash = ''
+    if password:
+        pw_hash = crypt.crypt(password, salt)
 
-    return crypt.crypt(password, salt)
+    return pw_hash
 
 
 CUSTOM_FILTERS = [
