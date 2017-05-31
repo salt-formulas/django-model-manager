@@ -11,3 +11,6 @@ DEFAULT_PANEL = 'resource_topology'
 # Python panel class of the PANEL to be added.
 ADD_PANEL = 'devops_portal.dashboards.delivery.resource_topology.panel.ResourceTopology'
 
+ADD_JS_FILES = ["resource_topology/js/topology-graph.js"]
+
+AUTODISCOVER_STATIC_FILES = True
