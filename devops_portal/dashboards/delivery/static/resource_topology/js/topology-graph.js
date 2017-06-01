@@ -8,7 +8,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         ry = h / 2,
         m0, rotate = 0,
         pi = Math.PI,
-        precis_text, active_link, color = d3.scale.ordinal().domain([-3, -2, -1, 0, 1, 2, 3]).range(["#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A"]),
+        active_link, color = d3.scale.ordinal().domain([-3, -2, -1, 0, 1, 2, 3]).range(["#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A"]),
         color_arc = d3.scale.ordinal().domain([-3, -2, -1, 0, 1, 2, 3]).range(["#FDB613", "#FDB613", "#2C2B1A", "#FDB613", "#FDB613", "#FDB613", "#FDB613"]),
         //var color_link = d3.scale.linear().domain([1, 3, 5]).range(["#C7C7C7", "#000000", "#000000"]);
         color_link = d3.scale.linear().domain([1, 6]).range(["#C7C7C7", "#000000"]),
@@ -23,27 +23,32 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             return [e.pageX - rx, e.pageY - ry];
         };
     var nodeHelpers = {
-      // Lazily construct the package hierarchy from class names.
+      nodeServiceId: function(d){
+        return "node-" + d.host.replace(/\./g,"_") + "-service-" + d.service.replace(/\./g,"_");
+      },
       root: function(classes) {
         var map = {};
-        function find(name, data) {
-          var node = map[name], i;
-          if (!node) {
-            node = map[name] = data || {name: name, children: []};
-            if (name.length) {
-              node.parent = find(name.substring(0, i = name.lastIndexOf("|")));
-              node.parent.children.push(node);
-              node.key = name.substring(i + 1);
-            }
-          }
-          return node;
-        }
+        var parentObj = {host:"", children:[]};
+        var addedHosts = []
 
         classes.forEach(function(d) {
-          find(d.name, d);
+          //create hosts array
+           if(addedHosts.indexOf(d.host) === -1){
+              addedHosts.push(d.host);
+              var newHost={host: d.host, service: d.host, parent: parentObj}
+              newHost.children = [$.extend({parent:newHost}, d)]
+              parentObj.children.push(newHost);
+          }else{
+              // find host and add children
+              parentObj.children.forEach(function(item){
+                if(item.host == d.host){
+                    item.children.push($.extend({parent:item}, d))
+                }
+              });
+          }
         });
 
-        return map[""];
+        return parentObj;
       },
 
       // Return a list of imports for the given array of nodes.
@@ -53,19 +58,14 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
 
         // Compute a map from name to node.
         nodes.forEach(function(d) {
-          map[d.name] = d;
+          map[d.host+"_"+d.service] = d;
         });
 
         // For each import, construct a link from the source to target node.
         nodes.forEach(function(d) {
-          if (d.imports) {
-            d.imports.forEach(function(i) {
-                 j_found=0;
-                 for (j=0; j<map[d.name].imports.length; j++)
-                    if (map[d.name].imports[j].split("|").pop().match(map[i].key))
-                        j_found = j;
-
-                imports.push({source: map[d.name], target: map[i], link_str: d.lnkstrength[j_found]});
+          if (d.relations) {
+            d.relations.forEach(function(i) {
+                imports.push({source: map[d.host+"_"+d.service], target: map[i.host + "_" + i.service], link_str: 2});
             });
           }
         });
@@ -76,7 +76,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         graph.cluster = d3.layout.cluster()
             .size([360, ry - 150])
             .sort(function(a, b) {
-                return d3.ascending(a.key, b.key);
+                return d3.ascending(a.service, b.service);
             });
         graph.bundle = d3.layout.bundle();
         graph.line = d3.svg.line.radial()
@@ -122,13 +122,14 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         });
     };
     this.render = function(classes) {
-        var nodes = graph.cluster.nodes(nodeHelpers.root(classes)),
+        var rootNodes = nodeHelpers.root(classes);
+        var nodes = graph.cluster.nodes(rootNodes),
             links = nodeHelpers.imports(nodes),
             splines = graph.bundle(links);
 
         var groupData = graph.svg.selectAll("g.group")
             .data(nodes.filter(function(d) {
-                return (d.key == d.name.split("|")[0]) && d.children;
+                return d.host && d.service == d.host && d.children;
             }))
             .enter().append("group")
             .attr("class", "group");
@@ -160,7 +161,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .enter().append("svg:g")
             .attr("class", "node")
             .attr("id", function(d) {
-                return "node-" + d.key;
+                return nodeHelpers.nodeServiceId(d);
             })
             .attr("transform", function(d) {
                 return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
@@ -176,7 +177,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 return d.x < 180 ? "start" : "end";
             })
             .style("fill", function(d) {
-                return color(d.name.split("|")[0]);
+                return color(d.host);
             })
             .style("text-anchor", function(d) {
                 return d.x < 180 ? "end" : "start";
@@ -185,39 +186,37 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 return d.x < 180 ? "rotate(180)" : "rotate(0)";
             })
             .text(function(d) {
-                return d.name.replace("_", " ").replace("_", " ");
+                return d.service;
             })
             .on("mouseover", function(d) {
-                graph.svg.selectAll("path.link.target-" + d.key)
+                graph.svg.selectAll("path.link.target-" + d.host.replace(/\./g,"_") + "-" + d.service.replace(/\./g,"_"))
                     .classed("target", true)
-                    .style("stroke", "red")
+                    .style("stroke", "green")
                     .each(graph.updateNodes("source", true));
 
-                graph.svg.selectAll("path.link.source-" + d.key)
+                graph.svg.selectAll("path.link.source-" + d.host.replace(/\./g,"_") + "-" + d.service.replace(/\./g,"_"))
                     .classed("source", true)
                     .style("stroke", "red")
                     .each(graph.updateNodes("target", true));
 
-                var k = d.name.split("|").pop();
-
-                graph.svg.select("#node-" + d.key).classed("selected", true);
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d)).classed("selected", true);
             })
             .on("mouseout", function mouseout(d) {
-                graph.svg.selectAll("path.link.source-" + d.key)
+                graph.svg.selectAll("path.link.source-" + d.host.replace(/\./g,"_") + "-" + d.service.replace(/\./g,"_"))
                     .classed("source", false)
                     .each(graph.updateNodes("target", false))
                     .style("stroke", function(d) {
                         return color_link(d.link_str);
                     });
 
-                graph.svg.selectAll("path.link.target-" + d.key)
+                graph.svg.selectAll("path.link.target-" + d.host.replace(/\./g,"_") + "-" + d.service.replace(/\./g,"_"))
                     .classed("target", false)
                     .each(graph.updateNodes("source", false))
                     .style("stroke", function(d) {
                         return color_link(d.link_str);
                     });
 
-                graph.svg.select("#node-" + d.key).classed("selected", false);
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d)).classed("selected", false);
             });
 
         var path = graph.svg.selectAll("path.link")
@@ -225,7 +224,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .enter().append("svg:a")
             .append("svg:path")
             .attr("class", function(d) {
-                return "link source-" + d.source.key + " target-" + d.target.key;
+                return "link source-" + d.source.host.replace(/\./g,"_") + "-" + d.source.service.replace(/\./g,"_") +" target-" + d.target.host.replace(/\./g,"_") + "-" + d.target.service.replace(/\./g,"_");
             })
             .attr("d", function(d, i) {
                 return graph.line(splines[i]);
@@ -234,14 +233,14 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 return color_link(d.link_str);
             })
             .on("mouseover", function linkMouseover(d) {
-                active_link = ".source-" + d.source.key + ".target-" + d.target.key;
+                active_link = ".source-" + d.source.host.replace(/\./g,"_") + "-" + d.source.service.replace(/\./g,"_") + ".target-" + d.target.host.replace(/\./g,"_") + "-" + d.target.service.replace(/\./g,"_");
                 graph.svg.selectAll(active_link).classed("active", true)
-                    .style("stroke", "red");
+                    .style("stroke", "black");
 
-                graph.svg.select("#node-" + d.source.key)
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
                     .classed("source", true);
 
-                graph.svg.select("#node-" + d.target.key)
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
                     .classed("target", true);
             })
             .on("mouseout", function linkMouseout(d) {
@@ -250,10 +249,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                         return color_link(d.link_str);
                     });
 
-                graph.svg.select("#node-" + d.source.key)
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
                     .classed("source", false);
 
-                graph.svg.select("#node-" + d.target.key)
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
                     .classed("target", false);
             });
     };
@@ -261,7 +260,8 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
     this.updateNodes = function(name, value) {
         return function(d) {
             if (value) this.parentNode.appendChild(this);
-            graph.svg.select("#node-" + d[name].key).classed(name, value);
+            var selector = nodeHelpers.nodeServiceId(d[name]);
+            graph.svg.select("#"+selector).classed(name, value);
         };
     };
 

@@ -1,7 +1,6 @@
 <style type="text/css">
 
 path.arc {
-/*   cursor: move; */
   fill: #fff;
 }
 
@@ -19,10 +18,9 @@ path.arc {
 }
 
 .link {
-
   fill: none;
-  stroke-opacity: .3;
-  stroke-width:1.5;
+  stroke-opacity: .6;
+  stroke-width: 1.5;
 }
 
 .link.source, .link.target {
@@ -30,9 +28,10 @@ path.arc {
 }
 
 .node.target {
-  /*stroke: #2C2B1A !important;*/
+  stroke: #2C2B1A !important;
   fill-opacity: 1;
   font-size: 16px;
+  stroke-width: 0.5px;
 }
 
 .link.source {
@@ -40,18 +39,13 @@ path.arc {
 }
 
 .node.source {
-  /*stroke: #2C2B1A;*/
+  stroke: #2C2B1A;
   font-size: 16px;
   fill-opacity: 1;
 }
 
 .link.target {
-  //stroke: #FE4509;
-}
-
-.source, .target, .selected {
-  stroke-width: 1.5px;
-  stroke-opacity: 1.0;
+  stroke: #FE4509;
 }
 
 .tooltip:hover:after {
@@ -61,19 +55,28 @@ path.arc {
 }
 
 .selected {
-  /*stroke: #2C2B1A;*/
+  stroke: black;
+  stroke-width: 0.5px;
+  stroke-opacity: 0.7;
+}
+
+.selected text{
+  font-size: 14px!important;
+}
+a:hover{
+  text-decoration:none;
 }
 
 .link.active {
-  stroke: red;
-  stroke-width: 2px;
+  stroke-width: 2;
   stroke-opacity: 1;
 }
 </style>
-
+<script src="/static/topology-graph.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
     new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart").init();
+    //new ResourceTopologyGraph("/static/dashboard/js/new-structure-sample.js", "#resource-topology-chart").init();
     $(document).on("click", "g.node a", function(ev) {
         var chart_node = $(this).find('text').html();
         $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + chart_node, function(res) {
