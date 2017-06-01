@@ -5,7 +5,7 @@ import horizon
 
 class Integration(horizon.Dashboard):
 
-    name = getattr(settings, 'DEVOPS_PORTAL_NAME', _('Integration Dashboard'))
+    name = getattr(settings, 'DEVOPS_PORTAL_NAME', _('Integration'))
     slug = 'integration'
     default_panel = 'modeldesigner'
 

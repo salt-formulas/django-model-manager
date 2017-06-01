@@ -1,0 +1,23 @@
+@mixin prefix($property, $value, $prefixes: ()) {
+  @each $prefix in $prefixes {
+    #{'-' + $prefix + '-' + $property}: $value;
+  }
+ 
+  // Output standard non-prefixed declaration
+  #{$property}: $value;
+}
+
+@mixin mira-alert-variant($brand-color) {
+  background-color: $brand-color;
+  border-color: $brand-color;
+  color: #fff;
+
+  hr {
+    border-top-color: darken($brand-color, 5%);
+  }
+  .alert-link {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+

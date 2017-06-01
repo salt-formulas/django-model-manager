@@ -5,7 +5,7 @@ import horizon
 
 class Delivery(horizon.Dashboard):
 
-    name = _('Delivery Dashboard')
+    name = _('Delivery')
     slug = 'delivery'
 
 horizon.register(Delivery)
