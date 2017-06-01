@@ -1,3 +1,4 @@
+{"result": "ok", "data":
 [
     {
         "host": "ctl01.virtual-mcp11-k8s-calico-dyn.local", 
@@ -1277,4 +1278,4 @@
         "service": "salt.minion", 
         "size": 1
     }
-]
+]}
