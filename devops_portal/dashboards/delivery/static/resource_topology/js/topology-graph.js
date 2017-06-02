@@ -113,7 +113,8 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         }
         graph.div = d3.select(graphSelector).insert("div", "h2")
             .style("width", w + "px")
-            .style("height", w + "px");
+            .style("height", w + "px")
+            .style("margin","0px auto");
         graph.svg = graph.div.append("svg:svg")
             .attr("width", w)
             .attr("height", h)
@@ -293,7 +294,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
     };
 
     this.resetPosition = function(){
-        content_width = $(graphSelector).innerWidth();
+        content_width = $(window).width() - $("#sidebar").width() - 50;
         w = content_width;
         h = content_width;
         rx = w / 2;
