@@ -44,40 +44,8 @@ class DetailView(views.HorizonTemplateView):
 
 def topology_data_view(self, *args, **kwargs):
     data = []
-    result = 'error'
-    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.inventory'}])
-    if res and isinstance(res, dict):
-        # unwrap response from Salt Master
-        inventory = res.get('return', [{'': ''}])[0].values()[0]
-        # create topology graph source data, optionally filtered by cluster name
-        for node, node_data in inventory.items():
-            if kwargs.get('domain', '') in node:
-                roles = node_data.get('roles', [])
-                if kwargs.get('domain', None):
-                    node = node.replace(kwargs.get('domain'), '')[:-1]
-                for role in roles:
-                    datum = {
-                        'name': "|".join([node, role]),
-                        'lnkstrength': [],
-                        'imports': []
-                    }
-                    data.append(datum)
-        result = 'ok'
-
-    ret = {
-        'result': result,
-        'data': data
-    }
- 
-    return JsonResponse(ret)
-
-
-'''
-def topology_data_view(self, *args, **kwargs):
-    data = []
     res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
     graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph', [])
-
     if graph_data and isinstance(graph_data, list):
         ret = {
             'result': 'ok',
@@ -88,32 +56,27 @@ def topology_data_view(self, *args, **kwargs):
             'result': 'error',
             'data': 'No data received from Salt Master.'
         }
-
     return JsonResponse(ret)
-'''
+
 
 
 def pillar_data_view(self, *args, **kwargs):
     data = []
-    result = 'error'
     # recreate minion ID from domain and chart node name
     domain = kwargs.get('domain')
-    chart_node = kwargs.get('chart_node')
-    minion_id = chart_node.split('|')[0] + '.' + domain
-    system = chart_node.split('|')[1].split('.')[0]
-    subsystem = chart_node.split('|')[1].split('.')[1]
+    host = kwargs.get('host')
+    service = kwargs.get('service')
+    system = service.split('.')[0]
+    subsystem = service.split('.')[1]
 
-    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': minion_id}])
-    if res and isinstance(res, dict):
-        # unwrap response from Salt Master
-        pillar = res.get('return', [{'': ''}])[0].values()[0]
-        pillar_data = pillar.values()[0].get(system, {}).get(subsystem, {})
-        pillar_yaml = yaml.safe_dump(pillar_data, default_flow_style=False)
-        html = '<pre>' + pillar_yaml + '</pre>'
-        result = 'ok'
-
+    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': host}])
+    # unwrap response from Salt Master
+    pillar = res.get('return', [{'': ''}])[0].values()[0]
+    pillar_data = pillar.values()[0].get(system, {}).get(subsystem, {})
+    pillar_yaml = yaml.safe_dump(pillar_data, default_flow_style=False)
+    html = '<pre>' + pillar_yaml + '</pre>'
     ret = {
-        'result': result,
+        'result': 'ok',
         'html': html
     }
 
