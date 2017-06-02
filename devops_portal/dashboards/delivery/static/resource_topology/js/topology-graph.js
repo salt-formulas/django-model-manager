@@ -91,7 +91,8 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         return imports;
       }
     };
-    this.init = function() {
+    this._data = {},
+    this.init = function(reinit) {
         graph.cluster = d3.layout.cluster()
             .size([360, ry - 150])
             .sort(function(a, b) {
@@ -107,6 +108,9 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .angle(function(d) {
                 return d.x / 180 * pi;
             });
+        if(reinit && graph.div){
+            graph.div.remove();
+        }
         graph.div = d3.select(graphSelector).insert("div", "h2")
             .style("width", w + "px")
             .style("height", w + "px");
@@ -120,30 +124,37 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         graph.svg.append("svg:path")
             .attr("class", "arc")
             .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
-
-        //d3.json("/static/dashboard/js/new-structure-sample.js", function(classes) {
-        d3.json(dataUrl, function(res){
-            if(res && res.result === 'ok'){
-                graph.render(res.data);
-            }else{
-                console.log("Cannot create topology graph, server returns error: " + res.data);
-            }
-        });
-
-        d3.select(window).on("mousemove", function() {
-            if (m0) {
-                var m1 = mouseCoordinates(d3.event),
-                    dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
-                graph.div.style("-webkit-transform", "translate3d(0," + (ry - rx) + "px,0)rotate3d(0,0,0," + dm + "deg)translate3d(0," + (rx - ry) + "px,0)");
-            }
-        });
+        if(!reinit){
+            d3.json(dataUrl, function(res){
+                if(res && res.result === 'ok'){
+                    graph.render(res.data);
+                }else{
+                    console.log("Cannot create topology graph, server returns error: " + res.data);
+                }
+            });
+            $(window).on('resize', function(ev){
+                graph.resetPosition();
+                graph.init(true);
+                graph.render();
+            });
+            /*$(window).on("mousedown", function(ev){
+              m0 = mouseCoordinates(ev);
+              ev.preventDefault();
+            });
+            $(window).on("mousemove", function() {
+                if (m0) {
+                    var m1 = mouseCoordinates(d3.event),
+                        dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
+                    graph.div.style("-webkit-transform", "translate3d(0," + (ry - rx) + "px,0)rotate3d(0,0,0," + dm + "deg)translate3d(0," + (rx - ry) + "px,0)");
+                }
+            });*/
+        }
     };
     this.render = function(classes) {
-        var data = {};
-        if(classes){
-            data = classes;
+        if(classes instanceof Array){
+            graph._data = classes;
         }
-        var rootNodes = nodeHelpers.root(classes);
+        var rootNodes = nodeHelpers.root(graph._data);
         var nodes = graph.cluster.nodes(rootNodes),
             links = nodeHelpers.imports(nodes),
             splines = graph.bundle(links);
@@ -279,6 +290,14 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 graph.svg.select("#" + nodeHelpers.nodeServiceId(d.target))
                     .classed("target", false);
             });
+    };
+
+    this.resetPosition = function(){
+        content_width = $(graphSelector).innerWidth();
+        w = content_width;
+        h = content_width;
+        rx = w / 2;
+        ry = h / 2;
     };
 
     this.updateNodes = function(name, value) {
