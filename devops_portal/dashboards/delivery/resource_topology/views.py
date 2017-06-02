@@ -44,42 +44,20 @@ class DetailView(views.HorizonTemplateView):
 
 def topology_data_view(self, *args, **kwargs):
     data = []
-    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.inventory'}])
-    # unwrap response from Salt Master
-    inventory = res.get('return', [{'': ''}])[0].values()[0]
-    # create topology graph source data, optionally filtered by cluster name
-    for node, node_data in inventory.items():
-        if kwargs.get('domain', '') in node:
-            roles = node_data.get('roles', [])
-            if kwargs.get('domain', None):
-                node = node.replace(kwargs.get('domain'), '')[:-1]
-            for role in roles:
-                datum = {
-                    'name': "|".join([node, role]),
-                    'lnkstrength': [],
-                    'imports': []
-                }
-                data.append(datum)
-    ret = {
-        'result': 'ok',
-        'data': data
-    }
- 
-    return JsonResponse(ret)
-
-
-'''
-def topology_data_view(self, *args, **kwargs):
-    data = []
     res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
     graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph', [])
-    ret = {
-        'result': 'ok',
-        'data': graph_data
-    }
-
+    if graph_data and isinstance(graph_data, list):
+        ret = {
+            'result': 'ok',
+            'data': graph_data
+        }
+    else:
+        ret = {
+            'result': 'error',
+            'data': 'No data received from Salt Master.'
+        }
     return JsonResponse(ret)
-'''
+
 
 
 def pillar_data_view(self, *args, **kwargs):

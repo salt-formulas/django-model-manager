@@ -5,12 +5,13 @@ path.arc {
 }
 
 .node {
-  font-size: 12px;
   font-family: Helvetica, sans-serif;
   fill: #2C2B1A;
   fill-opacity: 0.6;
 }
-
+.node text{
+  font-size: 9px;
+}
 .node:hover {
   font-size: 20px;
   fill: #2C2B1A;
@@ -60,7 +61,7 @@ path.arc {
   stroke-opacity: 0.7;
 }
 
-.selected text{
+.node.selected text, .node.target text, .node.source text{
   font-size: 14px!important;
 }
 a:hover{
@@ -72,20 +73,26 @@ a:hover{
   stroke-opacity: 1;
 }
 </style>
-<script src="/static/topology-graph.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
     new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart").init();
-    //new ResourceTopologyGraph("/static/dashboard/js/new-structure-sample.js", "#resource-topology-chart").init();
     $(document).on("click", "g.node a", function(ev) {
-        var chart_node = $(this).find('text').html();
-        $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + chart_node, function(res) {
+        var $node = $(this)
+         ,  host = $node.parent().attr("data-node-id")
+         ,  service = $node.find('text').html();
+        if(host && service){
+        $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + host + "/" + service, function(res) {
             if(res && res.result === 'ok'){
               $('#resource-topology-detail').html(res.html);
             }else{
-              console.log("Cannot print pillar data server returns invalid response");
+              console.log("Cannot print pillar data, server returns invalid response: " + res.data);
             }
+        }).fail(function(error){
+          console.log("Cannot get service data, server returns " + error.status + " "+ error.statusText);
         });
+      }else{
+        console.log("Cannot get service data, host and service ID cannot be obtained");
+      }
     });
 });
 </script>

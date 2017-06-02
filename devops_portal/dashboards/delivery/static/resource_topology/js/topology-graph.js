@@ -1,4 +1,3 @@
-
 var ResourceTopologyGraph = function(dataUrl, graphSelector) {
     var content_width = $(graphSelector).innerWidth(),
         graph = this,
@@ -9,8 +8,8 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         m0, rotate = 0,
         pi = Math.PI,
         active_link, color = d3.scale.ordinal().domain([-3, -2, -1, 0, 1, 2, 3]).range(["#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A", "#2C2B1A"]),
-        color_arc = d3.scale.ordinal().domain([-3, -2, -1, 0, 1, 2, 3]).range(["#FDB613", "#FDB613", "#2C2B1A", "#FDB613", "#FDB613", "#FDB613", "#FDB613"]),
-        //var color_link = d3.scale.linear().domain([1, 3, 5]).range(["#C7C7C7", "#000000", "#000000"]);
+        //color_arc = d3.scale.ordinal().domain([-3, -2, -1, 0, 1, 2, 3]).range(["#FDB613", "#FDB613", "#2C2B1A", "#FDB613", "#FDB613", "#FDB613", "#FDB613"]),
+        color_arc = d3.scale.category20(),
         color_link = d3.scale.linear().domain([1, 6]).range(["#C7C7C7", "#000000"]),
         splines = [],
         cross = function(a, b) {
@@ -24,7 +23,22 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         };
     var nodeHelpers = {
       nodeServiceId: function(d){
-        return "node-" + d.host.replace(/\./g,"_") + "-service-" + d.service.replace(/\./g,"_");
+        if(d && d.host && d.service){
+            return "node-" + d.host.replace(/\./g,"_") + "-service-" + d.service.replace(/\./g,"_");
+        }else{
+            console.log("Cannot generate node-service ID, given node or its host/service is undefined! node: " + nodeHelpers.nodeToString(d));
+            return "node-" + (node.host?node.host:"UNDEFINED_HOST") + (node.service?node.service:"UNDEFINED_SERVICE");
+        }
+      },
+      nodeToString: function(n, hideRelations){
+           var cleanNode = {};
+           $.extend(cleanNode, n);
+           delete cleanNode.children;
+           delete cleanNode.parent;
+           if(hideRelations){
+             delete cleanNode.relations;
+           }
+           return JSON.stringify(cleanNode);
       },
       root: function(classes) {
         var map = {};
@@ -65,7 +79,12 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         nodes.forEach(function(d) {
           if (d.relations) {
             d.relations.forEach(function(i) {
-                imports.push({source: map[d.host+"_"+d.service], target: map[i.host + "_" + i.service], link_str: 2});
+                var line = {source: map[d.host+"_"+d.service], target: map[i.host + "_" + i.service], link_str: 2};
+                if(line.source && line.target){
+                    imports.push(line);
+                }else{
+                    console.log("Cannot create relation link, node: " + nodeHelpers.nodeToString(d) + " relation: " + JSON.stringify(i));
+                }
             });
           }
         });
@@ -88,11 +107,9 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .angle(function(d) {
                 return d.x / 180 * pi;
             });
-        // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
         graph.div = d3.select(graphSelector).insert("div", "h2")
             .style("width", w + "px")
-            .style("height", w + "px")
-            .style("position", "absolute");
+            .style("height", w + "px");
         graph.svg = graph.div.append("svg:svg")
             .attr("width", w)
             .attr("height", h)
@@ -109,7 +126,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             if(res && res.result === 'ok'){
                 graph.render(res.data);
             }else{
-                console.log("Cannot create topology graph, server returns error");
+                console.log("Cannot create topology graph, server returns error: " + res.data);
             }
         });
 
@@ -122,6 +139,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
         });
     };
     this.render = function(classes) {
+        var data = {};
+        if(classes){
+            data = classes;
+        }
         var rootNodes = nodeHelpers.root(classes);
         var nodes = graph.cluster.nodes(rootNodes),
             links = nodeHelpers.imports(nodes),
@@ -138,10 +159,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .innerRadius(ry - 185)
             .outerRadius(ry - 160)
             .startAngle(function(d) {
-                return (graph.findStartAngle(d.__data__.children) - 3) * pi / 180;
+                return (graph.findStartAngle(d.__data__.children) - 0.25) * pi / 180;
             })
             .endAngle(function(d) {
-                return (graph.findEndAngle(d.__data__.children) + 3) * pi / 180
+                return (graph.findEndAngle(d.__data__.children) + 0.25) * pi / 180
             });
 
         graph.svg.selectAll("g.arc")
@@ -149,10 +170,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             .enter().append("svg:path")
             .attr("d", groupArc)
             .attr("class", "groupArc")
-            .style("fill", function(d) {
-                return color_arc(d.__data__.children);
-            })
-            .style("fill-opacity", 0.9);
+            .style("fill", function(d,i) {
+                //return color_arc(d.__data__.children);
+                return color_arc(i);
+            });
 
         graph.svg.selectAll("g.node")
             .data(nodes.filter(function(n) {
@@ -160,6 +181,9 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
             }))
             .enter().append("svg:g")
             .attr("class", "node")
+            .attr("data-node-id", function(d){
+                return d.host;
+            })
             .attr("id", function(d) {
                 return nodeHelpers.nodeServiceId(d);
             })
@@ -237,10 +261,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                 graph.svg.selectAll(active_link).classed("active", true)
                     .style("stroke", "black");
 
-                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d.source))
                     .classed("source", true);
 
-                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d.target))
                     .classed("target", true);
             })
             .on("mouseout", function linkMouseout(d) {
@@ -249,10 +273,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector) {
                         return color_link(d.link_str);
                     });
 
-                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d.source))
                     .classed("source", false);
 
-                graph.svg.select("#" + nodeHelpers.nodeServiceId(d))
+                graph.svg.select("#" + nodeHelpers.nodeServiceId(d.target))
                     .classed("target", false);
             });
     };
