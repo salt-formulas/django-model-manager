@@ -86,12 +86,12 @@ def pillar_data_view(self, *args, **kwargs):
     data = []
     # recreate minion ID from domain and chart node name
     domain = kwargs.get('domain')
-    chart_node = kwargs.get('chart_node')
-    minion_id = chart_node.split('|')[0] + '.' + domain
-    system = chart_node.split('|')[1].split('.')[0]
-    subsystem = chart_node.split('|')[1].split('.')[1]
+    host = kwargs.get('host')
+    service = kwargs.get('service')
+    system = service.split('.')[0]
+    subsystem = service.split('.')[1]
 
-    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': minion_id}])
+    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': host}])
     # unwrap response from Salt Master
     pillar = res.get('return', [{'': ''}])[0].values()[0]
     pillar_data = pillar.values()[0].get(system, {}).get(subsystem, {})
