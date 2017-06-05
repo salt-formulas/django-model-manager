@@ -14,3 +14,5 @@ devops_portal/settings/local/local_settings.py
 # development dbs
 db.sqlite3
 backend_db.sqlite3
+# celery beat schedule
+celerybeat-schedule
