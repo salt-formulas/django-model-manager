@@ -22,7 +22,11 @@ class IndexView(tables.DataTableView):
 
     def get_data(self):
         data = []
-        res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.inventory'}])
+        try:
+            res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.inventory'}])
+        except:
+            res = {}
+            LOG.error('Could not get response from Salt Master API.')
         # unwrap response from Salt Master
         inventory = res.get('return', [{'': ''}])[0].values()[0]
         domains = [".".join(n.split('.')[1:]) for n in inventory]
@@ -44,8 +48,17 @@ class DetailView(views.HorizonTemplateView):
 
 def topology_data_view(self, *args, **kwargs):
     data = []
-    res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
-    graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph', [])
+    try:
+        res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
+    except:
+        res = {}
+        LOG.error('Could not get response from Salt Master API.')
+
+    try:
+        graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph')
+    except:
+        graph_data = res.get('return', [{'': ''}])[0].values()[0]
+
     if graph_data and isinstance(graph_data, list):
         ret = {
             'result': 'ok',
@@ -54,7 +67,7 @@ def topology_data_view(self, *args, **kwargs):
     else:
         ret = {
             'result': 'error',
-            'data': 'No data received from Salt Master.'
+            'data': repr(graph_data)
         }
     return JsonResponse(ret)
 
@@ -69,7 +82,12 @@ def pillar_data_view(self, *args, **kwargs):
     system = service.split('.')[0]
     subsystem = service.split('.')[1]
 
-    res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': host}])
+    try:
+        res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': host}])
+    except:
+        res = {}
+        LOG.error('Could not get response from Salt Master API.')
+
     # unwrap response from Salt Master
     pillar = res.get('return', [{'': ''}])[0].values()[0]
     pillar_data = pillar.values()[0].get(system, {}).get(subsystem, {})

@@ -18,11 +18,13 @@ def get_client():
         raise ImproperlyConfigured(msg)
 
     # instantiate client
-    c = Pepper(url)
-
-    # call login to get token on client instance
-    login = c.login(user, password, eauth)
-    LOG.debug(login)
+    try:
+        c = Pepper(url)
+        # call login to get token on client instance
+        login = c.login(user, password, eauth)
+    except:
+        c = None
+        LOG.error('Could not connect to Salt Master API.')
 
     return c
 
