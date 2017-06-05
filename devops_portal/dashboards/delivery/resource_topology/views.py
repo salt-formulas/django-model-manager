@@ -1,9 +1,11 @@
+import json
 import logging
 import yaml
 
 from collections import Counter
 from devops_portal.api.salt import salt_client
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
 from django.utils.translation import ugettext_lazy as _
 
@@ -11,6 +13,7 @@ from horizon import tables
 from horizon import views
 
 from .tables import ResourceTopologyTable
+from .utils import get_topology_data
 
 LOG = logging.getLogger(__name__)
 
@@ -47,54 +50,11 @@ class DetailView(views.HorizonTemplateView):
 
 
 def topology_data_view(self, *args, **kwargs):
-    data = []
-    try:
-        res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
-    except:
-        res = {}
-        LOG.error('Could not get response from Salt Master API.')
+    cache_ret = cache.get('topology_data', '{}')
+    ret = json.loads(cache_ret)
+    if not ret:
+        ret = get_topology_data()
 
-    try:
-        graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph')
-    except:
-        graph_data = res.get('return', [{'': ''}])[0].values()[0]
-
-    if graph_data and isinstance(graph_data, list):
-        ret = {
-            'result': 'ok',
-            'data': graph_data
-        }
-    else:
-        ret = {
-            'result': 'error',
-            'data': repr(graph_data)
-        }
-    return JsonResponse(ret)
-
-
-def status_data_view(self, *args, **kwargs):
-    data = []
-    try:
-        res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'saltresource.graph_data'}]) 
-    except:
-        res = {}
-        LOG.error('Could not get response from Salt Master API.')
-
-    try:
-        graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph')
-    except:
-        graph_data = res.get('return', [{'': ''}])[0].values()[0]
-
-    if graph_data and isinstance(graph_data, list):
-        ret = {
-            'result': 'ok',
-            'data': graph_data
-        }
-    else:
-        ret = {
-            'result': 'error',
-            'data': repr(graph_data)
-        }
     return JsonResponse(ret)
 
 

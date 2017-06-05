@@ -72,6 +72,35 @@ HORIZON_CONFIG = {
     'plugins': []
 }
 
+# Celery settings
+BROKER_URL = 'redis://localhost:6379/1'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Default Celery Beat schedule
+
+from datetime import timedelta
+
+CELERYBEAT_SCHEDULE = {
+    'cache_topology_data_task': {
+        'task': 'cache_topology_data',
+        'schedule': timedelta(seconds=60)
+    },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://localhost:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
 # Set to True to allow users to upload images to glance via Horizon server.
 # When enabled, a file form field will appear on the create image form.
 # See documentation for deployment considerations.
