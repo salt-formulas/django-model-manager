@@ -72,6 +72,31 @@ def topology_data_view(self, *args, **kwargs):
     return JsonResponse(ret)
 
 
+def status_data_view(self, *args, **kwargs):
+    data = []
+    try:
+        res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'saltresource.graph_data'}]) 
+    except:
+        res = {}
+        LOG.error('Could not get response from Salt Master API.')
+
+    try:
+        graph_data = res.get('return', [{'': ''}])[0].values()[0].get('graph')
+    except:
+        graph_data = res.get('return', [{'': ''}])[0].values()[0]
+
+    if graph_data and isinstance(graph_data, list):
+        ret = {
+            'result': 'ok',
+            'data': graph_data
+        }
+    else:
+        ret = {
+            'result': 'error',
+            'data': repr(graph_data)
+        }
+    return JsonResponse(ret)
+
 
 def pillar_data_view(self, *args, **kwargs):
     data = []
