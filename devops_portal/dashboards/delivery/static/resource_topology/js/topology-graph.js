@@ -11,13 +11,18 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
         splines = [],
         color_arc = d3.scale.category20(),
         line_color = function(d){
+            var color = "#C7C7C7";
             if(d.hasOwnProperty("source") && d.hasOwnProperty("target")){
                 //TODO: find relation object
                 d.source.relations.forEach(function(item){
-
+                    if(item.status === "success"){
+                        color = "#00BB00";
+                    }else if(item.status === "failed"){
+                        color = "#FF0000";
+                    }
                 });
             }
-            return "#C7C7C7";
+            return color;
         },
         cross = function(a, b) {
             return a[0] * b[1] - a[1] * b[0];
@@ -281,9 +286,8 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
                 })
                 .on("mouseover", function linkMouseover(d) {
                     active_link = ".source-" + d.source.host.replace(/\./g,"_") + "-" + d.source.service.replace(/\./g,"_") + ".target-" + d.target.host.replace(/\./g,"_") + "-" + d.target.service.replace(/\./g,"_");
-                    graph.svg.selectAll(active_link).classed("active", true)
-                        .style("stroke", "black");
-
+                    graph.svg.selectAll(active_link)
+                        .classed("active", true);
                     graph.svg.select("#" + nodeHelpers.nodeServiceId(d.source))
                         .classed("source", true);
 
@@ -319,7 +323,13 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
     }
 
     this.resetPosition = function(){
-        content_width = $(window).width() - $("#sidebar").width() - 50;
+        var sidebarWidth = $("#sidebar").width(),
+            windowWidth = $(window).width();
+        if(windowWidth > sidebarWidth){
+            content_width = windowWidth - sidebarWidth - 20;
+        }else{
+            content_width = windowWidth;
+        }
         w = content_width;
         h = content_width;
         rx = w / 2;

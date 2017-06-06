@@ -2,6 +2,7 @@
 [
     {
         "host": "ctl01.virtual-mcp11-k8s-calico-dyn.local", 
+        "status": "success",
         "type": "software", 
         "relations": [], 
         "service": "telegraf.agent", 
@@ -10,6 +11,7 @@
     {
         "host": "ctl01.virtual-mcp11-k8s-calico-dyn.local", 
         "type": "software", 
+        "status": "success",
         "relations": [], 
         "service": "kubernetes.master", 
         "size": 1
@@ -17,6 +19,7 @@
     {
         "host": "ctl01.virtual-mcp11-k8s-calico-dyn.local", 
         "type": "software", 
+        "status": "failed",
         "relations": [], 
         "service": "kubernetes.pool", 
         "size": 1
@@ -24,6 +27,7 @@
     {
         "host": "ctl01.virtual-mcp11-k8s-calico-dyn.local", 
         "type": "software", 
+        "status": "failed",
         "relations": [], 
         "service": "ntp.client", 
         "size": 1
@@ -31,6 +35,7 @@
     {
         "host": "ctl01.virtual-mcp11-k8s-calico-dyn.local", 
         "type": "software", 
+        "status": "failed",
         "relations": [], 
         "service": "ntp.server", 
         "size": 1
@@ -133,10 +138,8 @@
             {
                 "host": "cfg01.virtual-mcp11-k8s-calico-dyn.local",
                 "service": "salt.master",
-                "direction": 1,
-                "width": 1,
-                "type": "software",
-                "size": 1
+                "status": "success",
+                "type": "software"
             }
         ], 
         "service": "salt.minion", 
@@ -275,9 +278,8 @@
             {
                 "host": "cfg01.virtual-mcp11-k8s-calico-dyn.local",
                 "service": "salt.master",
-                "direction": 1,
-                "width": 1,
                 "type": "software",
+                "status": "failed",
                 "size": 1
             }
         ],
