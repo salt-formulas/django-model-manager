@@ -12,6 +12,15 @@ path.arc {
 .node text{
   font-size: 9px;
 }
+
+.node text.status-success{
+  fill: #00AA00;
+  fill-opacity: 1;
+}
+.node text.status-failed{
+  fill: #AA0000;
+  fill-opacity: 1;
+}
 .node:hover {
   font-size: 20px;
   fill: #2C2B1A;
@@ -75,7 +84,8 @@ a:hover{
 </style>
 <script type="text/javascript">
 $(document).ready(function() {
-    new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart").init();
+    //new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", 60).init();
+    new ResourceTopologyGraph("/static/dashboard/js/new-structure-sample.js", "#resource-topology-chart", 60).init();
     $(document).on("click", "g.node a", function(ev) {
         var $node = $(this)
          ,  host = $node.parent().attr("data-node-id")
