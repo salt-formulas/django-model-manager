@@ -72,6 +72,13 @@ HORIZON_CONFIG = {
     'plugins': []
 }
 
+# Salt API settings
+SALT_API_URL="http://127.0.0.1:8000"
+SALT_API_USER="saltdev"
+SALT_API_PASSWORD="saltdev"
+SALT_API_EAUTH="pam"
+SALT_API_POLLING_INTERVAL=30
+
 # Celery settings
 BROKER_URL = 'redis://localhost:6379/1'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
@@ -80,17 +87,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
-# Default Celery Beat schedule
-
-from datetime import timedelta
-
-CELERYBEAT_SCHEDULE = {
-    'cache_topology_data_task': {
-        'task': 'cache_topology_data',
-        'schedule': timedelta(seconds=60)
-    },
-}
-
+# Default cache set to Redis
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -430,3 +427,15 @@ if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
 CSRF_COOKIE_AGE = None
+
+# Default Celery Beat schedule
+
+from datetime import timedelta
+
+CELERYBEAT_SCHEDULE = {
+    'cache_topology_data_task': {
+        'task': 'cache_topology_data',
+        'schedule': timedelta(seconds=SALT_API_POLLING_INTERVAL)
+    },
+}
+

@@ -49,6 +49,11 @@ class DetailView(views.HorizonTemplateView):
     template_name = "delivery/resource_topology/detail.html"
     page_title = _("Resource Topology - {{ domain }}")
 
+    def get_context_data(self, **kwargs):
+        context = super(DetailView, self).get_context_data(**kwargs)
+        context['polling_interval'] = getattr(settings, 'SALT_API_POLLING_INTERVAL', 30)
+        return context
+
 
 def topology_data_view(self, *args, **kwargs):
     domain = kwargs.get('domain', None)

@@ -83,7 +83,7 @@ a:hover{
 </style>
 <script type="text/javascript">
 $(document).ready(function() {
-    new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", 60).init();
+    new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
     //new ResourceTopologyGraph("/static/dashboard/js/new-structure-sample.js", "#resource-topology-chart").init();
     $(document).on("click", "g.node a", function(ev) {
         var $node = $(this)
