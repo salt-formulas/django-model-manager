@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import yaml
@@ -50,10 +51,29 @@ class DetailView(views.HorizonTemplateView):
 
 
 def topology_data_view(self, *args, **kwargs):
+    domain = kwargs.get('domain', None)
     cache_ret = cache.get('topology_data', '{}')
-    ret = json.loads(cache_ret)
-    if not ret:
-        ret = get_topology_data()
+    graph_data = json.loads(cache_ret)
+    if not graph_data:
+        graph_data = get_topology_data()
+
+    filtered_data = copy.copy(graph_data)
+    if domain:
+       filtered_data = [d for d in graph_data if domain in d.get('host', '')]
+       all_relations = [r.get('relations', [])[0] for r in filtered_data if r.get('relations', [])]
+       external_hosts = [d for d in graph_data if d.get('host') in [r.get('host') for r in all_relations] and d.get('host') not in [f.get('host') for f in filtered_data]]
+       filtered_data = filtered_data + external_hosts
+
+    if filtered_data and isinstance(filtered_data, list):
+        ret = {
+            'result': 'ok',
+            'data': filtered_data
+        }
+    else:
+        ret = {
+            'result': 'error',
+            'data': repr(filtered_data)
+        }
 
     return JsonResponse(ret)
 

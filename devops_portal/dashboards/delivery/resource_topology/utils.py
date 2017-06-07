@@ -41,16 +41,5 @@ def get_topology_data():
         for relation in datum.get('relations', []):
             relation['status'] = datum.get('status', 'unknown')
 
-    if graph_data and isinstance(graph_data, list):
-        ret = {
-            'result': 'ok',
-            'data': graph_data
-        }
-    else:
-        ret = {
-            'result': 'error',
-            'data': repr(graph_data)
-        }
-
-    return ret
+    return graph_data
 
