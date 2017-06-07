@@ -199,12 +199,27 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
             graph.svg.selectAll("g.arc")
                 .data(groupData[0])
                 .enter().append("svg:path")
+                .attr("id",function(d){
+                    return "node-"+d.__data__.host;
+                })
                 .attr("d", groupArc)
                 .attr("class", "groupArc")
                 .style("fill", function(d,i) {
                     return color_arc(i);
                 });
-
+           graph.svg.selectAll("path.groupArc")[0].forEach(function(group){
+                var nodeHost = d3.select(group).attr("id");
+                d3.select("g").append("text")
+                .style("font-size",12)
+                .style("fill","#F8F8F8")
+                .attr("dy",17)
+                .append("textPath")
+                .attr("xlink:href", function(d){
+                    return "#"+nodeHost;
+                })
+                .attr("startOffset",10)
+                .text(nodeHost)
+            });
             graph.svg.selectAll("g.node")
                 .data(nodes.filter(function(n) {
                     return !n.children;
