@@ -13,7 +13,6 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
         line_color = function(d){
             var color = "#C7C7C7";
             if(d.hasOwnProperty("source") && d.hasOwnProperty("target")){
-                //TODO: find relation object
                 d.source.relations.forEach(function(item){
                     if(item.status === "success"){
                         color = "#00BB00";
@@ -206,7 +205,7 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
                 d3.select("g").append("text")
                 .style("font-size",12)
                 .style("fill","#F8F8F8")
-                .attr("dy",17)
+                .attr("dy", 17)
                 .append("textPath")
                 .attr("xlink:href", function(d){
                     return "#"+nodeHostId;
