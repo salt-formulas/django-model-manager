@@ -39,7 +39,9 @@ def get_topology_data():
             datum['status'] = status
 
         for relation in datum.get('relations', []):
-            relation['status'] = datum.get('status', 'unknown')
+            rel_host = [h for h in graph_data if h.get('host') == relation.get('host') and h.get('service') == relation.get('service')]
+            if rel_host:
+                relation['status'] = rel_host[0].get('status', 'unknown')
 
     return graph_data
 
