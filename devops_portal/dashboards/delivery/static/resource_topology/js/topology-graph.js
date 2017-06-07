@@ -157,18 +157,6 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
                     });
                 }, refreshInterval * 1000);
             }
-
-            $(window).on("mousedown", function(ev){
-              m0 = mouseCoordinates(ev);
-              ev.preventDefault();
-            });
-            $(window).on("mousemove", function(ev) {
-                if (m0) {
-                    var m1 = mouseCoordinates(ev),
-                        dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
-                    graph.div.style("-webkit-transform", "translate3d(0," + (ry - rx) + "px,0)rotate3d(0,0,0," + dm + "deg)translate3d(0," + (rx - ry) + "px,0)");
-                }
-            });
         }
         return this;
     };
@@ -200,7 +188,10 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
                 .data(groupData[0])
                 .enter().append("svg:path")
                 .attr("id",function(d){
-                    return "node-"+d.__data__.host;
+                    return "node-"+d.__data__.host.replace(/\./g,"_");
+                })
+                .attr("data-node-host",function(d){
+                    return d.__data__.host;
                 })
                 .attr("d", groupArc)
                 .attr("class", "groupArc")
@@ -208,17 +199,41 @@ var ResourceTopologyGraph = function(dataUrl, graphSelector, refreshInterval) {
                     return color_arc(i);
                 });
            graph.svg.selectAll("path.groupArc")[0].forEach(function(group){
-                var nodeHost = d3.select(group).attr("id");
+                var arc = d3.select(group),
+                    nodeHostId = arc.attr("id"),
+                    nodeHost = arc.attr("data-node-host");
+
                 d3.select("g").append("text")
                 .style("font-size",12)
                 .style("fill","#F8F8F8")
                 .attr("dy",17)
                 .append("textPath")
                 .attr("xlink:href", function(d){
-                    return "#"+nodeHost;
+                    return "#"+nodeHostId;
                 })
-                .attr("startOffset",10)
+                .attr("startOffset", 7)
+                .attr("width", arc.node().getTotalLength()/2.4)
                 .text(nodeHost)
+                .each(function wrap( d ) {
+                    var self = d3.select(this),
+                        textLength = self.node().getComputedTextLength(),
+                        text = self.text(),
+                        width = self.attr('width');
+                    if(width > 50){
+                        while ( ( textLength > width )&& text.length > 0) {
+                            if(width > 100){
+                                text = text.slice(0, -1);
+                                self.text(text + '...');
+                            }else{
+                                text = text.slice(0, -5);
+                                self.text(text);
+                            }
+                            textLength = self.node().getComputedTextLength();
+                        }
+                    }else{
+                        self.text("");
+                    }
+                });
             });
             graph.svg.selectAll("g.node")
                 .data(nodes.filter(function(n) {
