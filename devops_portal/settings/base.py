@@ -428,14 +428,3 @@ if DEBUG:
 
 CSRF_COOKIE_AGE = None
 
-# Default Celery Beat schedule
-
-from datetime import timedelta
-
-CELERYBEAT_SCHEDULE = {
-    'cache_topology_data_task': {
-        'task': 'cache_topology_data',
-        'schedule': timedelta(seconds=SALT_API_POLLING_INTERVAL)
-    },
-}
-
