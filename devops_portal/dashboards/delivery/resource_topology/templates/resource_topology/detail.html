@@ -4,6 +4,11 @@
 {% block title %}{% trans "Resource Topology" %} - {{ domain }}{% endblock %}
 
 {% block main %}
+<div class="btn-group">
+    <a class="btn btn-default{% if not request.GET.graph or request.GET.graph == 'radial' %} disabled{% endif %}" href="?graph=radial">Radial layout</a>
+    <a class="btn btn-default{% if request.GET.graph == 'linear' %} disabled{% endif %}" href="?graph=linear">Linear layout</a>
+    <a class="btn btn-default{% if request.GET.graph == 'threemap' %} disabled{% endif %}" href="?graph=treemap">Treemap</a>
+</div>
 <div class="col-xs-12">
   <h3>{% trans "Topology chart" %}</h3>
   <div id="resource-topology-chart"></div>

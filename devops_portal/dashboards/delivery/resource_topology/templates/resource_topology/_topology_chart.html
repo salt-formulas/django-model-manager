@@ -1,3 +1,4 @@
+{% if not request.GET.graph or request.GET.graph == 'radial' %}
 <style type="text/css">
 
 path.arc {
@@ -81,28 +82,68 @@ a:hover{
   stroke-opacity: 1;
 }
 </style>
+
+{% elif request.GET.graph == 'linear'%}
+<style>
+.node {
+  font: 10px sans-serif;
+}
+
+.link {
+  stroke: steelblue;
+  stroke-opacity: .4;
+  fill: none;
+}
+</style>
+
+{% elif request.GET.graph == 'treemap' %}
+<style>
+.cell {
+  border: solid 1px white;
+  font: 10px sans-serif;
+  line-height: 12px;
+  overflow: hidden;
+  position: absolute;
+  text-indent: 2px;
+}
+
+.link {
+  stroke: #000;
+  stroke-opacity: .5;
+  fill: none;
+}
+</style>
+{% endif %}
 <script type="text/javascript">
 $(document).ready(function() {
-    new ResourceTopologyGraph("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
-    //new ResourceTopologyGraph("/static/dashboard/js/new-structure-sample.js", "#resource-topology-chart").init();
-    $(document).on("click", "g.node a", function(ev) {
-        var $node = $(this)
-         ,  host = $node.parent().attr("data-node-id")
-         ,  service = $node.find('text').html();
-        if(host && service){
-        $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + host + "/" + service, function(res) {
-            if(res && res.result === 'ok'){
-              $('#resource-topology-detail').html(res.html);
-            }else{
-              console.log("Cannot print pillar data, server returns invalid response: " + res.data);
-            }
-        }).fail(function(error){
-          console.log("Cannot get service data, server returns " + error.status + " "+ error.statusText);
-        });
-      }else{
-        console.log("Cannot get service data, host and service ID cannot be obtained");
-      }
-    });
+    var serviceClickHandler = function(ev) {
+        var $node =  $(this),
+            host = $node.parent().attr("data-node-id"),
+            service = $node.find('text').html();
+        if (host && service) {
+            $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + host + "/" + service, function(res) {
+                if (res && res.result === 'ok') {
+                    $('#resource-topology-detail').html(res.html);
+                } else {
+                    console.log("Cannot print pillar data, server returns invalid response: " + res.data);
+                }
+            }).fail(function(error) {
+                console.log("Cannot get service data, server returns " + error.status + " " + error.statusText);
+            });
+        } else {
+            console.log("Cannot get service data, host and service ID cannot be obtained");
+        }
+    };
+    if ("{{ request.GET.graph }}" === "" || "{{ request.GET.graph }}" === "radial") {
+        new ResourceTopologyGraphs.radial("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
+        $(document).on("click", "g.node a", serviceClickHandler);
+    } else if ("{{ request.GET.graph }}" === "linear") {
+        new ResourceTopologyGraphs.linear("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
+        $(document).on("click", "g.node", serviceClickHandler);
+    } else if ("{{ request.GET.graph }}" === "treemap") {
+        new ResourceTopologyGraphs.treemap("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
+        //$(document).on("click", "g.node", serviceClickHandler);
+    }
 });
 </script>
 
