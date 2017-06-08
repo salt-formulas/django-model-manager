@@ -118,7 +118,7 @@ a:hover{
 $(document).ready(function() {
     var serviceClickHandler = function(ev) {
         var $node =  $(this),
-            host = $node.parent().attr("data-node-id"),
+            host = $node.attr("data-host-id"),
             service = $node.find('text').html();
         if (host && service) {
             $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + host + "/" + service, function(res) {
@@ -136,7 +136,7 @@ $(document).ready(function() {
     };
     if ("{{ request.GET.graph }}" === "" || "{{ request.GET.graph }}" === "radial") {
         new ResourceTopologyGraphs.radial("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
-        $(document).on("click", "g.node a", serviceClickHandler);
+        $(document).on("click", "g.node", serviceClickHandler);
     } else if ("{{ request.GET.graph }}" === "linear") {
         new ResourceTopologyGraphs.linear("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
         $(document).on("click", "g.node", serviceClickHandler);

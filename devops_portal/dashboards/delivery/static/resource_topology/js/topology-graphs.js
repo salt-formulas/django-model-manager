@@ -4,12 +4,12 @@ var ResourceTopologyGraphs = {
      */
     radial: function(dataUrl, graphSelector, refreshInterval) {
         var content_width = $(graphSelector).innerWidth(),
-            graph = this,
             w = content_width,
             h = content_width,
             rx = w / 2,
             ry = h / 2,
-            m0, rotate = 0,
+            rotate = 0,
+            positioningMagicNumber = - 10,
             pi = Math.PI,
             active_link,
             splines = [],
@@ -35,7 +35,8 @@ var ResourceTopologyGraphs = {
             },
             mouseCoordinates = function(e) {
                 return [e.pageX - rx, e.pageY - ry];
-            };
+            },
+            graph = this;
         this._data = {},
         this.init = function(reinit) {
             if(!dataUrl || !graphSelector){
@@ -75,7 +76,7 @@ var ResourceTopologyGraphs = {
                 .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
 
             if(!reinit){
-                graph.requestData(graph.render);
+                graph.requestData(dataUrl, graph.render);
                 $(window).on('resize', function(ev){
                     graph.resetPosition();
                     graph.init(true);
@@ -84,14 +85,13 @@ var ResourceTopologyGraphs = {
 
                 if(refreshInterval){
                     setInterval(function(){
-                        graph.requestData(function(){
+                        graph.requestData(dataUrl, function(){
                             graph.init(true);
                             graph.render();
                         });
                     }, refreshInterval * 1000);
                 }
             }
-            return this;
         };
         this.render = function() {
             if(graph._data && graph._data.length > 0){
@@ -174,7 +174,7 @@ var ResourceTopologyGraphs = {
                     }))
                     .enter().append("svg:g")
                     .attr("class", "node")
-                    .attr("data-node-id", function(d){
+                    .attr("data-host-id", function(d){
                         return d.host;
                     })
                     .attr("id", function(d) {
@@ -272,7 +272,7 @@ var ResourceTopologyGraphs = {
             }
         };
 
-        this.requestData = function(callback){
+        this.requestData = function(dataUrl, callback){
             d3.json(dataUrl, function(res){
                 if(res && res.result === 'ok'){
                     graph._data = res.data;
@@ -289,7 +289,7 @@ var ResourceTopologyGraphs = {
             var sidebarWidth = $("#sidebar").width(),
                 windowWidth = $(window).width();
             if(windowWidth > sidebarWidth){
-                content_width = windowWidth - sidebarWidth - 2;
+                content_width = windowWidth - sidebarWidth + positioningMagicNumber;
             }else{
                 content_width = windowWidth;
             }
@@ -329,13 +329,15 @@ var ResourceTopologyGraphs = {
      * Linear topology graph
      */
     linear: function(dataUrl, graphSelector, refreshInterval){
-      var margin = {top: 10, right: 140, bottom: 10, left: -400},
+      var marginLeft = 125,
+          height = 2400,
+          positioningMagicNumber = 20,
           content_width = $(graphSelector).innerWidth(),
-          graph = this,
           width = content_width,
-          height = 2400 - margin.top - margin.bottom;
+          graph = this;
 
-      this.init = function(){
+      this._data={};
+      this.init = function(reinit){
           graph.cluster = d3.layout.cluster()
               .size([height, width])
               .sort(function(a, b) { return d3.ascending(a.name, b.name); })
@@ -348,60 +350,102 @@ var ResourceTopologyGraphs = {
               .tension(.85)
               .x(function(d) { return d.y; })
               .y(function(d) { return d.x; });
-
+          if(reinit && graph.svg){
+             d3.selectAll(graphSelector + " svg").remove();
+          }
           graph.svg = d3.select(graphSelector).append("svg")
-              .attr("width", width + margin.left + margin.right)
-              .attr("height", height + margin.top + margin.bottom)
+              .attr("width", width - positioningMagicNumber)
+              .attr("height", height)
             .append("g")
-              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-         graph.render();
+              .attr("transform", "translate(-" + marginLeft + ", 0)");
+
+          if(!reinit){
+            graph.requestData(dataUrl, graph.render);
+            $(window).on('resize', function(ev){
+                graph.resetPosition();
+                graph.init(true);
+                graph.render();
+            });
+
+            if(refreshInterval){
+                setInterval(function(){
+                    graph.requestData(dataUrl, function(){
+                        graph.init(true);
+                        graph.render();
+                    });
+                }, refreshInterval * 1000);
+            }
+        }
       };
       this.render = function(){
-          d3.json(dataUrl, function(error, classes) {
-            if (error) throw error;
+        var nodes = graph.cluster.nodes(nodeHelpers.root(graph._data)),
+            links = nodeHelpers.imports(nodes);
 
-            var nodes = graph.cluster.nodes(nodeHelpers.root(classes.data)),
-                links = nodeHelpers.imports(nodes);
+        graph.svg.selectAll(".link")
+            .data(graph.bundle(links))
+          .enter().append("path")
+            .attr("class", "link")
+            .attr("d", graph.line);
 
-            graph.svg.selectAll(".link")
-                .data(graph.bundle(links))
-              .enter().append("path")
-                .attr("class", "link")
-                .attr("d", graph.line);
+        graph.svg.selectAll(".node")
+            .data(nodes.filter(function(n) { return !n.children; }))
+          .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+            .attr("data-host-id", function(d){ return d.host; })
+          .append("text")
+            .attr("dx", 8)
+            .attr("dy", ".31em")
+            .text(function(d) { return d.service; });
 
-            graph.svg.selectAll(".node")
-                .data(nodes.filter(function(n) { return !n.children; }))
-              .enter().append("g")
-                .attr("class", "node")
-                .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
-              .append("text")
-                .attr("dx", 8)
-                .attr("dy", ".31em")
-                .text(function(d) { return d.service; });
-          });
-
-          d3.select(self.frameElement).style("height", height + margin.top + margin.bottom + "px");
+          d3.select(self.frameElement).style("height", height + "px");
       };
+
+      this.requestData = function(dataUrl, callback){
+            d3.json(dataUrl, function(res){
+                if(res && res.result === 'ok'){
+                    graph._data = res.data;
+                    if(typeof callback === 'function'){
+                        callback();
+                    }
+                }else{
+                    console.log("Cannot create topology graph, server returns error: " + res.data);
+                }
+            });
+        };
+        this.resetPosition = function(){
+            var sidebarWidth = $("#sidebar").width(),
+                windowWidth = $(window).width();
+            if(windowWidth > sidebarWidth){
+                content_width = windowWidth - sidebarWidth + positioningMagicNumber;
+            }else{
+                content_width = windowWidth;
+            }
+            width = content_width - marginLeft;
+        };
     },
     /**
      *  Treemap graph
      */
     treemap: function(dataUrl, graphSelector, refreshInterval){
       var content_width = $(graphSelector).innerWidth(),
-          graph = this,
           width = content_width,
           height = 500,
+          positioningMagicNumber = -105,
           //var fill = d3.scale.ordinal()      .range(["#f0f0f0", "#d9d9d9", "#bdbdbd"]);
           fill = d3.scale.category20(),
-          stroke = d3.scale.linear().domain([0, 1e4]).range(["brown", "steelblue"]);
-
-      this.init = function(){
+          stroke = d3.scale.linear().domain([0, 1e4]).range(["brown", "steelblue"]),
+          graph = this;
+      this._data = {};
+      this.init = function(reinit){
           graph.treemap = d3.layout.treemap()
               .size([width, height])
               .value(function(d) { return d.service.length });
 
           graph.bundle = d3.layout.bundle();
-
+          if(reinit && graph.div){
+             graph.div.remove();
+          }
           graph.div = d3.select(graphSelector).append("div")
               .style("position", "relative")
               .style("width", width + "px")
@@ -412,39 +456,73 @@ var ResourceTopologyGraphs = {
               .tension(.85)
               .x(function(d) { return d.x + d.dx / 2; })
               .y(function(d) { return d.y + d.dy / 2; });
-          graph.render();
+        if(!reinit){
+            graph.requestData(dataUrl, graph.render);
+            $(window).on('resize', function(ev){
+                graph.resetPosition();
+                graph.init(true);
+                graph.render();
+            });
+
+            if(refreshInterval){
+                setInterval(function(){
+                    graph.requestData(dataUrl, function(){
+                        graph.init(true);
+                        graph.render();
+                    });
+                }, refreshInterval * 1000);
+            }
+        }
       };
       this.render= function(){
-          d3.json(dataUrl, function(error, classes) {
-            if (error) throw error;
+        var nodes = graph.treemap.nodes(nodeHelpers.root(graph._data)),
+            links = nodeHelpers.imports(nodes);
 
-            var nodes = graph.treemap.nodes(nodeHelpers.root(classes.data)),
-                links = nodeHelpers.imports(nodes);
+        graph.div.selectAll(".cell")
+            .data(nodes)
+          .enter().append("div")
+            .attr("class", "cell")
+            .style("background-color", function(d) { return d.children ? fill(d.host) : null; })
+          .call(function cell() {
+                this.style("left", function(d) { return d.x + "px"; })
+                    .style("top", function(d) { return d.y + "px"; })
+                    .style("width", function(d) { return d.dx - 1 + "px"; })
+                    .style("height", function(d) { return d.dy - 1 + "px"; });
+            })
+            .text(function(d) { return d.children ? null : d.service; });
 
-            graph.div.selectAll(".cell")
-                .data(nodes)
-              .enter().append("div")
-                .attr("class", "cell")
-                .style("background-color", function(d) { return d.children ? fill(d.host) : null; })
-              .call(function cell() {
-                    this.style("left", function(d) { return d.x + "px"; })
-                        .style("top", function(d) { return d.y + "px"; })
-                        .style("width", function(d) { return d.dx - 1 + "px"; })
-                        .style("height", function(d) { return d.dy - 1 + "px"; });
-                })
-                .text(function(d) { return d.children ? null : d.service; });
-
-            graph.div.append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .style("position", "absolute")
-              .selectAll(".link")
-                .data(graph.bundle(links))
-              .enter().append("path")
-                .attr("class", "link")
-                .attr("d", graph.line)
-                .style("stroke", function(d) { return stroke(d[0].value); });
-          });
+        graph.div.append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("position", "absolute")
+          .selectAll(".link")
+            .data(graph.bundle(links))
+          .enter().append("path")
+            .attr("class", "link")
+            .attr("d", graph.line)
+            .style("stroke", function(d) { return stroke(d[0].value); });
       };
+        this.requestData = function(dataUrl, callback){
+            d3.json(dataUrl, function(res){
+                if(res && res.result === 'ok'){
+                    graph._data = res.data;
+                    if(typeof callback === 'function'){
+                        callback();
+                    }
+                }else{
+                    console.log("Cannot create topology graph, server returns error: " + res.data);
+                }
+            });
+        };
+        this.resetPosition = function(){
+            var sidebarWidth = $("#sidebar").width(),
+                windowWidth = $(window).width();
+            if(windowWidth > sidebarWidth){
+                content_width = windowWidth - sidebarWidth + positioningMagicNumber;
+            }else{
+                content_width = windowWidth;
+            }
+            width = content_width;
+        };
     }
-}
+};
