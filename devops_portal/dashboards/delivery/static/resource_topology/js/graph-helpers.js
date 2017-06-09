@@ -1,9 +1,9 @@
-var nodeHelpers = {
+var graphHelpers = {
   nodeServiceId: function(d){
     if(d && d.host && d.service){
         return "node-" + d.host.replace(/\./g,"_") + "-service-" + d.service.replace(/\./g,"_");
     }else{
-        console.log("Cannot generate node-service ID, given node or its host/service is undefined! node: " + nodeHelpers.nodeToString(d));
+        console.log("Cannot generate node-service ID, given node or its host/service is undefined! node: " + graphHelpers.nodeToString(d));
         return "node-" + (node.host?node.host:"UNDEFINED_HOST") + (node.service?node.service:"UNDEFINED_SERVICE");
     }
   },
@@ -60,7 +60,7 @@ var nodeHelpers = {
             if(line.source && line.target){
                 imports.push(line);
             }else{
-                console.log("Cannot create relation link, node: " + nodeHelpers.nodeToString(d) + " relation: " + JSON.stringify(i));
+                console.log("Cannot create relation link, node: " + graphHelpers.nodeToString(d) + " relation: " + JSON.stringify(i));
             }
         });
       }
