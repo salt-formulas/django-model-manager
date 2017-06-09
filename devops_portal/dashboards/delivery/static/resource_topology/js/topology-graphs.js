@@ -61,7 +61,7 @@ var ResourceTopologyGraphs = {
                 graph.div.remove();
             }
             graph.div = d3.select(graphSelector).insert("div", "h2")
-                .style("width", w + "px")
+                .style("width", w - 20 + "px")
                 .style("height", w + "px")
                 .style("margin","0px auto");
             graph.svg = graph.div.append("svg:svg")
