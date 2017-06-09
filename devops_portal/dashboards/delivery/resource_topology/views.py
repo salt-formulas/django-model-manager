@@ -27,7 +27,7 @@ class IndexView(tables.DataTableView):
     def get_data(self):
         data = []
         try:
-            res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.inventory'}])
+            res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.inventory'}])
         except:
             res = {}
             LOG.error('Could not get response from Salt Master API.')
@@ -93,7 +93,7 @@ def pillar_data_view(self, *args, **kwargs):
     subsystem = service.split('.')[1]
 
     try:
-        res = salt_client.low([{'client': 'local', 'tgt': 'cfg01*', 'fun': 'reclass.node_pillar', 'arg': host}])
+        res = salt_client.low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.node_pillar', 'arg': host}])
     except:
         res = {}
         LOG.error('Could not get response from Salt Master API.')
