@@ -1,2 +1,2 @@
--r requirements/devops_portal.txt
+-r requirements/model_manager.txt
 -r requirements/devops_portal_backend.txt
