@@ -55,6 +55,38 @@ class DetailView(views.HorizonTemplateView):
         return context
 
 
+class HostDetailView(views.HorizonTemplateView):
+    template_name = "delivery/resource_topology/host_detail.html"
+    page_title = _("Host Detail - {{ host }}")
+
+    def get_context_data(self, **kwargs):
+        context = super(HostDetailView, self).get_context_data(**kwargs)
+
+        try:
+            res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'saltresource.host_data', 'arg': context.get('host', None)}])
+            resource_data = res.get('return', [{'': ''}])[0].values()[0].get('graph')
+        except Exception as e:
+            resource_data = []
+            LOG.error('Could not get host resource data from Salt Master API: %s' % repr(e))
+
+        try:
+            res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.node_pillar', 'arg': context.get('host', None)}])
+            pillar_data = res.get('return', [{'': ''}])[0].values()[0].values()[0]
+        except Exception as e:
+            pillar_data = []
+            LOG.error('Could not get host pillar data from Salt Master API: %s' % repr(e))
+
+        try:
+            pillar_data_f = yaml.safe_dump(pillar_data, default_flow_style=False)
+        except:
+            pillar_data_f = pillar_data
+
+        context['resource_data'] = resource_data
+        context['pillar_data'] = pillar_data_f
+
+        return context
+
+
 def topology_data_view(self, *args, **kwargs):
     domain = kwargs.get('domain', None)
     cache_ret = cache.get('topology_data', '{}')
