@@ -305,7 +305,7 @@ var ResourceTopologyGraphs = function(ResourceTopologyGraphs){
         this.updateNodes = function(name, value) {
             return function(d) {
                 if (value) this.parentNode.appendChild(this);
-                var selector = nodeHelpers.nodeServiceId(d[name]);
+                var selector = graphHelpers.nodeServiceId(d[name]);
                 graph.svg.select("#"+selector).classed(name, value);
             };
         };
