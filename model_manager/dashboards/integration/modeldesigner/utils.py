@@ -16,6 +16,7 @@ from django import shortcuts
 from django import template
 from django.conf import settings
 from django.core import exceptions as django_exc
+from django.core.cache import cache
 from django.utils.encoding import force_text, force_bytes
 from django.utils.translation import ugettext_lazy as _
 from docutils.core import publish_parts
@@ -279,26 +280,43 @@ CUSTOM_FILTERS = [
 ]
 
 
-def generate_ssh_keypair():
-    private_key_obj = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, \
-        key_size=2048)
-    
-    public_key_obj = private_key_obj.public_key()
-    
-    public_key = public_key_obj.public_bytes(
-        serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH)
-    
-    private_key = private_key_obj.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption())
-    
-    private_key_str = private_key.decode('utf-8')
-    public_key_str = public_key.decode('utf-8')
+def generate_ssh_keypair(seed=None):
+    if not seed:
+        private_key_str = ""
+        public_key_str = ""
+    else:
+        private_key_cache = 'private_key_' + str(seed)
+        public_key_cache = 'public_key_' + str(seed)
+        cached_private_key = cache.get(private_key_cache)
+        cached_public_key = cache.get(public_key_cache)
+
+        if cached_private_key and cached_public_key:
+            private_key_str = cached_private_key
+            public_key_str = cached_public_key
+
+        else:
+            private_key_obj = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, \
+                key_size=2048)
+
+            public_key_obj = private_key_obj.public_key()
+
+            public_key = public_key_obj.public_bytes(
+                serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH)
+
+            private_key = private_key_obj.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption())
+
+            private_key_str = private_key.decode('utf-8')
+            public_key_str = public_key.decode('utf-8')
+
+            cache.set(private_key_cache, private_key_str, 3600)
+            cache.set(public_key_cache, public_key_str, 3600)
 
     return (private_key_str, public_key_str)    
-    
-    
+
+
 CUSTOM_FUNCTIONS = [
     ('generate_ssh_keypair', generate_ssh_keypair)
 ]
