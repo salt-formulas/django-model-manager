@@ -67,6 +67,10 @@ class ContextTemplateCollector(object):
         url = self.url
         token = self.token
 
+        cached_ctx = cache.get('workflow_context', None)
+        if cached_ctx:
+            return cached_ctx
+
         if not url:
             msg = 'Github repository API URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "github".'
             raise django_exc.ImproperlyConfigured(msg)
@@ -90,6 +94,8 @@ class ContextTemplateCollector(object):
         else:
             ctx = r.text
 
+        cache.set('workflow_context', ctx, 3600)
+
         return ctx
 
     def _http_collector(self):
@@ -97,6 +103,10 @@ class ContextTemplateCollector(object):
         url = self.url
         username = self.username
         password = self.password
+
+        cached_ctx = cache.get('workflow_context', None)
+        if cached_ctx:
+            return cached_ctx
 
         if not url:
             msg = 'HTTP URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "http".'
@@ -113,6 +123,8 @@ class ContextTemplateCollector(object):
             ctx = ""
         else:
             ctx = r.text
+
+        cache.set('workflow_context', ctx, 3600)
 
         return ctx
 
