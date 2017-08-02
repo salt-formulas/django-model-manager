@@ -27,13 +27,13 @@ from django.views.decorators.debug import sensitive_post_parameters  # noqa
 from keystoneclient.auth import token_endpoint
 from keystoneclient import exceptions as keystone_exceptions
 
-from devops_portal_auth import forms
+from model_manager_auth import forms
 # This is historic and is added back in to not break older versions of
 # Horizon, fix to Horizon to remove this requirement was committed in
 # Juno
-from devops_portal_auth.forms import Login  # noqa
-from devops_portal_auth import user as auth_user
-from devops_portal_auth import utils
+from model_manager_auth.forms import Login  # noqa
+from model_manager_auth import user as auth_user
+from model_manager_auth import utils
 
 try:
     is_safe_url = http.is_safe_url
@@ -48,7 +48,7 @@ LOG = logging.getLogger(__name__)
 @csrf_protect
 @never_cache
 def login(request, template_name=None, extra_context=None, **kwargs):
-    """Logs a user in using the :class:`~devops_portal_auth.forms.Login` form."""
+    """Logs a user in using the :class:`~model_manager_auth.forms.Login` form."""
     if not request.is_ajax():
         # If the user is already authenticated, redirect them to the
         # dashboard straight away, unless the 'next' parameter is set as it

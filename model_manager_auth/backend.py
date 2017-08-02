@@ -4,8 +4,8 @@
 import logging
 
 from django.utils.translation import ugettext_lazy as _
-from devops_portal_auth import user as auth_user
-from devops_portal_auth import exceptions
+from model_manager_auth import user as auth_user
+from model_manager_auth import exceptions
 from devops_portal.api.devops_portal import devops_portal
 
 from . import utils
