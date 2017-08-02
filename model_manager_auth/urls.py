@@ -20,7 +20,7 @@ utils.patch_middleware_get_user()
 
 
 urlpatterns = patterns(
-    'devops_portal_auth.views',
+    'model_manager_auth.views',
     url(r"^login/$", "login", name='login'),
     url(r"^logout/$", 'logout', name='logout'),
 )
