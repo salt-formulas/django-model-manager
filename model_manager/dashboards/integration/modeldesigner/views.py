@@ -6,6 +6,7 @@ from model_manager.api.jenkins import jenkins_client
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
+from horizon import messages
 from horizon import tables
 from horizon import tabs
 from horizon import workflows
@@ -36,6 +37,8 @@ class IndexView(tables.DataTableView):
                 if build['result'] not in [chc[0] for chc in STATUS_CHOICES]:
                     build['result'] = 'UNKNOWN'
         except:
+            msg = 'Unable to connect to Jenkins API.'
+            messages.error(self.request, msg)
             builds = []
 
         return builds
