@@ -25,6 +25,7 @@ salt-pepper==0.5.0
 django-celery==3.2.1
 redis==2.10.5
 django-redis==4.8.0
+-e git+https://github.com/oms4suse/python-ceph-cfg.git#egg=ceph-cfg
 
 # XStatic fix
 XStatic-Magic-Search==0.2.5.1

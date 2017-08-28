@@ -1,3 +1,4 @@
+import ceph_cfg
 import copy
 import crypt
 import io
@@ -5,6 +6,7 @@ import json
 import logging
 import requests
 import socket
+import uuid
 import yaml
 
 from cryptography.hazmat.primitives import serialization
@@ -329,8 +331,40 @@ def generate_ssh_keypair(seed=None):
     return (private_key_str, public_key_str)    
 
 
+def generate_uuid():
+    return uuid.uuid4()
+
+
+def generate_ceph_keyring(cluster_uuid, keyring_type, seed):
+    if not cluster_uuid:
+        return ''
+
+    keyring_cache = 'keyring_%s_%s_%s' % (keyring_type, cluster_uuid, seed)
+    cached_keyring = cache.get(keyring_cache)
+
+    if cached_keyring:
+        return cached_keyring
+
+    keyring_kwargs = {
+        'cluster_name': 'ceph',
+        'cluster_uuid': cluster_uuid,
+        'keyring_type': keyring_type
+    }
+
+    out = ceph_cfg.keyring_create(**keyring_kwargs)
+    key_start = out.find('key') + 6
+    key_end = out.find('==') + 2
+    keyring = out[key_start:key_end]
+
+    cache.set(keyring_cache, keyring, 3600)
+
+    return keyring
+
+
 CUSTOM_FUNCTIONS = [
-    ('generate_ssh_keypair', generate_ssh_keypair)
+    ('generate_ssh_keypair', generate_ssh_keypair),
+    ('generate_uuid', generate_uuid),
+    ('generate_ceph_keyring', generate_ceph_keyring)
 ]
 
 # Extended workflow classes
