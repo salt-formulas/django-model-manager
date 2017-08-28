@@ -315,8 +315,8 @@ THEME_COLLECTION_DIR = 'themes'
 THEME_COOKIE_NAME = 'theme'
 
 try:
-    with open("/etc/model_manager/settings.py") as f:
-        code = compile(f.read(), "/etc/model_manager/settings.py", 'exec')
+    with open("/etc/model-manager/settings.py") as f:
+        code = compile(f.read(), "/etc/model-manager/settings.py", 'exec')
         exec(code)
 except IOError:
     pass
