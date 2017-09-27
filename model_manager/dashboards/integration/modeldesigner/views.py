@@ -36,9 +36,10 @@ class IndexView(tables.DataTableView):
                     build['result'] = 'BUILDING'
                 if build['result'] not in [chc[0] for chc in STATUS_CHOICES]:
                     build['result'] = 'UNKNOWN'
-        except:
+        except Exception as e:
             msg = 'Unable to connect to Jenkins API.'
             messages.error(self.request, msg)
+            LOG.error('Unable to get build history from Jenkins: %s' % repr(e))
             builds = []
 
         return builds
