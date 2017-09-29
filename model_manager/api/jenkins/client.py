@@ -15,6 +15,7 @@ from six.moves.urllib.request import Request
 
 LOG = logging.getLogger(__name__)
 
+JOB_INFO = '%(folder_url)sjob/%(short_name)s/api/json?depth=%(depth)s'
 # Requires Pipeline Stage View plugin
 BUILD_WF = '%(folder_url)sjob/%(short_name)s/build'
 BUILD_WITH_PARAMS_WF = '%(folder_url)sjob/%(short_name)s/buildWithParameters'
@@ -37,6 +38,11 @@ if not JENKINS_CLIENT:
         jenkins_url,
         username=jenkins_user,
         password=jenkins_pass)
+
+
+class JenkinsException(Exception):
+    '''General exception type for jenkins-API-related failures.'''
+    pass
 
 
 class JenkinsClientExtension(object):
@@ -146,6 +152,44 @@ class JenkinsClientExtension(object):
             return False
 
         return True
+
+    def _safe_response(self, response):
+        esc26 = chr(26)
+        return response.replace(esc26, "")
+
+    # PATCHED VERSION OF ORIGINAL CLIENTS METHOD
+    def get_job_info(self, name, depth=0, fetch_all_builds=False):
+        '''Get job information dictionary.
+
+        :param name: Job name, ``str``
+        :param depth: JSON depth, ``int``
+        :param fetch_all_builds: If true, all builds will be retrieved
+                                 from Jenkins. Otherwise, Jenkins will
+                                 only return the most recent 100
+                                 builds. This comes at the expense of
+                                 an additional API call which may
+                                 return significant amounts of
+                                 data. ``bool``
+        :returns: dictionary of job information
+        '''
+        folder_url, short_name = self.client._get_job_folder(name)
+        try:
+            _response = self.client.jenkins_open(Request(
+                self.client._build_url(JOB_INFO, locals())
+            ))
+            response = self._safe_response(_response)
+            if response:
+                if fetch_all_builds:
+                    return self.client._add_missing_builds(json.loads(response))
+                else:
+                    return json.loads(response)
+            else:
+                raise JenkinsException('job[%s] does not exist' % name)
+        except HTTPError:
+            raise JenkinsException('job[%s] does not exist' % name)
+        except ValueError:
+            raise JenkinsException(
+                "Could not parse JSON info for job[%s]" % name)
 
 extension = JenkinsClientExtension()
 extension.client = JENKINS_CLIENT
