@@ -74,7 +74,7 @@ class HostDetailView(views.HorizonTemplateView):
             pillar_data = res.get('return', [{'': ''}])[0].values()[0].values()[0]
         except Exception as e:
             pillar_data = []
-            LOG.error('Could not get host pillar data from Salt Master API: %s' % repr(e))
+            LOG.error('Could not get host pillar data for %s from Salt Master API: %s' % (context.get('host', 'N/A'), repr(e)))
 
         try:
             pillar_data_f = yaml.safe_dump(pillar_data, default_flow_style=False)
