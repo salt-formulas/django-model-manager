@@ -27,6 +27,9 @@ from horizon import messages
 from horizon import workflows
 from ipaddress import IPv4Network
 from jinja2 import Environment, meta
+from pygerrit.rest import GerritRestAPI
+from requests import HTTPError
+from requests.auth import HTTPBasicAuth
 from os import urandom
 
 from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField 
@@ -56,6 +59,9 @@ class ContextTemplateCollector(object):
         default_username = getattr(settings, 'COOKIECUTTER_CONTEXT_USERNAME', None)
         default_password = getattr(settings, 'COOKIECUTTER_CONTEXT_PASSWORD', None)
         default_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
+        default_versions = getattr(settings, 'COOKIECUTTER_CONTEXT_VERSIONS', [])
+        default_project_name = getattr(settings, 'COOKIECUTTER_CONTEXT_PROJECT_NAME', None)
+        default_file_name = getattr(settings, 'COOKIECUTTER_CONTEXT_FILE_NAME', None)
 
         self.url = kwargs.get('url', default_url)
         self.path = kwargs.get('path', default_path)
@@ -63,9 +69,81 @@ class ContextTemplateCollector(object):
         self.username = kwargs.get('username', default_username)
         self.password = kwargs.get('password', default_password)
         self.token = kwargs.get('token', default_token)
+        self.versions = kwargs.get('versions', default_versions)
+        self.project_name = kwargs.get('project_name', default_project_name)
+        self.file_name = kwargs.get('file_name', default_file_name)
 
-    def _github_collector(self):
-        s = requests.Session()
+        self.collectors = {
+            'github': {
+                'collector': self._github_collector,
+                'version_collector': self._static_version_collector
+            },
+            'http': {
+                'collector': self._http_collector,
+                'version_collector': self._static_version_collector
+            },
+            'gerrit': {
+                'collector': self._gerrit_collector,
+                'version_collector': self._gerrit_version_collector
+            },
+            'localfs': {
+                'collector': self._localfs_collector,
+                'version_collector': self._static_version_collector
+            }
+        }
+
+    def _gerrit_get(self, endpoint_url):
+        auth = HTTPBasicAuth(self.username, self.password)
+        rest = GerritRestAPI(url=self.url, auth=auth)
+        response_body = ''
+        try:
+            response_body = rest.get(endpoint_url)
+        except HTTPError as e:
+            msg = "Failed to get response from Gerrit URL %s: %s" % (endpoint_url, str(e))
+            LOG.error(msg)
+        except Exception as e:
+            LOG.exception(e)
+        return response_body
+
+    def _gerrit_collector(self, version=None):
+        cache_key = 'workflow_context'
+        endpoint_url = '/projects/%s/branches/master/files/%s/content' % (self.project_name, self.file_name)
+        if version:
+            versions = self._gerrit_get_versions()
+            full_version = 'refs/tags/%s' % version
+            matched_versions = filter(lambda v: v['ref'] == full_version, versions)
+            if len(matched_versions) == 1:
+                revision = matched_versions[0].get('revision', '')
+                cache_key = 'workflow_context_%s' % revision
+                endpoint_url = '/projects/%s/commits/%s/files/%s/content' % (self.project_name, revision, self.file_name)
+
+        cached_ctx = cache.get(cache_key, None)
+        if cached_ctx:
+            return cached_ctx
+
+        ctx = self._gerrit_get(endpoint_url)
+        cache.set(cache_key, ctx, 3600)
+        return ctx
+
+    def _gerrit_get_versions(self):
+        cache_key = 'workflow_versions_%s_%s' % (self.url, self.project_name)
+        cached_versions = cache.get(cache_key, None)
+        if cached_versions:
+            return cached_versions
+
+        endpoint_url = '/projects/%s/tags/' % self.project_name
+
+        versions = self._gerrit_get(endpoint_url)
+        cache.set(cache_key, versions, 3600)
+        return versions
+
+    def _gerrit_version_collector(self):
+        versions = self._gerrit_get_versions()
+        pretty_versions = [v['ref'].replace('refs/tags/', '') for v in versions]
+        return pretty_versions
+
+    def _github_collector(self, version=None):
+        session = requests.Session()
         url = self.url
         token = self.token
 
@@ -81,27 +159,27 @@ class ContextTemplateCollector(object):
             msg = 'Github API token is required to be set as COOKIECUTTER_CONTEXT_TOKEN with COOKIECUTTER_CONTEXT_REMOTE = "github".'
             raise django_exc.ImproperlyConfigured(msg)
 
-        s.headers.update({'Accept': 'application/vnd.github.v3.raw'})
-        s.headers.update({'Authorization': 'token ' + str(token)})
-        r = s.get(url)
-        if r.status_code >= 300:
+        session.headers.update({'Accept': 'application/vnd.github.v3.raw'})
+        session.headers.update({'Authorization': 'token ' + str(token)})
+        response = session.get(url)
+        if response.status_code >= 300:
             try:
-                r_json = json.loads(str(r.text))
-                r_text = r_json['message']
+                response_json = json.loads(str(response.text))
+                response_text = response_json['message']
             except:
-                r_text = r.text
-            msg = "Could not get remote file from Github:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (str(r.status_code), r_text)
+                response_text = response.text
+            msg = "Could not get remote file from Github:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (str(response.status_code), response_text)
             LOG.error(msg)
             ctx = ""
         else:
-            ctx = r.text
+            ctx = response.text
 
         cache.set('workflow_context', ctx, 3600)
 
         return ctx
 
-    def _http_collector(self):
-        s = requests.Session()
+    def _http_collector(self, version=None):
+        session = requests.Session()
         url = self.url
         username = self.username
         password = self.password
@@ -115,22 +193,22 @@ class ContextTemplateCollector(object):
             raise django_exc.ImproperlyConfigured(msg)
 
         if username and password:
-            r = s.get(url, auth=(username, password))
+            response = session.get(url, auth=(username, password))
         else:
-            r = s.get(url)
+            response = session.get(url)
 
-        if r.status_code >= 300:
-            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (url, str(r.status_code), r.text)
+        if response.status_code >= 300:
+            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (url, str(response.status_code), response.text)
             LOG.error(msg)
             ctx = ""
         else:
-            ctx = r.text
+            ctx = response.text
 
         cache.set('workflow_context', ctx, 3600)
 
         return ctx
 
-    def _localfs_collector(self):
+    def _localfs_collector(self, version=None):
         path = self.path
 
         if not path:
@@ -147,21 +225,22 @@ class ContextTemplateCollector(object):
 
         return ctx
 
-    def collect_template(self):
-        url = self.url
-        remote = self.remote
-        collector = None
+    def _static_version_collector(self):
+        return self.versions
 
-        if 'github' in remote:
-            collector = self._github_collector
-        elif 'http' in remote:
-            collector = self._http_collector
-        elif 'localfs' in remote:
-            collector = self._localfs_collector
+    def collect_template(self, version=None):
+        if version:
+            versions = self.collect_versions()
+            if not version in versions:
+                LOG.warning('Selected version %s not available, using default. Available versions: %s' % (version, versions))
+                version = None
 
-        tmpl = collector()
+        collector = self.collectors.get(self.remote, {}).get('collector', lambda: '')
+        return collector(version)
 
-        return tmpl
+    def collect_versions(self):
+        collector = self.collectors.get(self.remote, {}).get('version_collector', lambda: [])
+        return collector()
 
 
 ######################################################
