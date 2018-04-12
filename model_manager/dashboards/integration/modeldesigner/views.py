@@ -4,13 +4,17 @@ import logging
 
 from model_manager.api.jenkins import jenkins_client
 from django.conf import settings
+from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
+from horizon import forms
 from horizon import messages
 from horizon import tables
 from horizon import tabs
 from horizon import workflows
+from urllib import urlencode
 
+from .forms import VersionForm
 from .tables import CookiecutterTable, STATUS_CHOICES
 from .tabs import DetailTabGroup
 from .utils import AsyncWorkflowView
@@ -43,6 +47,22 @@ class IndexView(tables.DataTableView):
             builds = []
 
         return builds
+
+
+class ContextVersionView(forms.ModalFormView):
+    form_class = VersionForm
+    template_name = 'integration/modeldesigner/version.html'
+    modal_id = 'context_version_modal'
+    modal_header = _('Choose Context Version')
+    submit_label = _('Continue')
+    submit_url = reverse_lazy('horizon:integration:modeldesigner:version')
+
+    def get_success_url(self, **kwargs):
+        form = self.get_form()
+        version = form.data['version']
+        param = {'version': version}
+        url = reverse_lazy('horizon:integration:modeldesigner:create') + '?' + urlencode(param)
+        return url
 
 
 class CreateView(AsyncWorkflowView):
