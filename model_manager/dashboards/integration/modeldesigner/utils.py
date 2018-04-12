@@ -587,8 +587,9 @@ class GeneratedAction(workflows.Action):
         remote = self.context_template_remote or self.default_context_template_remote
         url = self.context_template_url or self.default_context_template_url
         token = self.context_template_token or self.default_context_template_token
+        version = self.request.GET.get('version')
         ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
-        ctx_tmpl = ctx_tmpl_collector.collect_template()
+        ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
         return ctx_tmpl
 
@@ -688,8 +689,9 @@ class GeneratedStep(workflows.Step):
         remote = self.context_template_remote or self.default_context_template_remote
         url = self.context_template_url or self.default_context_template_url
         token = self.context_template_token or self.default_context_template_token
+        version = self.workflow.request.GET.get('version')
         ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
-        ctx_tmpl = ctx_tmpl_collector.collect_template()
+        ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
         return ctx_tmpl
 
