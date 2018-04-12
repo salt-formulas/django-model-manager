@@ -3,6 +3,7 @@ import logging
 
 #from model_manager import api
 from django.conf import settings
+from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_variables  # noqa
 from horizon import exceptions, forms, messages, workflows, forms as horizon_forms
@@ -90,3 +91,16 @@ class CreateCookiecutterForm(forms.SelfHandlingForm):
 
         return True
 
+
+def version_choices():
+    from .utils import ContextTemplateCollector
+    collector = ContextTemplateCollector()
+    versions = collector.collect_versions()
+    return [(v, v) for v in versions]
+
+
+class VersionForm(forms.SelfHandlingForm):
+    version = forms.ChoiceField(label='Version', choices=version_choices)
+
+    def handle(self, request, data):
+        return True
