@@ -4,6 +4,7 @@ import crypt
 import io
 import json
 import logging
+import re
 import requests
 import socket
 import uuid
@@ -62,6 +63,7 @@ class ContextTemplateCollector(object):
         default_versions = getattr(settings, 'COOKIECUTTER_CONTEXT_VERSIONS', [])
         default_project_name = getattr(settings, 'COOKIECUTTER_CONTEXT_PROJECT_NAME', None)
         default_file_name = getattr(settings, 'COOKIECUTTER_CONTEXT_FILE_NAME', None)
+        default_version_filter = getattr(settings, 'COOKIECUTTER_CONTEXT_VERSION_FILTER', None)
 
         self.url = kwargs.get('url', default_url)
         self.path = kwargs.get('path', default_path)
@@ -72,6 +74,7 @@ class ContextTemplateCollector(object):
         self.versions = kwargs.get('versions', default_versions)
         self.project_name = kwargs.get('project_name', default_project_name)
         self.file_name = kwargs.get('file_name', default_file_name)
+        self.version_filter = kwargs.get('version_filter', default_version_filter)
 
         self.collectors = {
             'github': {
@@ -240,7 +243,11 @@ class ContextTemplateCollector(object):
 
     def collect_versions(self):
         collector = self.collectors.get(self.remote, {}).get('version_collector', lambda: [])
-        return collector()
+        versions = collector()
+        if self.version_filter:
+            regex = re.compile(self.version_filter)
+            versions = filter(regex.search, versions)
+        return sorted(versions, reverse=True)
 
 
 ######################################################
