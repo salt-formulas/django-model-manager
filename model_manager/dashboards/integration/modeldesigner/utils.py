@@ -129,12 +129,9 @@ class ContextTemplateCollector(object):
         endpoint_url = '/projects/%s/branches/master/files/%s/content' % (self.project_name, self.file_name)
         if version:
             versions = self._gerrit_get_versions()
-            full_version = 'refs/tags/%s' % version
-            matched_versions = filter(lambda v: v['ref'] == full_version, versions)
-            if len(matched_versions) == 1:
-                revision = matched_versions[0].get('revision', '')
-                cache_key = 'workflow_context_%s' % revision
-                endpoint_url = '/projects/%s/commits/%s/files/%s/content' % (self.project_name, revision, self.file_name)
+            revision = versions.get(version)
+            cache_key = 'workflow_context_%s' % revision
+            endpoint_url = '/projects/%s/commits/%s/files/%s/content' % (self.project_name, revision, self.file_name)
 
         cached_ctx = cache.get(cache_key, None)
         if cached_ctx:
@@ -150,16 +147,24 @@ class ContextTemplateCollector(object):
         if cached_versions:
             return cached_versions
 
-        endpoint_url = '/projects/%s/tags/' % self.project_name
+        tags_endpoint_url = '/projects/%s/tags/' % self.project_name
+        master_endpoint_url = '/projects/%s/branches/master/' % self.project_name
 
-        versions = self._gerrit_get(endpoint_url)
-        cache.set(cache_key, versions, 3600)
-        return versions
+        tags = self._gerrit_get(tags_endpoint_url)
+        master = self._gerrit_get(master_endpoint_url)
+
+        self.versions = {}
+        for tag in tags:
+            key = tag['ref'].replace('refs/tags/', '')
+            self.versions[key] = tag['revision']
+        self.versions['master'] = master['revision']
+
+        cache.set(cache_key, self.versions, 3600)
+        return self.versions
 
     def _gerrit_version_collector(self):
         versions = self._gerrit_get_versions()
-        pretty_versions = [v['ref'].replace('refs/tags/', '') for v in versions]
-        return pretty_versions
+        return list(versions.keys())
 
     def _github_collector(self, version=None):
         session = requests.Session()
