@@ -261,7 +261,7 @@ class ContextTemplateCollector(object):
         if self.version_filter:
             regex = re.compile(self.version_filter)
             versions = filter(regex.search, versions)
-        return sorted(versions, reverse=True)
+        return sorted(versions)
 
 
 ######################################################
