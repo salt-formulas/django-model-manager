@@ -147,24 +147,22 @@ class ContextTemplateCollector(object):
 
     def _github_collector(self, version=None):
         session = requests.Session()
-        url = self.url
-        token = self.token
 
         cached_ctx = cache.get('workflow_context', None)
         if cached_ctx:
             return cached_ctx
 
-        if not url:
+        if not self.url:
             msg = 'Github repository API URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "github".'
             raise django_exc.ImproperlyConfigured(msg)
 
-        if not token:
+        if not self.token:
             msg = 'Github API token is required to be set as COOKIECUTTER_CONTEXT_TOKEN with COOKIECUTTER_CONTEXT_REMOTE = "github".'
             raise django_exc.ImproperlyConfigured(msg)
 
         session.headers.update({'Accept': 'application/vnd.github.v3.raw'})
-        session.headers.update({'Authorization': 'token ' + str(token)})
-        response = session.get(url)
+        session.headers.update({'Authorization': 'token ' + str(self.token)})
+        response = session.get(self.url)
         if response.status_code >= 300:
             try:
                 response_json = json.loads(str(response.text))
@@ -183,25 +181,22 @@ class ContextTemplateCollector(object):
 
     def _http_collector(self, version=None):
         session = requests.Session()
-        url = self.url
-        username = self.username
-        password = self.password
 
         cached_ctx = cache.get('workflow_context', None)
         if cached_ctx:
             return cached_ctx
 
-        if not url:
+        if not self.url:
             msg = 'HTTP URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "http".'
             raise django_exc.ImproperlyConfigured(msg)
 
-        if username and password:
-            response = session.get(url, auth=(username, password))
+        if self.username and self.password:
+            response = session.get(self.url, auth=(self.username, self.password))
         else:
-            response = session.get(url)
+            response = session.get(self.url)
 
         if response.status_code >= 300:
-            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (url, str(response.status_code), response.text)
+            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (self.url, str(response.status_code), response.text)
             LOG.error(msg)
             ctx = ""
         else:
@@ -212,17 +207,15 @@ class ContextTemplateCollector(object):
         return ctx
 
     def _localfs_collector(self, version=None):
-        path = self.path
-
-        if not path:
+        if not self.path:
             msg = 'Path to file on local filesystem is required to be set as COOKIECUTTER_CONTEXT_PATH with COOKIECUTTER_CONTEXT_REMOTE = "localfs".'
             raise django_exc.ImproperlyConfigured(msg)
 
         try:
-            with io.open(path, 'r') as file_handle:
+            with io.open(self.path, 'r') as file_handle:
                 ctx = file_handle.read()
         except Exception as e:
-            msg = "Could not read file %s: %s" % (path, repr(e))
+            msg = "Could not read file %s: %s" % (self.path, repr(e))
             LOG.error(msg)
             ctx = ""
 
