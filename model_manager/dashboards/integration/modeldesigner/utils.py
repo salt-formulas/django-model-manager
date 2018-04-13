@@ -109,6 +109,22 @@ class ContextTemplateCollector(object):
         return response_body
 
     def _gerrit_collector(self, version=None):
+        if not self.username:
+            msg = 'Gerrit username is required to be set as COOKIECUTTER_CONTEXT_USERNAME with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            raise django_exc.ImproperlyConfigured(msg)
+        if not self.password:
+            msg = 'Gerrit password is required to be set as COOKIECUTTER_CONTEXT_PASSWORD with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            raise django_exc.ImproperlyConfigured(msg)
+        if not self.url:
+            msg = 'Gerrit base URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            raise django_exc.ImproperlyConfigured(msg)
+        if not self.project_name:
+            msg = 'Gerrit project name is required to be set as COOKIECUTTER_CONTEXT_PROJECT_NAME with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            raise django_exc.ImproperlyConfigured(msg)
+        if not self.file_name:
+            msg = 'Gerrit context file name is required to be set as COOKIECUTTER_CONTEXT_FILE_NAME with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            raise django_exc.ImproperlyConfigured(msg)
+
         cache_key = 'workflow_context'
         endpoint_url = '/projects/%s/branches/master/files/%s/content' % (self.project_name, self.file_name)
         if version:
