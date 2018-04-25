@@ -36,6 +36,9 @@ COOKIECUTTER_CONTEXT_TOKEN = 'githubapitoken'
 # Allow multiple versions of context file, only Gerrit remote has version parsing from project implemented at this time
 COOKIECUTTER_CONTEXT_VERSIONING_ENABLED = True
 COOKIECUTTER_CONTEXT_VERSION_FILTER = '\d{4}\.\d{1,2}(\.\d{1,2})?' # only versions matching this regex are shown in the UI
+COOKIECUTTER_CONTEXT_VERSION_MAP = {
+    'master': 'nightly' # this will rename version master to version nightly
+}
 
 SALT_API_URL="http://127.0.0.1:8000"
 SALT_API_USER="saltdev"
