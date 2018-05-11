@@ -36,6 +36,13 @@ class FieldMixin(object):
         super(FieldMixin, self).__init__(*args, **kwargs)
 
 
+class FileField(FieldMixin, forms.FileField):
+    """
+    Custom FileField with fieldset attribute
+    """
+    pass
+
+
 class CharField(FieldMixin, forms.CharField):
     """
     Custom CharField with fieldset attribute

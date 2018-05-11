@@ -33,7 +33,7 @@ from requests import HTTPError
 from requests.auth import HTTPBasicAuth
 from os import urandom
 
-from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField 
+from .forms import Fieldset, FileField, CharField, BooleanField, IPField, ChoiceField 
 
 LOG = logging.getLogger(__name__)
 
@@ -550,12 +550,33 @@ class GeneratedAction(workflows.Action):
                 "choices": [],
                 "required": False
             }
+        },
+        "FILE": {
+            "class": FileField,
+            "args": tuple(),
+            "kwargs": {
+                "max_length": 255,
+                "label": "",
+                "required": True,
+                "help_text": ""
+            }
         }
     }
 
     def __init__(self, request, context, *args, **kwargs):
-        super(GeneratedAction, self).__init__(
-            request, context, *args, **kwargs)
+        #import pdb; pdb.set_trace()
+
+        if request.method == "POST":
+            forms.Form.__init__(self, request.POST, request.FILES, initial=context)
+        else:
+            forms.Form.__init__(self, initial=context)
+
+        if not hasattr(self, "handle"):
+            raise AttributeError("The action %s must define a handle method."
+                                 % self.__class__.__name__)
+        self.request = request
+        self._populate_choices(request, context)
+        self.required_css_class = 'required'
 
         rendered_context = self.render_context(context)
         for fieldset in rendered_context:
@@ -795,6 +816,7 @@ class AsyncWorkflowView(workflows.WorkflowView):
         else:
             # There are valid VALIDATE_STEP* headers, so only do validation
             # for the specified steps and return results.
+            import pdb; pdb.set_trace()
             data = self.validate_steps(request, workflow,
                                        validate_step_start,
                                        validate_step_end)
