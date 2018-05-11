@@ -31,12 +31,28 @@ class ShowDetail(tables.LinkAction):
 
 
 class CreateCookiecutter(tables.LinkAction):
-    name = "create_cookiecutter"
-    verbose_name = _("Create Model")
-    url = "horizon:integration:modeldesigner:create"
+    name = 'create_cookiecutter'
+    verbose_name = _('Create Model')
+    url = 'horizon:integration:modeldesigner:create'
 
     def get_link_url(self, datum=None):
         return reverse(self.url)
+
+    def allowed(self, request, datum):
+        return not getattr(settings, 'COOKIECUTTER_CONTEXT_VERSIONING_ENABLED', False)
+
+
+class CreateCookiecutterWithVersion(tables.LinkAction):
+    name = 'create_cookiecutter_with_version'
+    verbose_name = _('Create Model')
+    url = 'horizon:integration:modeldesigner:version'
+    classes = ('ajax-modal',)
+
+    def get_link_url(self, datum=None):
+        return reverse(self.url)
+
+    def allowed(self, request, datum):
+        return getattr(settings, 'COOKIECUTTER_CONTEXT_VERSIONING_ENABLED', False)
 
 
 class JobRow(tables.Row):
@@ -72,6 +88,6 @@ class CookiecutterTable(BuildTableBase):
         verbose_name = _("Cookiecutters")
         status_columns = ('result',)
         row_class = JobRow
-        table_actions = (CreateCookiecutter,)
+        table_actions = (CreateCookiecutter, CreateCookiecutterWithVersion)
         #row_actions = (ShowDetail,)
 
