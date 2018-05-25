@@ -59,7 +59,7 @@ def my_represent_scalar(self, tag, value, style=None):
     return node
 
 
-class MacAddressDatum:
+class MaaSMachinesDatum:
     '''Example input kwargs:
 
       {
@@ -101,23 +101,40 @@ class MacAddressDatum:
         self._power_password = power_password
 
     def get_dict(self):
-        return {
-            self._node_name: {
-                'interface': {
-                    'subnet': self._subnet,
-                    'ip': self._ip,
-                    'mac': self._mac,
-                    'mode': self._mode,
-                    'gateway': self._gateway
-                },
-                'power_parameters': {
-                    'power_type': self._power_type,
-                    'power_user': self._power_user,
-                    'power_address': self._power_address,
-                    'power_password': self._power_password
+        _dict = {}
+        if all(self._subnet, self._ip, self._mode, self._gateway):
+            _dict = {
+                self._node_name: {
+                    'interface': {
+                        'subnet': self._subnet,
+                        'ip': self._ip,
+                        'mac': self._mac,
+                        'mode': self._mode,
+                        'gateway': self._gateway
+                    },
+                    'power_parameters': {
+                        'power_type': self._power_type,
+                        'power_user': self._power_user,
+                        'power_address': self._power_address,
+                        'power_password': self._power_password
+                    }
                 }
             }
-        }
+        else:
+            _dict = {
+                self._node_name: {
+                    'interface': {
+                        'mac': self._mac,
+                    },
+                    'power_parameters': {
+                        'power_type': self._power_type,
+                        'power_user': self._power_user,
+                        'power_address': self._power_address,
+                        'power_password': self._power_password
+                    }
+                }
+            }
+        return _dict
 
     def get_yaml(self):
         return yaml.safe_dump(self.get_dict(), default_flow_style=False)
@@ -133,16 +150,16 @@ class MacAddressDatum:
         return self.get_dict()
 
 
-class MacAddressData:
+class MaaSMachinesData:
     '''Helper template for data from MAC address file field.
 
-    filedata: list of MacAddressDatum dictionaries
+    filedata: list of MaaSMachinesDatum dictionaries
     '''
 
     def __init__(self, filedata):
         self.filedata = []
         for datum in filedata:
-            self.filedata.append(MacAddressDatum(**datum))
+            self.filedata.append(MaaSMachinesDatum(**datum))
         self._count = len(self.filedata)
 
     def get_dict(self):
@@ -167,7 +184,7 @@ class MacAddressData:
 
 def process_file(field_name, file_obj, seed):
     file_csv = csv.DictReader(file_obj)
-    file_instance = MacAddressData([r for r in file_csv])
+    file_instance = MaaSMachinesData([r for r in file_csv])
     file_data = file_instance.get_yaml()
     file_fields = cache.get('meta_file_fields_{}'.format(seed), {})
     file_fields.update({field_name: file_data})
