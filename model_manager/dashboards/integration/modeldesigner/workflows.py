@@ -36,6 +36,7 @@ class CreateCookiecutterContext(workflows.Workflow):
     name = _("Create new Deployment Model")
     slug = "create_cookiecutter_context"
     async_wizard = True
+    multipart = True
     default_steps = (GeneralParamsStep, InfraParamsStep, ProductParamsStep, CookiecutterContextStep)
     finalize_button_name = _("Confirm")
     success_message = _('Your request was successfully submitted.')

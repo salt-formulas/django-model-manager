@@ -557,15 +557,13 @@ class GeneratedAction(workflows.Action):
             "kwargs": {
                 "max_length": 255,
                 "label": "",
-                "required": True,
+                "required": False,
                 "help_text": ""
             }
         }
     }
 
     def __init__(self, request, context, *args, **kwargs):
-        #import pdb; pdb.set_trace()
-
         if request.method == "POST":
             forms.Form.__init__(self, request.POST, request.FILES, initial=context)
         else:
@@ -816,7 +814,6 @@ class AsyncWorkflowView(workflows.WorkflowView):
         else:
             # There are valid VALIDATE_STEP* headers, so only do validation
             # for the specified steps and return results.
-            import pdb; pdb.set_trace()
             data = self.validate_steps(request, workflow,
                                        validate_step_start,
                                        validate_step_end)
