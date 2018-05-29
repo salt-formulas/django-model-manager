@@ -163,6 +163,9 @@ class ContextTemplateCollector(object):
             self.versions[key] = tag['revision']
         self.versions['master'] = master['revision']
 
+        # manually add specific review commit for development purposes
+        # self.versions['mm_devel'] = '7a5ad84f09e16d48c190319f82cc556eab9aeb40'
+
         cache.set(cache_key, self.versions, 3600)
         return self.versions
 
@@ -495,6 +498,7 @@ DOCUTILS_RENDERER_SETTINGS = {
 class GeneratedAction(workflows.Action):
     """ TODO: Document this class
     """
+    global_context = {}
     field_templates = {
         "TEXT": {
             "class": CharField,
@@ -630,6 +634,7 @@ class GeneratedAction(workflows.Action):
 
     def get_context_template(self):
         version = self.request.GET.get('version')
+        self.global_context['_cookiecutter_version'] = version or getattr(settings, 'COOKIECUTTER_CONTEXT_DEFAULT_VERSION', '')
         ctx_tmpl_collector = ContextTemplateCollector()
         ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
@@ -644,6 +649,10 @@ class GeneratedAction(workflows.Action):
         source_context = self.get_context_template()
         tmpl = env.from_string(source_context)
         parsed_source = env.parse(source_context)
+
+        # update context with global context
+        context.update(self.global_context)
+
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
             if key not in env.globals:
@@ -697,6 +706,7 @@ class GeneratedStep(workflows.Step):
     template_name = "integration/modeldesigner/workflow/_workflow_step_with_fieldsets.html"
     depends_on = tuple()
     contributes = tuple()
+    global_context = {}
 
     def __init__(self, *args, **kwargs):
         super(GeneratedStep, self).__init__(*args, **kwargs)
@@ -722,6 +732,7 @@ class GeneratedStep(workflows.Step):
 
     def get_context_template(self):
         version = self.workflow.request.GET.get('version')
+        self.global_context['_cookiecutter_version'] = version or getattr(settings, 'COOKIECUTTER_CONTEXT_DEFAULT_VERSION', '')
         ctx_tmpl_collector = ContextTemplateCollector()
         ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
@@ -735,8 +746,13 @@ class GeneratedStep(workflows.Step):
         for fnc in CUSTOM_FUNCTIONS:
             env.globals[fnc[0]] = fnc[1]
         source_context = self.get_context_template()
+
         tmpl = env.from_string(source_context)
         parsed_source = env.parse(source_context)
+
+        # update context with global context
+        context.update(self.global_context)
+
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
             if key not in env.globals:
