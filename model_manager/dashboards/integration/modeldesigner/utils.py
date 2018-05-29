@@ -131,6 +131,8 @@ class ContextTemplateCollector(object):
         endpoint_url = '/projects/%s/branches/master/files/%s/content' % (self.project_name, self.file_name)
         if version:
             versions = self._gerrit_get_versions()
+            if version in self.version_map.values():
+                version = [v[0] for v in self.version_map.items() if v[1] == version][0]
             revision = versions.get(version)
             cache_key = 'workflow_context_%s' % revision
             endpoint_url = '/projects/%s/commits/%s/files/%s/content' % (self.project_name, revision, self.file_name)
