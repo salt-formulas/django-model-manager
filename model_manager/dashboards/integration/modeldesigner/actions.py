@@ -102,7 +102,7 @@ class MaaSMachinesDatum:
 
     def get_dict(self):
         _dict = {}
-        if all(self._subnet, self._ip, self._mode, self._gateway):
+        if all([self._subnet, self._ip, self._mode, self._gateway]):
             _dict = {
                 self._node_name: {
                     'interface': {
