@@ -495,13 +495,6 @@ DOCUTILS_RENDERER_SETTINGS = {
 class GeneratedAction(workflows.Action):
     """ TODO: Document this class
     """
-    default_context_template_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
-    default_context_template_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
-    default_context_template_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
-    context_template_remote = None
-    context_template_url = None
-    context_template_token = None
-
     field_templates = {
         "TEXT": {
             "class": CharField,
@@ -636,11 +629,8 @@ class GeneratedAction(workflows.Action):
         return str(string).replace('_', ' ').capitalize()
 
     def get_context_template(self):
-        remote = self.context_template_remote or self.default_context_template_remote
-        url = self.context_template_url or self.default_context_template_url
-        token = self.context_template_token or self.default_context_template_token
         version = self.request.GET.get('version')
-        ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
+        ctx_tmpl_collector = ContextTemplateCollector()
         ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
         return ctx_tmpl
@@ -708,13 +698,6 @@ class GeneratedStep(workflows.Step):
     depends_on = tuple()
     contributes = tuple()
 
-    default_context_template_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
-    default_context_template_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
-    default_context_template_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
-    context_template_remote = None
-    context_template_url = None
-    context_template_token = None
-
     def __init__(self, *args, **kwargs):
         super(GeneratedStep, self).__init__(*args, **kwargs)
         ctx = self.render_context()
@@ -738,11 +721,8 @@ class GeneratedStep(workflows.Step):
         return context
 
     def get_context_template(self):
-        remote = self.context_template_remote or self.default_context_template_remote
-        url = self.context_template_url or self.default_context_template_url
-        token = self.context_template_token or self.default_context_template_token
         version = self.workflow.request.GET.get('version')
-        ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
+        ctx_tmpl_collector = ContextTemplateCollector()
         ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
         return ctx_tmpl
