@@ -29,4 +29,3 @@ def iframe_embed_settings(context):
                                     True)
     context = {'disallow_iframe_embed': disallow_iframe_embed}
     return context
-

@@ -26,7 +26,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from model_manager import exceptions
 from .static import find_static_files, get_staticfiles_dirs
-from .theme import get_available_themes, get_theme_static_dirs 
+from .theme import get_available_themes, get_theme_static_dirs
 
 warnings.formatwarning = lambda message, category, *args, **kwargs: \
     '%s: %s' % (category.__name__, message)
@@ -73,11 +73,11 @@ HORIZON_CONFIG = {
 }
 
 # Salt API settings
-SALT_API_URL="http://127.0.0.1:8000"
-SALT_API_USER="saltdev"
-SALT_API_PASSWORD="saltdev"
-SALT_API_EAUTH="pam"
-SALT_API_POLLING_INTERVAL=30
+SALT_API_URL = 'http://127.0.0.1:8000'
+SALT_API_USER = 'saltdev'
+SALT_API_PASSWORD = 'saltdev'
+SALT_API_EAUTH = 'pam'
+SALT_API_POLLING_INTERVAL = 30
 
 # Celery settings
 BROKER_URL = 'redis://localhost:6379/1'
@@ -427,4 +427,3 @@ if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
 CSRF_COOKIE_AGE = None
-

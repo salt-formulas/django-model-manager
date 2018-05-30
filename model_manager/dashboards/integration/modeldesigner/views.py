@@ -36,7 +36,7 @@ class IndexView(tables.DataTableView):
             for build in builds:
                 if 'result' not in build:
                     build['result'] = 'UNKNOWN'
-                elif build['result'] == None:
+                elif build['result'] is None:
                     build['result'] = 'BUILDING'
                 if build['result'] not in [chc[0] for chc in STATUS_CHOICES]:
                     build['result'] = 'UNKNOWN'

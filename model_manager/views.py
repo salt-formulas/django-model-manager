@@ -16,4 +16,3 @@ def splash(request):
 
     response = shortcuts.redirect(HOME)
     return response
-

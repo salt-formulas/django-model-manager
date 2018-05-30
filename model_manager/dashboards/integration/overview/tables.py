@@ -14,4 +14,3 @@ class OverviewTable(tables.DataTable):
     class Meta:
         name = _("Overview")
         verbose_name = _("Overviews")
-

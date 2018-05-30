@@ -39,4 +39,3 @@ class BaseClient(PaginatedManager):
             if isinstance(value, date):
                 params[key] = value.strftime('%Y-%m-%d')
         return params
-

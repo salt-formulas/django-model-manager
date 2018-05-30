@@ -53,6 +53,7 @@ urlpatterns += staticfiles_urlpatterns()
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
-    urlpatterns += patterns('',
-    url(r'^500/$', 'django.views.defaults.server_error')
+    urlpatterns += patterns(
+        '',
+        url(r'^500/$', 'django.views.defaults.server_error')
     )

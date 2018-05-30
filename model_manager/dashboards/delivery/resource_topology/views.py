@@ -27,7 +27,12 @@ class IndexView(tables.DataTableView):
     def get_data(self):
         data = []
         try:
-            res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.inventory'}])
+            res = salt_client.safe_low([{
+                'client': 'local',
+                'tgt': 'salt:master',
+                'expr_form': 'pillar',
+                'fun': 'reclass.inventory'
+            }])
         except:
             res = {}
             LOG.error('Could not get response from Salt Master API.')
@@ -63,18 +68,31 @@ class HostDetailView(views.HorizonTemplateView):
         context = super(HostDetailView, self).get_context_data(**kwargs)
 
         try:
-            res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'saltresource.host_data', 'arg': context.get('host', None)}])
+            res = salt_client.safe_low([{
+                'client': 'local',
+                'tgt': 'salt:master',
+                'expr_form': 'pillar',
+                'fun': 'saltresource.host_data',
+                'arg': context.get('host', None)
+            }])
             resource_data = res.get('return', [{'': ''}])[0].values()[0].get('graph')
         except Exception as e:
             resource_data = []
             LOG.error('Could not get host resource data from Salt Master API: %s' % repr(e))
 
         try:
-            res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.node_pillar', 'arg': context.get('host', None)}])
+            res = salt_client.safe_low([{
+                'client': 'local',
+                'tgt': 'salt:master',
+                'expr_form': 'pillar',
+                'fun': 'reclass.node_pillar',
+                'arg': context.get('host', None)
+            }])
             pillar_data = res.get('return', [{'': ''}])[0].values()[0].values()[0]
         except Exception as e:
             pillar_data = []
-            LOG.error('Could not get host pillar data for %s from Salt Master API: %s' % (context.get('host', 'N/A'), repr(e)))
+            LOG.error('Could not get host pillar data for %s from Salt Master API: %s'
+                      % (context.get('host', 'N/A'), repr(e)))
 
         try:
             pillar_data_f = yaml.safe_dump(pillar_data, default_flow_style=False)
@@ -96,10 +114,23 @@ def topology_data_view(self, *args, **kwargs):
 
     filtered_data = copy.copy(graph_data)
     if domain:
-       filtered_data = [d for d in graph_data if domain in d.get('host', '')]
-       all_relations = [r.get('relations', [])[0] for r in filtered_data if r.get('relations', [])]
-       external_hosts = [d for d in graph_data if d.get('host') in [r.get('host') for r in all_relations] and d.get('host') not in [f.get('host') for f in filtered_data]]
-       filtered_data = filtered_data + external_hosts
+        filtered_data = [d for d in graph_data if domain in d.get('host', '')]
+        all_relations = [r.get('relations', [])[0] for r in filtered_data if r.get('relations', [])]
+        external_hosts = [
+            d
+            for d
+            in graph_data
+            if d.get('host') in [
+                r.get('host')
+                for r
+                in all_relations
+            ] and d.get('host') not in [
+                f.get('host')
+                for f
+                in filtered_data
+            ]
+        ]
+        filtered_data = filtered_data + external_hosts
 
     if filtered_data and isinstance(filtered_data, list):
         ret = {
@@ -125,7 +156,13 @@ def pillar_data_view(self, *args, **kwargs):
     subsystem = service.split('.')[1]
 
     try:
-        res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.node_pillar', 'arg': host}])
+        res = salt_client.safe_low([{
+            'client': 'local',
+            'tgt': 'salt:master',
+            'expr_form': 'pillar',
+            'fun': 'reclass.node_pillar',
+            'arg': host
+        }])
     except:
         res = {}
         LOG.error('Could not get response from Salt Master API.')
@@ -141,4 +178,3 @@ def pillar_data_view(self, *args, **kwargs):
     }
 
     return JsonResponse(ret)
-

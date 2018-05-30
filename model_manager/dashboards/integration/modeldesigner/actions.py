@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 from django import forms
 from horizon import workflows
 
-from .const import CTX
 from .utils import GeneratedAction
 
 
@@ -48,8 +47,8 @@ def should_use_block(value):
 def my_represent_scalar(self, tag, value, style=None):
     if style is None:
         if should_use_block(value):
-             style='|'
-             value = value.replace('\r', '')
+            style = '|'
+            value = value.replace('\r', '')
         else:
             style = self.default_style
 
@@ -202,8 +201,20 @@ class CookiecutterContextAction(workflows.Action):
         super(CookiecutterContextAction, self).__init__(
             request, context, *args, **kwargs)
         seed = context.get('context_seed', '-')
-        cookiecutter_ctx = {'default_context': {k: v for (k, v) in context.items() if v is not None and k != 'cookiecutter_context'}}
-        transform_bools = {k: str(v) for (k, v) in cookiecutter_ctx['default_context'].items() if isinstance(v, bool)}
+        cookiecutter_ctx = {
+            'default_context': {
+                k: v
+                for (k, v)
+                in context.items()
+                if v is not None and k != 'cookiecutter_context'
+            }
+        }
+        transform_bools = {
+            k: str(v)
+            for (k, v)
+            in cookiecutter_ctx['default_context'].items()
+            if isinstance(v, bool)
+        }
         cookiecutter_ctx['default_context'].update(transform_bools)
         process_files = {k: process_file(k, v, seed)
                          for (k, v)
@@ -216,10 +227,11 @@ class CookiecutterContextAction(workflows.Action):
 
         cookiecutter_ctx['default_context'].update(process_files)
         yaml.representer.BaseRepresenter.represent_scalar = my_represent_scalar
-        self.fields['cookiecutter_context'].initial = yaml.safe_dump(cookiecutter_ctx, default_flow_style=False)
-        # TODO: this basically makes the field uneditable, but it is necessary to deliver correct initial value
+        self.fields['cookiecutter_context'].initial = yaml.safe_dump(cookiecutter_ctx,
+                                                                     default_flow_style=False)
+        # TODO: this basically makes the field uneditable,
+        # but it is necessary to deliver correct initial value
         self.initial['cookiecutter_context'] = self.fields['cookiecutter_context'].initial
 
     class Meta(object):
         name = _("Output summary")
-

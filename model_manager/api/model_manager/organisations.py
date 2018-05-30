@@ -14,4 +14,3 @@ class Organisation(BaseClient):
             '/%s/%s/summary' % (self.scope, id),
             'GET',
             request=request)
-

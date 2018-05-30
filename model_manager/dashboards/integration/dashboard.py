@@ -10,4 +10,3 @@ class Integration(horizon.Dashboard):
     default_panel = 'modeldesigner'
 
 horizon.register(Integration)
-

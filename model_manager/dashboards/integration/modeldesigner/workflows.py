@@ -6,25 +6,21 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import workflows
 from time import sleep
 
-from .actions import (GeneralParamsAction, InfraParamsAction, ProductParamsAction,
-    CookiecutterContextAction)
-from .const import CTX
+from .actions import (GeneralParamsAction, InfraParamsAction,
+                      ProductParamsAction, CookiecutterContextAction)
 from .utils import GeneratedStep
 
 
 class GeneralParamsStep(GeneratedStep):
     action_class = GeneralParamsAction
-    source_context = CTX
 
 
 class InfraParamsStep(GeneratedStep):
     action_class = InfraParamsAction
-    source_context = CTX
 
 
 class ProductParamsStep(GeneratedStep):
     action_class = ProductParamsAction
-    source_context = CTX
 
 
 class CookiecutterContextStep(workflows.Step):
@@ -48,7 +44,12 @@ class CreateCookiecutterContext(workflows.Workflow):
         # contribute choice field options to workflow context as Bools
         context = self.context
         for step in self.steps:
-            choice_fields = [obj for obj in step.action.fields.values() if hasattr(obj, 'choices') and getattr(obj, 'extend_context', False)]
+            choice_fields = [
+                obj
+                for obj
+                in step.action.fields.values()
+                if hasattr(obj, 'choices') and getattr(obj, 'extend_context', False)
+            ]
             choices = [chc[0] for fld in choice_fields for chc in fld.choices]
             for choice in choices:
                 if choice not in context.keys():

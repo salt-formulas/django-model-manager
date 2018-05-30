@@ -70,4 +70,3 @@ NOT_FOUND = (
 RECOVERABLE = (
     requests.RequestException,
 )
-

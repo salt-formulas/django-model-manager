@@ -19,4 +19,3 @@ class ResourceTopologyTable(tables.DataTable):
     class Meta(object):
         name = 'resource_topology'
         row_actions = [ResourceTopologyDetailLink]
-

@@ -18,8 +18,12 @@ def cache_topology_data():
     lock_interval = interval = POLLING_INTERVAL
     if lock_interval < 30:
         lock_interval = 30
-    acquire_lock = lambda: cache.add('cache_topology_data_lock', 'true', 5 * lock_interval)
-    release_lock = lambda: cache.delete('cache_topology_data_lock')
+
+    def acquire_lock():
+        cache.add('cache_topology_data_lock', 'true', 5 * lock_interval)
+
+    def release_lock():
+        cache.delete('cache_topology_data_lock')
 
     if acquire_lock():
         LOG.info('Obtaining topology data from Salt Master ...')
@@ -35,4 +39,3 @@ def cache_topology_data():
         LOG.info('Another instance of cache_topology_data is already running, skipping ...')
 
     return True
-

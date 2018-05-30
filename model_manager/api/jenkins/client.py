@@ -54,7 +54,7 @@ class JenkinsClientExtension(object):
         jobs = self.client.get_jobs()
 
         return jobs
-        #filter(lambda job: "workflow" in job["name"], jobs)
+        # filter(lambda job: "workflow" in job["name"], jobs)
 
     def get_builds(self, name):
         job_info = self.client.get_job_info(name)
@@ -138,7 +138,8 @@ class JenkinsClientExtension(object):
         '''
         base_path = getattr(settings, 'JENKINS_API_URL')
         folder_url, short_name = self.client._get_job_folder(name)
-        ext_path = "%(folder_url)sjob/%(short_name)s/buildWithParameters" % {'folder_url': folder_url, 'short_name': short_name}
+        ext_path = '%(folder_url)sjob/%(short_name)s/buildWithParameters' % {
+            'folder_url': folder_url, 'short_name': short_name}
         url = urlparse.urljoin(base_path, ext_path)
         headers = {
             'content-type': 'application/x-www-form-urlencoded',
@@ -200,4 +201,3 @@ for method in [method for method in dir(extension)
     setattr(JENKINS_CLIENT, method, getattr(extension, method))
 
 jenkins_client = JENKINS_CLIENT
-
