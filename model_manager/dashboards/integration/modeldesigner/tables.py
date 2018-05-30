@@ -3,7 +3,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.translation import pgettext_lazy, ugettext_lazy as _
 from horizon import tables
-# from horizon_contrib.tables import FilterAction
 
 STATUS_DISPLAY_CHOICES = (
     ("SUCCESS", pgettext_lazy("Job build status", u"Success")),
@@ -12,7 +11,7 @@ STATUS_DISPLAY_CHOICES = (
     ("BUILDING", pgettext_lazy("Job build status", u"Building")),
 )
 
-STATUS_CHOICES = ( 
+STATUS_CHOICES = (
     ("SUCCESS", True),
     ("FAILURE", False),
     ("UNKNOWN", False),
@@ -89,5 +88,4 @@ class CookiecutterTable(BuildTableBase):
         status_columns = ('result',)
         row_class = JobRow
         table_actions = (CreateCookiecutter, CreateCookiecutterWithVersion)
-        #row_actions = (ShowDetail,)
-
+        # row_actions = (ShowDetail,)

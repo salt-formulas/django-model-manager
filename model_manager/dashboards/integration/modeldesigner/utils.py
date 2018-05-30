@@ -33,7 +33,7 @@ from requests import HTTPError
 from requests.auth import HTTPBasicAuth
 from os import urandom
 
-from .forms import Fieldset, CharField, BooleanField, IPField, ChoiceField 
+from .forms import Fieldset, FileField, CharField, BooleanField, IPField, ChoiceField
 
 LOG = logging.getLogger(__name__)
 
@@ -112,28 +112,36 @@ class ContextTemplateCollector(object):
 
     def _gerrit_collector(self, version=None):
         if not self.username:
-            msg = 'Gerrit username is required to be set as COOKIECUTTER_CONTEXT_USERNAME with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            msg = """ Gerrit username is required to be set as COOKIECUTTER_CONTEXT_USERNAME
+                      with COOKIECUTTER_CONTEXT_REMOTE = "gerrit". """
             raise django_exc.ImproperlyConfigured(msg)
         if not self.password:
-            msg = 'Gerrit password is required to be set as COOKIECUTTER_CONTEXT_PASSWORD with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            msg = """ Gerrit password is required to be set as COOKIECUTTER_CONTEXT_PASSWORD
+                      with COOKIECUTTER_CONTEXT_REMOTE = "gerrit". """
             raise django_exc.ImproperlyConfigured(msg)
         if not self.url:
-            msg = 'Gerrit base URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            msg = """ Gerrit base URL is required to be set as COOKIECUTTER_CONTEXT_URL
+                      with COOKIECUTTER_CONTEXT_REMOTE = "gerrit". """
             raise django_exc.ImproperlyConfigured(msg)
         if not self.project_name:
-            msg = 'Gerrit project name is required to be set as COOKIECUTTER_CONTEXT_PROJECT_NAME with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            msg = """ Gerrit project name is required to be set as COOKIECUTTER_CONTEXT_PROJECT_NAME
+                      with COOKIECUTTER_CONTEXT_REMOTE = "gerrit". """
             raise django_exc.ImproperlyConfigured(msg)
         if not self.file_name:
-            msg = 'Gerrit context file name is required to be set as COOKIECUTTER_CONTEXT_FILE_NAME with COOKIECUTTER_CONTEXT_REMOTE = "gerrit".'
+            msg = """ Gerrit context file name is required to be set as COOKIECUTTER_CONTEXT_FILE_NAME
+                      with COOKIECUTTER_CONTEXT_REMOTE = "gerrit". """
             raise django_exc.ImproperlyConfigured(msg)
 
         cache_key = 'workflow_context'
         endpoint_url = '/projects/%s/branches/master/files/%s/content' % (self.project_name, self.file_name)
         if version:
             versions = self._gerrit_get_versions()
+            if version in self.version_map.values():
+                version = [v[0] for v in self.version_map.items() if v[1] == version][0]
             revision = versions.get(version)
             cache_key = 'workflow_context_%s' % revision
-            endpoint_url = '/projects/%s/commits/%s/files/%s/content' % (self.project_name, revision, self.file_name)
+            endpoint_url = '/projects/%s/commits/%s/files/%s/content' % (
+                self.project_name, revision, self.file_name)
 
         cached_ctx = cache.get(cache_key, None)
         if cached_ctx:
@@ -161,6 +169,9 @@ class ContextTemplateCollector(object):
             self.versions[key] = tag['revision']
         self.versions['master'] = master['revision']
 
+        # manually add specific review commit for development purposes
+        # self.versions['mm_devel'] = '7a5ad84f09e16d48c190319f82cc556eab9aeb40'
+
         cache.set(cache_key, self.versions, 3600)
         return self.versions
 
@@ -176,11 +187,13 @@ class ContextTemplateCollector(object):
             return cached_ctx
 
         if not self.url:
-            msg = 'Github repository API URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "github".'
+            msg = """ Github repository API URL is required to be set as COOKIECUTTER_CONTEXT_URL
+                      with COOKIECUTTER_CONTEXT_REMOTE = "github". """
             raise django_exc.ImproperlyConfigured(msg)
 
         if not self.token:
-            msg = 'Github API token is required to be set as COOKIECUTTER_CONTEXT_TOKEN with COOKIECUTTER_CONTEXT_REMOTE = "github".'
+            msg = """ Github API token is required to be set as COOKIECUTTER_CONTEXT_TOKEN
+                      with COOKIECUTTER_CONTEXT_REMOTE = "github". """
             raise django_exc.ImproperlyConfigured(msg)
 
         session.headers.update({'Accept': 'application/vnd.github.v3.raw'})
@@ -192,7 +205,8 @@ class ContextTemplateCollector(object):
                 response_text = response_json['message']
             except:
                 response_text = response.text
-            msg = "Could not get remote file from Github:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (str(response.status_code), response_text)
+            msg = "Could not get remote file from Github:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (
+                str(response.status_code), response_text)
             LOG.error(msg)
             ctx = ""
         else:
@@ -210,7 +224,8 @@ class ContextTemplateCollector(object):
             return cached_ctx
 
         if not self.url:
-            msg = 'HTTP URL is required to be set as COOKIECUTTER_CONTEXT_URL with COOKIECUTTER_CONTEXT_REMOTE = "http".'
+            msg = """ HTTP URL is required to be set as COOKIECUTTER_CONTEXT_URL
+                      with COOKIECUTTER_CONTEXT_REMOTE = "http". """
             raise django_exc.ImproperlyConfigured(msg)
 
         if self.username and self.password:
@@ -219,7 +234,8 @@ class ContextTemplateCollector(object):
             response = session.get(self.url)
 
         if response.status_code >= 300:
-            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (self.url, str(response.status_code), response.text)
+            msg = "Could not get remote file from HTTP URL %s:\nSTATUS CODE: %s\nRESPONSE:\n%s" % (
+                self.url, str(response.status_code), response.text)
             LOG.error(msg)
             ctx = ""
         else:
@@ -231,7 +247,8 @@ class ContextTemplateCollector(object):
 
     def _localfs_collector(self, version=None):
         if not self.path:
-            msg = 'Path to file on local filesystem is required to be set as COOKIECUTTER_CONTEXT_PATH with COOKIECUTTER_CONTEXT_REMOTE = "localfs".'
+            msg = """ Path to file on local filesystem is required to be set as
+                      COOKIECUTTER_CONTEXT_PATH with COOKIECUTTER_CONTEXT_REMOTE = "localfs". """
             raise django_exc.ImproperlyConfigured(msg)
 
         try:
@@ -250,8 +267,9 @@ class ContextTemplateCollector(object):
     def collect_template(self, version=None):
         if version:
             versions = self.collect_versions()
-            if not version in versions:
-                LOG.warning('Selected version %s not available, using default. Available versions: %s' % (version, versions))
+            if version not in versions:
+                LOG.warning('Selected version %s not available, using default. Available versions: %s' % (
+                    version, versions))
                 version = None
 
         collector = self.collectors.get(self.remote, {}).get('collector', lambda: '')
@@ -419,8 +437,11 @@ def generate_ssh_keypair(seed=None):
             public_key_str = cached_public_key
 
         else:
-            private_key_obj = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, \
-                key_size=2048)
+            private_key_obj = rsa.generate_private_key(
+                backend=default_backend(),
+                public_exponent=65537,
+                key_size=2048
+            )
 
             public_key_obj = private_key_obj.public_key()
 
@@ -438,7 +459,7 @@ def generate_ssh_keypair(seed=None):
             cache.set(private_key_cache, private_key_str, 3600)
             cache.set(public_key_cache, public_key_str, 3600)
 
-    return (private_key_str, public_key_str)    
+    return (private_key_str, public_key_str)
 
 
 def generate_uuid():
@@ -480,26 +501,21 @@ CUSTOM_FUNCTIONS = [
 # Extended workflow classes
 
 DOCUTILS_RENDERER_SETTINGS = {
-    "initial_header_level": 2,
+    'initial_header_level': 2,
     # important, to have even lone titles stay in the html fragment:
-    "doctitle_xform": False, 
+    'doctitle_xform': False,
     # we also disable the promotion of lone subsection title to a subtitle:
-    "sectsubtitle_xform": False, 
+    'sectsubtitle_xform': False,
     'file_insertion_enabled': False,  # SECURITY MEASURE (file hacking)
-    'raw_enabled': False, # SECURITY MEASURE (script tag)
-    'report_level': 2,  # report warnings and above, by default
+    'raw_enabled': False,             # SECURITY MEASURE (script tag)
+    'report_level': 2,                # report warnings and above, by default
 }
+
 
 class GeneratedAction(workflows.Action):
     """ TODO: Document this class
     """
-    default_context_template_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
-    default_context_template_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
-    default_context_template_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
-    context_template_remote = None
-    context_template_url = None
-    context_template_token = None
-
+    global_context = {}
     field_templates = {
         "TEXT": {
             "class": CharField,
@@ -550,12 +566,31 @@ class GeneratedAction(workflows.Action):
                 "choices": [],
                 "required": False
             }
+        },
+        "FILE": {
+            "class": FileField,
+            "args": tuple(),
+            "kwargs": {
+                "max_length": 255,
+                "label": "",
+                "required": False,
+                "help_text": ""
+            }
         }
     }
 
     def __init__(self, request, context, *args, **kwargs):
-        super(GeneratedAction, self).__init__(
-            request, context, *args, **kwargs)
+        if request.method == "POST":
+            forms.Form.__init__(self, request.POST, request.FILES, initial=context)
+        else:
+            forms.Form.__init__(self, initial=context)
+
+        if not hasattr(self, "handle"):
+            raise AttributeError("The action %s must define a handle method."
+                                 % self.__class__.__name__)
+        self.request = request
+        self._populate_choices(request, context)
+        self.required_css_class = 'required'
 
         rendered_context = self.render_context(context)
         for fieldset in rendered_context:
@@ -584,7 +619,7 @@ class GeneratedAction(workflows.Action):
                 field_kw = field_template['kwargs']
                 # set kwargs
                 field_kw['fieldset'] = fieldset_name
-                field_kw['label'] = field.get('label', None) if 'label' in field else self.deslugify(field['name'])
+                field_kw['label'] = field.get('label', self.deslugify(field['name']))
                 field_kw['help_text'] = field.get('help_text', None)
                 field_kw['initial'] = field.get('initial', None)
                 field_kw['width'] = field.get('width', 'full')
@@ -607,7 +642,8 @@ class GeneratedAction(workflows.Action):
                     self.fields[field['name']].widget = forms.HiddenInput()
                 # workaround for empty strings in inital data after ``contribute`` is defined
                 # TODO: find out why this is happening
-                if field['name'] in self.initial and (self.initial[field['name']] == '' or self.initial[field['name']] == None):
+                if (field['name'] in self.initial and
+                        (self.initial[field['name']] == '' or self.initial[field['name']] is None)):
                     self.initial[field['name']] = field.get('initial', None)
 
     @staticmethod
@@ -615,11 +651,10 @@ class GeneratedAction(workflows.Action):
         return str(string).replace('_', ' ').capitalize()
 
     def get_context_template(self):
-        remote = self.context_template_remote or self.default_context_template_remote
-        url = self.context_template_url or self.default_context_template_url
-        token = self.context_template_token or self.default_context_template_token
         version = self.request.GET.get('version')
-        ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
+        self.global_context['_cookiecutter_version'] = \
+            version or getattr(settings, 'COOKIECUTTER_CONTEXT_DEFAULT_VERSION', '')
+        ctx_tmpl_collector = ContextTemplateCollector()
         ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
         return ctx_tmpl
@@ -633,10 +668,14 @@ class GeneratedAction(workflows.Action):
         source_context = self.get_context_template()
         tmpl = env.from_string(source_context)
         parsed_source = env.parse(source_context)
+
+        # update context with global context
+        context.update(self.global_context)
+
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
             if key not in env.globals:
-                if (not key in context) or (key in context and context[key] == None):
+                if (key not in context) or (key in context and context[key] is None):
                     context[key] = ""
         try:
             ctx = yaml.load(tmpl.render(context))
@@ -652,10 +691,10 @@ class GeneratedAction(workflows.Action):
             settings_overrides["initial_header_level"] = header_level
         if report_level is not None:  # starts from 1 too
             settings_overrides["report_level"] = report_level
-        parts = publish_parts(source=force_bytes(value), 
-                              writer_name="html4css1", 
+        parts = publish_parts(source=force_bytes(value),
+                              writer_name="html4css1",
                               settings_overrides=settings_overrides)
-        trimmed_parts = parts['html_body'][23:-8] 
+        trimmed_parts = parts['html_body'][23:-8]
         return force_text(trimmed_parts)
 
     def requirements_met(self, item, context):
@@ -665,7 +704,7 @@ class GeneratedAction(workflows.Action):
             for req in item['requires']:
                 key = req.keys()[0]
                 value = req.values()[0]
-                if (not key in context) or (key in context and not value == context[key]):
+                if (key not in context) or (key in context and not value == context[key]):
                     return False
         if context and 'requires_or' in item:
             score = 0
@@ -686,13 +725,7 @@ class GeneratedStep(workflows.Step):
     template_name = "integration/modeldesigner/workflow/_workflow_step_with_fieldsets.html"
     depends_on = tuple()
     contributes = tuple()
-
-    default_context_template_url = getattr(settings, 'COOKIECUTTER_CONTEXT_URL', None)
-    default_context_template_remote = getattr(settings, 'COOKIECUTTER_CONTEXT_REMOTE', None)
-    default_context_template_token = getattr(settings, 'COOKIECUTTER_CONTEXT_TOKEN', None)
-    context_template_remote = None
-    context_template_url = None
-    context_template_token = None
+    global_context = {}
 
     def __init__(self, *args, **kwargs):
         super(GeneratedStep, self).__init__(*args, **kwargs)
@@ -710,18 +743,22 @@ class GeneratedStep(workflows.Step):
     def contribute(self, data, context):
         super(GeneratedStep, self).contribute(data, context)
         # update shared context with option Bool values according to choices made in ChoiceList fields
-        choice_fields = [obj for obj in self.action.fields.values() if hasattr(obj, 'choices') and getattr(obj, 'extend_context',  False)]
+        choice_fields = [
+            obj
+            for obj
+            in self.action.fields.values()
+            if hasattr(obj, 'choices') and getattr(obj, 'extend_context',  False)
+        ]
         choices = [chc[0] for fld in choice_fields for chc in fld.choices]
         for choice in choices:
             context[choice] = True if choice in context.values() else False
         return context
 
     def get_context_template(self):
-        remote = self.context_template_remote or self.default_context_template_remote
-        url = self.context_template_url or self.default_context_template_url
-        token = self.context_template_token or self.default_context_template_token
         version = self.workflow.request.GET.get('version')
-        ctx_tmpl_collector = ContextTemplateCollector(remote=remote, url=url, token=token)
+        self.global_context['_cookiecutter_version'] = \
+            version or getattr(settings, 'COOKIECUTTER_CONTEXT_DEFAULT_VERSION', '')
+        ctx_tmpl_collector = ContextTemplateCollector()
         ctx_tmpl = ctx_tmpl_collector.collect_template(version)
 
         return ctx_tmpl
@@ -734,8 +771,13 @@ class GeneratedStep(workflows.Step):
         for fnc in CUSTOM_FUNCTIONS:
             env.globals[fnc[0]] = fnc[1]
         source_context = self.get_context_template()
+
         tmpl = env.from_string(source_context)
         parsed_source = env.parse(source_context)
+
+        # update context with global context
+        context.update(self.global_context)
+
         tmpl_ctx_keys = meta.find_undeclared_variables(parsed_source)
         for key in tmpl_ctx_keys:
             if key not in env.globals:
@@ -834,4 +876,3 @@ class AsyncWorkflowView(workflows.WorkflowView):
             return response
         next_url = self.request.POST.get(workflow.redirect_param_name)
         return shortcuts.redirect(next_url or workflow.get_success_url())
-

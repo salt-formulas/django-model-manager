@@ -39,6 +39,7 @@ COOKIECUTTER_CONTEXT_VERSION_FILTER = '\d{4}\.\d{1,2}(\.\d{1,2})?' # only versio
 COOKIECUTTER_CONTEXT_VERSION_MAP = {
     'master': 'nightly' # this will rename version master to version nightly
 }
+COOKIECUTTER_CONTEXT_DEFAULT_VERSION = 'master' # version to populate global context with if none were collected from remote
 
 SALT_API_URL="http://127.0.0.1:8000"
 SALT_API_USER="saltdev"

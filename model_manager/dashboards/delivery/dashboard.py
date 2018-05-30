@@ -9,4 +9,3 @@ class Delivery(horizon.Dashboard):
     slug = 'delivery'
 
 horizon.register(Delivery)
-

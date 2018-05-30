@@ -60,11 +60,11 @@ class WorkflowTab(tabs.Tab):
                         'id': node['id'],
                         'atoms': []
                     })
- 
+
                     cur = next(i for (i, d) in enumerate(nodes) if d.get('id', -1) == node['id'])
                 elif cur:
-                    print "GET_WF_NODE_LOG"
-                    text = jenkins_client.get_wf_node_log(job_id, int(build_id), int(node['id'])).get('text', '')
+                    text = jenkins_client.get_wf_node_log(job_id, int(build_id),
+                                                          int(node['id'])).get('text', '')
                     nodes[cur]['atoms'].append({
                         'displayName': node['displayName'],
                         'url': node['url'],
@@ -131,7 +131,12 @@ class ParamTab(tabs.Tab):
         build_id = self.tab_group.kwargs['build_id']
         build = jenkins_client.get_build_info(job_id, int(build_id), depth=1)
         parameters = {}
-        index = next(i for (i, d) in enumerate(build['actions']) if 'hudson.model.ParametersAction' in d.get('_class', ''))
+        index = next(
+            i
+            for (i, d)
+            in enumerate(build['actions'])
+            if 'hudson.model.ParametersAction' in d.get('_class', '')
+        )
         if isinstance(index, int):
             parameters = build['actions'][index]['parameters']
 
@@ -143,4 +148,3 @@ class DetailTabGroup(tabs.TabGroup):
     tabs = (ParamTab, OutputTab, WorkflowTab)
     sticky = True
     show_single_tab = True
-

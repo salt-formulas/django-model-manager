@@ -10,4 +10,3 @@ DEFAULT_PANEL = 'modeldesigner'
 
 # Python panel class of the PANEL to be added.
 ADD_PANEL = 'model_manager.dashboards.integration.modeldesigner.panel.ModelDesigner'
-

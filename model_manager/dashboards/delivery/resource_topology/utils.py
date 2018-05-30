@@ -11,13 +11,23 @@ def get_topology_data():
     '''
     data = []
     try:
-        res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'reclass.graph_data'}]) 
+        res = salt_client.safe_low([{
+            'client': 'local',
+            'tgt': 'salt:master',
+            'expr_form': 'pillar',
+            'fun': 'reclass.graph_data'
+        }])
     except:
         res = {}
         LOG.error('Could not get topology data from Salt Master API.')
 
     try:
-        status_res = salt_client.safe_low([{'client': 'local', 'tgt': 'salt:master', 'expr_form': 'pillar', 'fun': 'saltresource.graph_data'}]) 
+        status_res = salt_client.safe_low([{
+            'client': 'local',
+            'tgt': 'salt:master',
+            'expr_form': 'pillar',
+            'fun': 'saltresource.graph_data'
+        }])
     except:
         status_res = {}
         LOG.error('Could not get status data from Salt Master API.')
@@ -33,15 +43,24 @@ def get_topology_data():
         status_data = []
 
     for datum in graph_data:
-        status_datum = [r for r in status_data if r.get('host') == datum.get('host') and r.get('service') == datum.get('service')]
+        status_datum = [
+            r
+            for r
+            in status_data
+            if r.get('host') == datum.get('host') and r.get('service') == datum.get('service')
+        ]
         if status_datum:
             status = status_datum[0].get('status', 'unknown')
             datum['status'] = status
 
         for relation in datum.get('relations', []):
-            rel_host = [h for h in graph_data if h.get('host') == relation.get('host') and h.get('service') == relation.get('service')]
+            rel_host = [
+                h
+                for h
+                in graph_data
+                if h.get('host') == relation.get('host') and h.get('service') == relation.get('service')
+            ]
             if rel_host:
                 relation['status'] = rel_host[0].get('status', 'unknown')
 
     return graph_data
-

@@ -70,4 +70,3 @@ if SALT_CLIENT:
     salt_client = SALT_CLIENT
 else:
     salt_client = None
-

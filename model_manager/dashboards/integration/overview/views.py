@@ -32,4 +32,3 @@ class StatusView(TemplateView):
 
         return HttpResponse(json.dumps(ret),
                             content_type='application/json')
-

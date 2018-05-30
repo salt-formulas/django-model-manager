@@ -8,8 +8,8 @@ urlpatterns = patterns(
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^(?P<domain>[\w\.\-]+)$', views.DetailView.as_view(), name='detail'),
     url(r'^(?P<domain>[\w\.\-]+)/topology_data$', views.topology_data_view, name='topology_data'),
-    url(r'^(?P<domain>[\w\.\-]+)/topology_data/(?P<host>[\w\.\-\|]+)/(?P<service>[\w\.\-\|]+)$', views.pillar_data_view, name='pillar_data'),
-    url(r'^(?P<domain>[\w\.\-]+)/(?P<host>[\w\.\-\|]+)$', views.HostDetailView.as_view(), name='host_detail'),
-
+    url(r'^(?P<domain>[\w\.\-]+)/topology_data/(?P<host>[\w\.\-\|]+)/(?P<service>[\w\.\-\|]+)$',
+        views.pillar_data_view, name='pillar_data'),
+    url(r'^(?P<domain>[\w\.\-]+)/(?P<host>[\w\.\-\|]+)$', views.HostDetailView.as_view(),
+        name='host_detail'),
 )
-

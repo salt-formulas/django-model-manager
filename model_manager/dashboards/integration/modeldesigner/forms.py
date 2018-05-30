@@ -1,7 +1,6 @@
 import json
 import logging
 
-#from model_manager import api
 from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
@@ -36,6 +35,13 @@ class FieldMixin(object):
         super(FieldMixin, self).__init__(*args, **kwargs)
 
 
+class FileField(FieldMixin, forms.FileField):
+    """
+    Custom FileField with fieldset attribute
+    """
+    pass
+
+
 class CharField(FieldMixin, forms.CharField):
     """
     Custom CharField with fieldset attribute
@@ -65,31 +71,6 @@ class ChoiceField(FieldMixin, forms.ChoiceField):
         if 'extend_context' in kwargs:
             self.extend_context = kwargs.pop('extend_context')
         super(ChoiceField, self).__init__(*args, **kwargs)
-
-
-class CreateCookiecutterForm(forms.SelfHandlingForm):
-
-    class Meta:
-        name = _('Create Cookiecutter')
-        help_text = _('Generate new Cookiecutter.')
-
-    name = forms.CharField(
-        required=True)
-
-    param1 = forms.BooleanField(
-        required=False,
-        initial=False)
-
-    def handle(self, request, data):
-
-        try:
-            api.model_manager.jobs.create(
-                data,
-                request)
-        except Exception as e:
-            raise e
-
-        return True
 
 
 def version_choices():

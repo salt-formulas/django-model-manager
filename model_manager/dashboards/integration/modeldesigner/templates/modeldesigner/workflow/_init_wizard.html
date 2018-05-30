@@ -20,7 +20,7 @@ $(document).ready(function() {
   
       // Temporarilly remove "disabled" attribute to get the values serialized
       var disabled = $form.find('select[disabled="disabled"]').removeAttr("disabled");
-  
+
       // Send the data for validation.
       $.ajax({
         type: 'POST',
@@ -29,7 +29,11 @@ $(document).ready(function() {
           'X-Horizon-Validate-Step-Start': start,
           'X-Horizon-Validate-Step-End': end
         },
-        data: $form.serialize(),
+        // data: $form.serialize(),
+        data: new FormData($form[0]),
+        cache: false, //
+        contentType: false, //
+        processData: false, //
         dataType: 'json',
         async: false,
         success: function (data) { response = data; }

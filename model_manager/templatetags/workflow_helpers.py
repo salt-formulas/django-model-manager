@@ -13,4 +13,3 @@ LAYOUT_CLASSES = {
 @register.filter
 def layout_class(width):
     return LAYOUT_CLASSES.get(width, 'full')
-

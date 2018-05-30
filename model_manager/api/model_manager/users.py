@@ -41,4 +41,3 @@ class User(BaseClient):
             'POST',
             params=data,
             request=request)
-

@@ -13,4 +13,3 @@ def format_return(ret):
     except:
         out = '<pre class="return">%s></pre>' % ret
     return out
-

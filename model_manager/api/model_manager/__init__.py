@@ -10,4 +10,3 @@ class Api(BaseClient):
     organisations = Organisation()
 
 model_manager = Api()
-

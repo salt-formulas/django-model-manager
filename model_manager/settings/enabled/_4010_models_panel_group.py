@@ -6,4 +6,3 @@ PANEL_GROUP = 'models'
 PANEL_GROUP_NAME = _('Models')
 # The slug of the dashboard the PANEL_GROUP associated with. Required.
 PANEL_GROUP_DASHBOARD = 'integration'
-
