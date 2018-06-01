@@ -145,6 +145,19 @@ class JenkinsClientExtension(object):
             'content-type': 'application/x-www-form-urlencoded',
             'Authorization': self.client.auth
         }
+
+        # Set Jenkins crumb
+        if self.client.crumb is None:
+            try:
+                response = self.client.jenkins_open(Request(
+                    self.client._build_url(jenkins.CRUMB_URL)), add_crumb=False)
+            except (jenkins.NotFoundException, jenkins.EmptyResponseException):
+                self.client.crumb = False
+            else:
+                self.client.crumb = json.loads(response)
+        if self.client.crumb:
+            headers[self.client.crumb['crumbRequestField']] = self.client.crumb['crumb']
+
         try:
             response = requests.post(url, headers=headers, data=params)
         except Exception as e:
