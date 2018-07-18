@@ -651,7 +651,10 @@ class GeneratedAction(workflows.Action):
         return str(string).replace('_', ' ').capitalize()
 
     def get_context_template(self):
-        version = self.request.GET.get('version')
+        if self.request.method == 'POST':
+            version = self.request.META.get('HTTP_X_HORIZON_CONTEXT_VERSION')
+        elif self.request.method == 'GET':
+            version = self.request.GET.get('version')
         self.global_context['_cookiecutter_version'] = \
             version or getattr(settings, 'COOKIECUTTER_CONTEXT_DEFAULT_VERSION', '')
         ctx_tmpl_collector = ContextTemplateCollector()
