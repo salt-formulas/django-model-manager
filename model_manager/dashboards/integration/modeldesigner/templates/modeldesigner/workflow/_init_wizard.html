@@ -21,13 +21,18 @@ $(document).ready(function() {
       // Temporarilly remove "disabled" attribute to get the values serialized
       var disabled = $form.find('select[disabled="disabled"]').removeAttr("disabled");
 
+      // Get context version if present
+      var urlParams = new URLSearchParams(window.location.search);
+      var contextVersion = urlParams.get('version');
+
       // Send the data for validation.
       $.ajax({
         type: 'POST',
         url: $form.attr('action'),
         headers: {
           'X-Horizon-Validate-Step-Start': start,
-          'X-Horizon-Validate-Step-End': end
+          'X-Horizon-Validate-Step-End': end,
+          'X-Horizon-Context-Version': contextVersion
         },
         // data: $form.serialize(),
         data: new FormData($form[0]),
