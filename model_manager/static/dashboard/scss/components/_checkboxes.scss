@@ -14,7 +14,7 @@
     display:none;
 
     // The checkbox - Unchecked
-    & + label {
+    & ~ label {
       margin-bottom: 0;  // remove the Bootstrap margin
 
       &:before {
@@ -31,7 +31,7 @@
     }
 
     // The checkbox - Checked
-    &:checked + label:before {
+    &:checked ~ label:before {
       content: $fa-var-check-square-o;
     }
   }
