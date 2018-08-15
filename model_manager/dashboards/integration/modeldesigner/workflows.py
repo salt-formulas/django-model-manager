@@ -55,6 +55,9 @@ class CreateCookiecutterContext(workflows.Workflow):
                 if choice not in context.keys():
                     context[choice] = True if choice in context.values() else False
 
+    def get_absolute_url(self):
+        return self.request.get_full_path()
+
     def handle(self, request, context):
         """Handles any final processing for this workflow. Should return a
         boolean value indicating success.
