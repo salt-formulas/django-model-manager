@@ -183,6 +183,10 @@ body#splash {
 
 /* Alert overrides */
 
+.alert {
+  padding: 10px;
+}
+
 .alert-success {
   @include mira-alert-variant($brand-success);
 }
@@ -199,3 +203,8 @@ body#splash {
   @include mira-alert-variant($brand-danger);
 }
 
+/* Forms */
+
+.form-control:focus {
+  @include prefix(box-shadow, none, webkit moz);
+}

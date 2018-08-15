@@ -10,13 +10,13 @@
 @mixin mira-alert-variant($brand-color) {
   background-color: $brand-color;
   border-color: $brand-color;
-  color: #fff;
+  color: #fff !important;
 
   hr {
     border-top-color: darken($brand-color, 5%);
   }
   .alert-link {
-    color: #fff;
+    color: #fff !important;
     text-decoration: underline;
   }
 }
