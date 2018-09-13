@@ -1,0 +1,31 @@
+{% extends 'auth/_login_form.html' %}
+{% load i18n %}
+
+{% block pre_login %}
+  <div class="anime-bg">
+    <video id="video_background" preload="auto" autoplay="autoplay" style="display: none;" loop="loop" onended="this.play()">
+      <source src="/static/themes/vendor/video/mboard.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="container login">
+    <div class="row">
+      <div class="col-xs-11 col-sm-8 col-md-6 col-lg-5 horizontal-center">
+        {{ block.super }}
+{% endblock %}
+
+{% block login_header %}
+  {% include 'auth/_splash.html' %}
+  {{ block.super }}
+{% endblock %}
+
+{% block post_login %}
+      {{ block.super }}
+      </div>
+    </div>
+  </div>
+  <script>
+    $(document).ready(function() {
+      $('#video_background').show();
+    });
+  </script>
+{% endblock %}

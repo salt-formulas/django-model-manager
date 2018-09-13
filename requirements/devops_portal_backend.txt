@@ -1,0 +1,2 @@
+django-extensions==1.6.7
+djangorestframework==3.3.3

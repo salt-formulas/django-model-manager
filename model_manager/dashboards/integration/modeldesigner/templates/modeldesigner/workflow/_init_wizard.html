@@ -1,0 +1,143 @@
+<script>
+$(document).ready(function() {
+  (function(){
+    var _max_visited_step = 0;
+    var _validate_steps = function (start, end) {
+      var $form = $('.workflow > form'),
+        response = {};
+  
+      if (typeof end === 'undefined') {
+        end = start;
+      }
+  
+      // Clear old errors.
+      $form.find('div.row div.alert-danger').remove();
+      $form.find('.form-group.has-error').each(function () {
+        var $group = $(this);
+        $group.removeClass('has-error');
+        $group.find('span.help-block.alert').remove();
+      });
+  
+      // Temporarilly remove "disabled" attribute to get the values serialized
+      var disabled = $form.find('select[disabled="disabled"]').removeAttr("disabled");
+
+      // Get context version if present
+      var urlParams = new URLSearchParams(window.location.search);
+      var contextVersion = urlParams.get('version');
+
+      // Send the data for validation.
+      $.ajax({
+        type: 'POST',
+        url: $form.attr('action'),
+        headers: {
+          'X-Horizon-Validate-Step-Start': start,
+          'X-Horizon-Validate-Step-End': end,
+          'X-Horizon-Context-Version': contextVersion
+        },
+        // data: $form.serialize(),
+        data: new FormData($form[0]),
+        cache: false, //
+        contentType: false, //
+        processData: false, //
+        dataType: 'json',
+        async: false,
+        success: function (data) { response = data; }
+      });
+  
+      // Re-enable the "disabled" attribute on disabled inputs.
+      disabled.attr("disabled", "disabled");
+  
+      // Handle errors.
+      if (response.has_errors) {
+        var first_field = true;
+  
+        $.each(response.errors, function (step_slug, step_errors) {
+          var step_id = response.workflow_slug + '__' + step_slug,
+            $fieldset = $form.find('#' + step_id);
+          $.each(step_errors, function (field, errors) {
+            var $field;
+            if (field === '__all__') {
+              // Add global errors.
+              $.each(errors, function (index, error) {
+                $fieldset.find('div.row').prepend(
+                  '<div class="alert alert-message alert-danger">' +
+                  error + '</div>');
+              });
+              $fieldset.find('input,  select, textarea').first().focus();
+              return;
+            }
+            // Add field errors.
+            $field = $fieldset.find('[name="' + field + '"]');
+            $field.closest('.form-group').addClass('has-error');
+            $.each(errors, function (index, error) {
+              $field.after(
+                '<span class="help-block alert alert-danger">' +
+                error + '</span>');
+            });
+            // Focus the first invalid field.
+            if (first_field) {
+              $field.focus();
+              first_field = false;
+            }
+          });
+        });
+        return false;
+      } else {
+        if (response.hasOwnProperty('rendered')) {
+          if (horizon.conf.debug) {
+            console.log(response);
+          }
+          for (var key in response.rendered) {
+            // append dynamic content
+            $("#" + key).html(response.rendered[key]);
+            // compile tab
+            horizon.utils.loadAngular($("#" + key));
+            // init switchable
+            // call initModal on every call..
+            $('form').find('select.switchable').trigger('change');
+          }
+        } else {
+          console.log('Response does not contain "rendered" property');
+        }
+      }
+    };
+    $('.workflow.async-wizard').bootstrapWizard({
+      firstSelector: '.async-wizard li.first',
+      lastSelector: '.async-wizard li.last',
+      tabClass: 'wizard-tabs',
+      nextSelector: '.button-next',
+      previousSelector: '.button-previous',
+      onTabShow: function (tab, navigation, index) {
+        var $navs = navigation.find('li');
+        var total = $navs.length;
+        var current = index;
+        var $footer = $('.modal-footer');
+        _max_visited_step = Math.max(_max_visited_step, current);
+        if (current + 1 >= total) {
+          $footer.find('.button-next').hide();
+          $footer.find('.button-final').show();
+        } else {
+          $footer.find('.button-next').show();
+          $footer.find('.button-final').hide();
+        }
+        $navs.each(function(i) {
+          var $this = $(this);
+          if (i <= _max_visited_step) {
+            $this.addClass('done');
+          } else {
+            $this.removeClass('done');
+          }
+        });
+      },
+      onNext: function ($tab, $nav, index) {
+        return _validate_steps(index - 1);
+      },
+      onTabClick: function ($tab, $nav, current, index) {
+        // Validate if moving forward, but move backwards without validation
+        return (index <= current ||
+                _validate_steps(current, index - 1) !== false);
+      }
+    });
+  })();
+});
+</script>

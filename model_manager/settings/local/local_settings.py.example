@@ -1,0 +1,48 @@
+SECRET_KEY = "secret"
+DEBUG = True
+
+# For all remotes
+JENKINS_API_URL = "localhost"
+JENKINS_API_USERNAME = "username"
+JENKINS_API_PASSWORD = "password"
+
+COOKIECUTTER_JENKINS_JOB = "cookiecutter-job"
+
+# Choose one of the context file locations bellow
+
+# HTTP remote
+COOKIECUTTER_CONTEXT_REMOTE = "http"
+COOKIECUTTER_CONTEXT_URL = "https://git.my-gitlab.io/group/project/raw/master/context.yaml"
+COOKIECUTTER_CONTEXT_USERNAME = 'username' # HTTP basic auth - optional
+COOKIECUTTER_CONTEXT_PASSWORD = 'password' # HTTP basic auth - optional
+
+# Gerrit remote
+COOKIECUTTER_CONTEXT_REMOTE = 'gerrit'
+COOKIECUTTER_CONTEXT_USERNAME = 'username' # Gerrit username
+COOKIECUTTER_CONTEXT_PASSWORD = 'password' # Gerrit HTTP password for given user, regular password with Gerrit LDAP auth
+COOKIECUTTER_CONTEXT_URL = 'https://gerrit.example.net'
+COOKIECUTTER_CONTEXT_PROJECT_NAME = 'full%2Fproject-name'
+COOKIECUTTER_CONTEXT_FILE_NAME = 'context.yaml'
+
+# Local FS remote
+COOKIECUTTER_CONTEXT_REMOTE = 'localfs'
+COOKIECUTTER_CONTEXT_PATH = '/path/to/context.yaml'
+
+# Github remote
+COOKIECUTTER_CONTEXT_REMOTE = 'github'
+COOKIECUTTER_CONTEXT_URL = 'https://api.github.com/repos/:owner/:repo/contents/:path'
+COOKIECUTTER_CONTEXT_TOKEN = 'githubapitoken'
+
+# Allow multiple versions of context file, only Gerrit remote has version parsing from project implemented at this time
+COOKIECUTTER_CONTEXT_VERSIONING_ENABLED = True
+COOKIECUTTER_CONTEXT_VERSION_FILTER = '\d{4}\.\d{1,2}(\.\d{1,2})?' # only versions matching this regex are shown in the UI
+COOKIECUTTER_CONTEXT_VERSION_MAP = {
+    'master': 'nightly' # this will rename version master to version nightly
+}
+COOKIECUTTER_CONTEXT_DEFAULT_VERSION = 'master' # version to populate global context with if none were collected from remote
+
+SALT_API_URL="http://127.0.0.1:8000"
+SALT_API_USER="saltdev"
+SALT_API_PASSWORD="saltdev"
+SALT_API_EAUTH="pam"
+

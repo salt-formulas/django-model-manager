@@ -1,0 +1,149 @@
+{% if not request.GET.graph or request.GET.graph == 'radial' %}
+<style type="text/css">
+
+path.arc {
+  fill: transparent;
+}
+
+.node {
+  font-family: Helvetica, sans-serif;
+  fill: #2C2B1A;
+  fill-opacity: 0.6;
+}
+.node text{
+  font-size: 9px;
+}
+
+.node text.status-success{
+  fill: #00BB00;
+  fill-opacity: 1;
+}
+.node text.status-failed{
+  fill: #FF0000;
+  fill-opacity: 1;
+}
+.node:hover {
+  font-size: 20px;
+  fill: #2C2B1A;
+  fill-opacity: 1;
+}
+
+.link {
+  fill: none;
+  stroke-opacity: .6;
+  stroke-width: 1.5;
+}
+
+.link.source, .link.target {
+  stroke-opacity: 0.6;
+}
+
+.node.target {
+  stroke: #2C2B1A !important;
+  fill-opacity: 1;
+  font-size: 16px;
+  stroke-width: 0.5px;
+}
+
+.link.source {
+  stroke: #FE4509;
+}
+
+.node.source {
+  stroke: #2C2B1A;
+  font-size: 16px;
+  fill-opacity: 1;
+}
+
+.link.target {
+  stroke: #FE4509;
+}
+
+.tooltip:hover:after {
+  content: attr(title);
+  display: block;
+  position: absolute; top: 10px; left: 0;
+}
+
+.selected {
+  stroke-width: 0.5px;
+  stroke-opacity: 0.7;
+}
+
+.node.selected text, .node.target text, .node.source text{
+  font-size: 14px!important;
+}
+a:hover{
+  text-decoration:none;
+}
+
+.link.active {
+  stroke-width: 2;
+  stroke-opacity: 1;
+}
+</style>
+
+{% elif request.GET.graph == 'linear'%}
+<style>
+.node {
+  font: 10px sans-serif;
+}
+
+.link {
+  stroke: steelblue;
+  stroke-opacity: .4;
+  fill: none;
+}
+</style>
+
+{% elif request.GET.graph == 'treemap' %}
+<style>
+.cell {
+  border: solid 1px white;
+  font: 10px sans-serif;
+  line-height: 12px;
+  overflow: hidden;
+  position: absolute;
+  text-indent: 2px;
+}
+
+.link {
+  stroke: #000;
+  stroke-opacity: .5;
+  fill: none;
+}
+</style>
+{% endif %}
+<script type="text/javascript">
+$(document).ready(function() {
+    var serviceClickHandler = function(ev) {
+        var $node =  $(this),
+            host = $node.attr("data-host-id"),
+            service = $node.find('text').html();
+        if (host && service) {
+            $.get("{% url 'horizon:delivery:resource_topology:topology_data' domain %}/" + host + "/" + service, function(res) {
+                if (res && res.result === 'ok') {
+                    $('#resource-topology-detail').html(res.html);
+                } else {
+                    console.log("Cannot print pillar data, server returns invalid response: " + res.data);
+                }
+            }).fail(function(error) {
+                console.log("Cannot get service data, server returns " + error.status + " " + error.statusText);
+            });
+        } else {
+            console.log("Cannot get service data, host and service ID cannot be obtained");
+        }
+    };
+    if ("{{ request.GET.graph }}" === "" || "{{ request.GET.graph }}" === "radial") {
+        new ResourceTopologyGraphs.radial("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
+        $(document).on("click", "g.node", serviceClickHandler);
+    } else if ("{{ request.GET.graph }}" === "linear") {
+        new ResourceTopologyGraphs.linear("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
+        $(document).on("click", "g.node", serviceClickHandler);
+    } else if ("{{ request.GET.graph }}" === "treemap") {
+        new ResourceTopologyGraphs.treemap("{% url 'horizon:delivery:resource_topology:topology_data' domain %}", "#resource-topology-chart", {{ polling_interval }}).init();
+        //$(document).on("click", "g.node", serviceClickHandler);
+    }
+});
+</script>
+

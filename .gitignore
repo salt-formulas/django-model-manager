@@ -1,0 +1,18 @@
+# virtualenv
+venv/
+# vim swp files
+.*.swp
+# static dir
+/static/
+# secret key store
+*.secret_key_store.lock
+# local_settings
+devops_portal/settings/local/local_settings.py
+# misc
+*.egg-info/
+*.pyc
+# development dbs
+db.sqlite3
+backend_db.sqlite3
+# celery beat schedule
+celerybeat-schedule

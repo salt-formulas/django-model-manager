@@ -1,0 +1,171 @@
+{% load jenkins i18n %}
+
+{% block main %}
+
+<style>
+#dag_container {
+  width: 500px;
+  margin: 0px auto;
+}
+
+#atom_container {
+  height: 60vh;
+  overflow: auto;
+}
+
+.console-output {
+  white-space: pre-wrap;
+  padding: 15px;
+  line-height: 1.5;
+}
+
+.panel .console-output {
+  border: none;
+  background-color: #fff;
+}
+</style>
+
+<div class="col-lg-4 col-md-12">
+  <div id="dag_container">
+    <svg width="500" height="300">
+      <g></g>
+    </svg>
+  </div>
+</div>
+<div class="col-lg-8 col-md-12" id="atom_container">
+  <ul class="nav nav-tabs hidden">
+    {% for node in nodes %}
+    <li><a data-toggle="tab" href="#stage-{{ forloop.counter }}">{{ node.displayName }}</a></li>
+    {% endfor %}
+    <li class="active"><a data-toggle="tab" href="#help">Help</a></li>
+  </ul>
+  <div class="tab-content">
+    {% for node in nodes %}
+    <div id="stage-{{ forloop.counter }}" class="tab-pane fade">
+      <h3>{{ node.displayName }}</h3>
+      <div class="panel-group" id="accordion">
+        {% for atom in node.atoms %}
+        <div class="panel panel-default">
+          <div class="panel-heading wf-status-{{ atom.iconColor }}">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-parent="#accordion" href="#collapse-{{ atom.id }}" style="color: #fff !important;">
+                <i class="fa fa-terminal" style="padding-right: 5px;"></i>
+                {{ atom.displayName }}
+              </a>
+            </h4>
+          </div>
+          <div id="collapse-{{ atom.id }}" class="panel-collapse collapse">
+            <pre class="console-output">{{ atom.text }}</pre>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    <div id="help" class="tab-pane fade in active">
+      <h4>{% trans "Click on node for more details." %}</h4>
+    </div>
+  </div>
+</div>
+
+<div id="color_palette">
+  <span class="wf-palette-primary text-primary"></span>
+  <span class="wf-palette-danger text-danger"></span>
+  <span class="wf-palette-success text-success"></span>
+  <span class="wf-palette-info text-info"></span>
+  <span class="wf-palette-warning text-warning"></span>
+  <span class="wf-palette-muted text-muted"></span>
+  <h2 class="h2"></h2>
+</div>
+
+<script>
+$.when(
+  $.getScript( "https://d3js.org/d3.v3.min.js" ),
+  $.getScript( "https://cpettitt.github.io/project/dagre-d3/latest/dagre-d3.min.js" ),
+  $.Deferred(function( deferred ){
+      $( deferred.resolve );
+  })
+).done(function(){
+
+  var color = {};
+  // Setup Bootstrap palette
+  color["primary"] = $("#color_palette > .wf-palette-primary").css("color");
+  color["danger"] = $("#color_palette > .wf-palette-danger").css("color");
+  color["success"] = $("#color_palette > .wf-palette-success").css("color");
+  color["info"] = $("#color_palette > .wf-palette-info").css("color");
+  color["warning"] = $("#color_palette > .wf-palette-warning").css("color");
+  color["muted"] = $("#color_palette > .wf-palette-muted").css("color");
+  // Assign specific box colors
+  color["blue"] = color["success"]
+  color["red"] = color["danger"]
+  color["notbuilt"] = color["muted"]
+
+  var font = {};
+  font['family'] = $("#color_palette > .h2").css("font-family");
+  font['size'] = $("#color_palette > .h2").css("font-size");
+  font['weight'] = $("#color_palette > .h2").css("font-weight");
+
+  // Create a new directed graph
+  var g = new dagreD3.graphlib.Graph().setGraph({});
+
+  {% for node in nodes %}
+  g.setNode("{{ node.id }}", {
+    label: "{{ node.displayName }}",
+    height: 60,
+    class: "wf-node-{{ node.iconColor }}",
+    style: "fill: " + color.{{ node.iconColor }} + "; stroke: " + color.{{ node.iconColor }} + ";",
+    labelStyle: "font-size: " + font.size + "; font-weight: " + font.weight + "; font-family: " + font.family + "; fill: #fff;"
+  });
+  {% endfor %}
+
+  // Set up the edges
+  {% for node in nodes %}
+    {% if not forloop.last %}
+      {% with next=nodes|index:forloop.counter %}
+  g.setEdge(
+    "{{ node.id }}",
+    "{{ next.id }}",
+    {
+      style: "stroke: " + color.muted + "; stroke-width: 3px; stroke-dasharray: 5, 5;",
+      arrowheadStyle: "fill: " + color.muted + ";",
+      lineInterpolate: 'basis'
+    }
+  );
+      {% endwith %}
+    {% endif %}
+  {% endfor %}
+  
+  // Set some general styles
+  g.nodes().forEach(function(v) {
+    var node = g.node(v);
+    node.rx = node.ry = 5;
+  });
+  
+  var svg = d3.select("svg"),
+      inner = svg.select("g");
+  
+  // Create the renderer
+  var render = new dagreD3.render();
+  
+  // Run the renderer. This is what draws the final graph.
+  render(inner, g);
+  
+  // Center the graph
+  var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
+  
+  inner.attr("transform", "translate(" + xCenterOffset + ", 20)");
+  svg.attr("height", g.graph().height + 40);
+
+  {% for node in nodes %}
+  $("#dag_container .nodes > g:nth-of-type({{ forloop.counter }})").click(function() {
+    $('#atom_container .nav-tabs > li:nth-of-type({{ forloop.counter }}) > a').tab('show');
+  });
+  {% endfor %}
+
+  $("<style type='text/css'>.wf-status-blue {background-color: " + color.blue + " !important;} .wf-status-red {background-color: " + color.red + " !important;}</style>").appendTo("head");
+
+});
+</script>
+
+{% endblock %}
+

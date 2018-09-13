@@ -1,0 +1,32 @@
+Django==1.8
+leonardo-horizon>=2016.8.3
+horizon-contrib>=2016.9.5
+pyparsing==2.2.0
+appdirs==1.4.3
+pathlib==1.0.1
+django-openstack-auth>=3.1.1
+python-keystoneclient!=1.8.0,!=2.1.0,<3.0.0,>=1.6.0
+Jinja2==2.9.6
+ipaddress==1.0.18
+bcrypt==3.1.3
+cryptography==1.8.1
+python-jenkins==0.4.14
+docutils==0.13.1
+fasteners==0.14.1
+rfc3986==0.4.1
+requests==2.13.0
+keystoneauth1==2.19.0
+prettytable==0.7.2
+django-appconf==1.0.2
+wrapt==1.10.10
+funcsigs==1.0.2
+monotonic==1.3
+salt-pepper==0.5.0
+django-celery==3.2.1
+redis==2.10.5
+django-redis==4.8.0
+-e git+https://github.com/oms4suse/python-ceph-cfg.git#egg=ceph-cfg
+
+# XStatic fix
+XStatic-Magic-Search==0.2.5.1
+

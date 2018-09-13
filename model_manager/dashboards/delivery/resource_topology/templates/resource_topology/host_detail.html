@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load i18n salt %}
+
+{% block title %}{% trans "Host Detail" %} - {{ host }}{% endblock %}
+
+{% block main %}
+<style>
+pre.return {
+  max-width: 800px;
+}
+
+pre.pillar {
+  width: 100%;
+  max-width: 1600px;
+}
+
+.hiddenRow {
+  padding: 0px !important;
+  border-top: 0px !important;
+}
+
+.accordion-body {
+  padding: 8px !important;
+}
+
+.status_col {
+  width: 150px !important;
+  text-align: right;
+}
+</style>
+
+<div class="col-xs-12">
+  <h3>{% trans "Resources" %}</h3>
+
+    <table class="table table-hover" style="border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th class="status_col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for datum in resource_data %}
+        <tr data-toggle="collapse" data-target="#service{{ forloop.counter }}" class="accordion-toggle{% if "success" in datum.status %} success{% elif "failed" in datum.status %} danger{% endif %}">
+          <td>{{ datum.service }}</td>
+          <td class="status_col">{{ datum.status }}</td>
+        </tr>
+        <tr>
+          <td colspan="6" class="hiddenRow">
+            <div class="accordion-body collapse" id="service{{ forloop.counter }}">
+              <table class="table table-hover" style="border-collapse:collapse;">
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Resource ID</th>
+                    <th>Last Return</th>
+                    <th class="status_col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for resource in datum.resources %}
+                  <tr class="{% if "success" in resource.status %} success{% elif "failed" in resource.status %} danger{% endif %}">
+                    <td>{{ resource.service }}</td>
+                    <td>{{ resource.resource_id }}</td>
+                    <td>{{ resource.last_ret|format_return|safe }}</td>
+                    <td class="status_col">{{ resource.status }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+</div>
+
+<div class="col-xs-12">
+  <h3>{% trans "Pillar" %}</h3>
+
+  <pre class="pillar">{{ pillar_data|safe }}</pre>
+</div>
+{% endblock %}
+
