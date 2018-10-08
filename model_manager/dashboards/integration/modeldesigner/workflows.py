@@ -8,19 +8,22 @@ from time import sleep
 
 from .actions import (GeneralParamsAction, InfraParamsAction,
                       ProductParamsAction, CookiecutterContextAction)
-from .utils import GeneratedStep
+from .utils import GeneratedStep, GeneratedWorkflow
 
 
 class GeneralParamsStep(GeneratedStep):
     action_class = GeneralParamsAction
+    excludes = ('cookiecutter_context',)
 
 
 class InfraParamsStep(GeneratedStep):
     action_class = InfraParamsAction
+    excludes = ('cookiecutter_context',)
 
 
 class ProductParamsStep(GeneratedStep):
     action_class = ProductParamsAction
+    excludes = ('cookiecutter_context',)
 
 
 class CookiecutterContextStep(workflows.Step):
@@ -28,35 +31,14 @@ class CookiecutterContextStep(workflows.Step):
     contributes = ('cookiecutter_context',)
 
 
-class CreateCookiecutterContext(workflows.Workflow):
+class CreateCookiecutterContext(GeneratedWorkflow):
     name = _("Create new Deployment Model")
     slug = "create_cookiecutter_context"
-    async_wizard = True
-    multipart = True
     default_steps = (GeneralParamsStep, InfraParamsStep, ProductParamsStep, CookiecutterContextStep)
     finalize_button_name = _("Confirm")
     success_message = _('Your request was successfully submitted.')
     failure_message = _('Your request could not be submitted, please try again later.')
     success_url = "horizon:integration:modeldesigner:index"
-
-    def __init__(self, *args, **kwargs):
-        super(CreateCookiecutterContext, self).__init__(*args, **kwargs)
-        # contribute choice field options to workflow context as Bools
-        context = self.context
-        for step in self.steps:
-            choice_fields = [
-                obj
-                for obj
-                in step.action.fields.values()
-                if hasattr(obj, 'choices') and getattr(obj, 'extend_context', False)
-            ]
-            choices = [chc[0] for fld in choice_fields for chc in fld.choices]
-            for choice in choices:
-                if choice not in context.keys():
-                    context[choice] = True if choice in context.values() else False
-
-    def get_absolute_url(self):
-        return self.request.get_full_path()
 
     def handle(self, request, context):
         """Handles any final processing for this workflow. Should return a

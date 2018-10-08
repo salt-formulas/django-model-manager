@@ -26,6 +26,7 @@ from docutils.core import publish_parts
 from horizon import exceptions as horizon_exc
 from horizon import messages
 from horizon import workflows
+from horizon.workflows.base import WorkflowContext
 from ipaddress import IPv4Network
 from jinja2 import Environment, meta
 from pygerrit.rest import GerritRestAPI
@@ -744,6 +745,16 @@ class GeneratedStep(workflows.Step):
 
     def contribute(self, data, context):
         super(GeneratedStep, self).contribute(data, context)
+
+        excluded_fields = ['csrfmiddlewaretoken', 'cookiecutter_context']
+        for key, value in data.items():
+            if value and key not in excluded_fields and key not in context:
+                context.update({key: value})
+                if key not in self.contributes:
+                    self.contributes += (key,)
+                if key not in self.workflow.contributions:
+                    self.workflow.contributions.add(key)
+
         # update shared context with option Bool values according to choices made in ChoiceList fields
         choice_fields = [
             obj
@@ -791,6 +802,60 @@ class GeneratedStep(workflows.Step):
         if not isinstance(ctx, dict):
             return {}
         return ctx[self.action_class.slug]
+
+
+class GeneratedWorkflow(workflows.Workflow):
+    async_wizard = True
+    multipart = True
+    exclusions = ['csrfmiddlewaretoken']
+
+    def __init__(self, request=None, context_seed=None, entry_point=None,
+                 *args, **kwargs):
+        super(GeneratedWorkflow, self).__init__(request, context_seed, entry_point, *args, **kwargs)
+
+        self.exclusions = set([])
+
+        for step in self.steps:
+            if hasattr(step, 'excludes'):
+                self.exclusions = self.exclusions | set(step.excludes)
+
+        # Override filtered context from parent class.
+        self.context = WorkflowContext(self)
+        context_seed = context_seed or {}
+        clean_seed = dict([(key, val)
+                           for key, val in context_seed.items()
+                           if key not in self.exclusions])
+        self.context_seed = clean_seed
+        self.context.update(clean_seed)
+
+        if request and request.method == "POST":
+            for step in self.steps:
+                valid = step.action.is_valid()
+                # Be sure to use the CLEANED data if the workflow is valid.
+                if valid:
+                    data = step.action.cleaned_data
+                else:
+                    data = request.POST
+                self.context = step.contribute(data, self.context)
+
+        # contribute choice field options to workflow context as Bools
+        for step in self.steps:
+            choice_fields = [
+                obj
+                for obj
+                in step.action.fields.values()
+                if hasattr(obj, 'choices') and getattr(obj, 'extend_context', False)
+            ]
+            choices = [chc[0] for fld in choice_fields for chc in fld.choices]
+            for choice in choices:
+                if choice not in self.context.keys():
+                    self.context[choice] = True if choice in self.context.values() else False
+
+    def get_absolute_url(self):
+        return self.request.get_full_path()
+
+    def _verify_contributions(self, context):
+        return True
 
 
 class AsyncWorkflowView(workflows.WorkflowView):
